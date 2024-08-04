@@ -1,0 +1,6 @@
+dependency-injector
+fastapi
+python-dotenv
+psycopg2-binary
+sqlalchemy
+uvicorn[standard]
