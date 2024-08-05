@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
-import { useKeyboard } from "react-aria";
 import { Meter, Label } from "react-aria-components";
 
 import { Document, Sentence } from "../../models";
+import { useKeyPress } from "../../utils";
 
 function secondsToMinuteSecondMillisecondString(seconds: number): string {
   // Rounded seconds to ms
@@ -222,7 +222,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   }, [activeParagraphIndex, document]);
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
+    (e: KeyboardEvent) => {
       // While recording - only move sequentially forward
       if (recording) {
         if (e.key === "ArrowLeft") {
@@ -273,9 +273,10 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
     ],
   );
 
-  const { keyboardProps } = useKeyboard({
-    onKeyDown: (e) => handleKeyDown(e),
-  });
+  useKeyPress(
+    ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Enter"],
+    handleKeyDown,
+  );
 
   useEffect(() => {
     activeSentenceRef.current?.scrollIntoView({
@@ -338,7 +339,6 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
           <StyledKbd disabled={recording}>&rarr;</StyledKbd> משפט קודם
         </div>
         <div
-          {...keyboardProps}
           tabIndex={0}
           className="col-span-3 max-h-96 max-w-prose overflow-auto py-10 text-justify text-xl"
         >
