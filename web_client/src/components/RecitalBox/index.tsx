@@ -307,12 +307,12 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
         ? "keepGoing"
         : "tooLong";
 
-  const recordingLengthFeedbackPrompt =
-    recordingLengthFeedback === "goodTimeToStop"
-      ? "זמן טוב לעצור"
-      : recordingLengthFeedback === "keepGoing"
-        ? "המשך להקליט"
-        : "אנא עצור";
+  // const recordingLengthFeedbackPrompt =
+  //   recordingLengthFeedback === "goodTimeToStop"
+  //     ? "זמן טוב לעצור"
+  //     : recordingLengthFeedback === "keepGoing"
+  //       ? "המשך להקליט"
+  //       : "אנא עצור";
 
   const recordingLengthMeterFeedbackBgColor =
     recordingLengthFeedback === "goodTimeToStop"
@@ -320,12 +320,12 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
       : recordingLengthFeedback === "keepGoing"
         ? "bg-blue-400"
         : "bg-red-600";
-  const recordingLengthMeterFeedbacTextColor =
-    recordingLengthFeedback === "goodTimeToStop"
-      ? "text-green-600"
-      : recordingLengthFeedback === "keepGoing"
-        ? "text-blue-400"
-        : "text-red-600";
+  // const recordingLengthMeterFeedbacTextColor =
+  //   recordingLengthFeedback === "goodTimeToStop"
+  //     ? "text-green-600"
+  //     : recordingLengthFeedback === "keepGoing"
+  //       ? "text-blue-400"
+  //       : "text-red-600";
 
   return (
     <div>

@@ -1,4 +1,4 @@
-const NON_WORD_UNICODE_MATCH_REGEXP = RegExp(/\P{L}+/, "u");
+const NON_WORD_UNICODE_MATCH_REGEXP = RegExp(/\P{L}+/gu);
 class Sentence {
   text: string;
   prev: SentencePointer;
