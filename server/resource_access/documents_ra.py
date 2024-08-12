@@ -1,10 +1,9 @@
 from contextlib import AbstractContextManager
 from typing import Callable, Iterator
 
-from sqlalchemy.orm import Session
+from sqlmodel import Session
 
-from .db.document import Document
-
+from ..models.document import Document
 
 class DocumentsRA:
 

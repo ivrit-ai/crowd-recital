@@ -1,6 +1,11 @@
 dependency-injector
+environs
 fastapi
-python-dotenv
+google-auth[requests]
+nanoid
+python-multipart
+pyjwt
 psycopg2-binary
 sqlalchemy
+sqlmodel
 uvicorn[standard]

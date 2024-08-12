@@ -4,13 +4,17 @@ from contextlib import contextmanager, AbstractContextManager
 from typing import Callable
 import logging
 
-from sqlalchemy import create_engine, orm
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session
+from sqlalchemy import orm
+
+# from sqlalchemy import create_engine, orm
+# from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.orm import Session
+
+from sqlmodel import Session, SQLModel, create_engine
 
 logger = logging.getLogger(__name__)
 
-Base = declarative_base()
+# Base = declarative_base()
 
 
 class Database:
@@ -20,13 +24,14 @@ class Database:
         self._session_factory = orm.scoped_session(
             orm.sessionmaker(
                 autocommit=False,
+                class_=Session,
                 autoflush=False,
                 bind=self._engine,
             ),
         )
 
     def create_database(self) -> None:
-        Base.metadata.create_all(self._engine)
+        SQLModel.metadata.create_all(self._engine)
 
     @contextmanager
     def session(self) -> Callable[..., AbstractContextManager[Session]]:
