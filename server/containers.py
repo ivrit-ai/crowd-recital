@@ -1,8 +1,8 @@
 from dependency_injector import containers, providers
 
 from .models.database import Database
-from .resource_access.documents_ra import DocumentsRA
 from .resource_access.users_ra import UsersRA
+from .resource_access.recitals_ra import RecitalsRA
 
 
 class Container(containers.DeclarativeContainer):
@@ -13,8 +13,8 @@ class Container(containers.DeclarativeContainer):
 
     db = providers.Singleton(Database, connection_str=config.db.connection_str)
 
-    documents_ra = providers.Factory(
-        DocumentsRA,
+    recitals_ra = providers.Factory(
+        RecitalsRA,
         session_factory=db.provided.session,
     )
     users_ra = providers.Factory(

@@ -13,19 +13,16 @@ class UsersRA:
 
     def get_all(self) -> Iterator[User]:
         with self.session_factory() as session:
-            statement = select(User)
-            return session.exec(statement)
+            return session.exec(select(User))
 
     def get_by_id(self, id: str) -> User:
         with self.session_factory() as session:
-            statement = select(User).filter(User.id == id)
-            results = session.exec(statement)
+            results = session.exec(select(User).filter(User.id == id))
             return results.first()
 
     def get_by_email(self, email: str) -> User:
         with self.session_factory() as session:
-            statement = select(User).filter(User.email == email)
-            results = session.exec(statement)
+            results = session.exec(select(User).filter(User.email == email))
             return results.first()
 
     def upsert(self, user: User) -> None:

@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 from ...containers import Container
 from ...utility.authentication.users import decode_access_token, get_access_token_expire_minutes
+from ...resource_access.users_ra import UsersRA
+from ...models.user import User
 
 AUTH_COOKIE_NAME = "access_token"
 
@@ -74,22 +76,23 @@ def get_authenticated_user_id(
     raise auth_error_exception
 
 
-class User(BaseModel):
-    id: str
-    email: str
-    email_verified: bool
-    name: str
-    picture: str
+@inject
+async def get_valid_user(
+    authenticated_user_id: Annotated[str, Depends(get_authenticated_user_id)],
+    users_ra: UsersRA = Depends(Provide[Container.users_ra]),
+):
+    user = users_ra.get_by_id(authenticated_user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+    return user
 
 
-async def get_valid_user(authenticated_user_id: Annotated[str, Depends(get_authenticated_user_id)]):
-    # Need to lookup in the DB etc.
-    return User(
-        **{
-            "id": authenticated_user_id,
-            "email": "fake-email@com.com",
-            "email_verified": True,
-            "name": "Fake John",
-            "picture": "noap",
-        }
-    )
+def has_speaker_permission(user: User):
+    return user.group == "speaker" or user.group == "admin"
+
+
+async def get_speaker_user(user: Annotated[User, Depends(get_valid_user)]):
+    if not has_speaker_permission(user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an authorized speaker")
+    return user

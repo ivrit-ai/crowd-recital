@@ -3,7 +3,7 @@ from typing import Annotated
 import wave
 import pathlib
 
-from dependency_injector.wiring import inject
+from dependency_injector.wiring import inject, Provide
 from fastapi import (
     APIRouter,
     Depends,
@@ -11,45 +11,57 @@ from fastapi import (
     UploadFile,
     Path,
 )
+from fastapi.exceptions import HTTPException
 from nanoid import generate
 from pydantic import BaseModel
 
-from .dependencies.users import User, get_valid_user
+
+from ..containers import Container
+from ..models.recital_session import RecitalSession
+from ..models.recital_text_segment import RecitalTextSegment
+from ..models.recital_audio_segment import RecitalAudioSegment
+from .dependencies.users import User, get_speaker_user
 from . import users
+from ..resource_access.recitals_ra import RecitalsRA
 
 
 router = APIRouter()
 
 
 class TextSegment(BaseModel):
-    end: float
+    seek_end: float
     text: str
 
 
 @router.put("/new-recital-session")
 @inject
-async def new_recital_session(active_user: Annotated[User, Depends(get_valid_user)]):
-    # TODO - this should go into the DB
-    # create a new session id
-    # return the session id
-    return {"session_id": generate()}
+async def new_recital_session(
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
+    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
+):
+    recital_session = RecitalSession(
+        id=generate(),
+        user_id=speaker_user.id,
+    )
+    recitals_ra.upsert(recital_session)
+
+    return {"session_id": recital_session.id}
 
 
 @router.post("/upload-text-segment/{session_id}")
 @inject
 async def upload_text_segment(
-    active_user: Annotated[User, Depends(get_valid_user)],
     session_id: Annotated[str, Path(title="Session id of the transcript")],
     segment: TextSegment,
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
+    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
 ):
-    # TODO - this should go into the DB
+    recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
+    if not recital_session:
+        raise HTTPException(status_code=404, detail="Recital session not found")
 
-    # to a file names "{session_id}.txt"
-    # append the text to the file (Create if file does not exist)
-    # each line is {end}, {text}
-    output_folder = pathlib.Path("./data")
-    with open(output_folder / f"{session_id}.txt", "a") as f:
-        f.write(f"{segment.end}, {segment.text}\n")
+    text_segment = RecitalTextSegment(recital_session=recital_session, seek_end=segment.seek_end, text=segment.text)
+    recitals_ra.add_text_segment(text_segment)
 
     return {"message": "Text segment uploaded successfully"}
 
@@ -74,11 +86,16 @@ def parse_mime_type(mime_type: str):
 @router.post("/upload-audio-segment/{session_id}/{segment_id}")
 @inject
 async def upload_audio_segment(
-    active_user: Annotated[User, Depends(get_valid_user)],
     session_id: Annotated[str, Path(title="Session id of the audio segment")],
     segment_id: Annotated[str, Path(title="Id of the audio segment")],
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
     audio_data: UploadFile = File(...),
+    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
 ):
+    recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
+    if not recital_session:
+        raise HTTPException(status_code=404, detail="Recital session not found")
+
     # Read the MIME type
     mime_type = audio_data.content_type
     print(f"MIME type: {mime_type}")
@@ -99,13 +116,17 @@ async def upload_audio_segment(
     audio_content = await audio_data.read()
 
     # Write the raw PCM data to a WAV file
-    with wave.open(str(pathlib.Path("data", f"{session_id}_{segment_id}.wav")), "wb") as wav_file:
+    file_name = f"{session_id}_{segment_id}.wav"
+    with wave.open(str(pathlib.Path("data", file_name)), "wb") as wav_file:
         wav_file.setnchannels(channels)
         wav_file.setsampwidth(bits // 8)  # Convert bits to bytes per sample
         wav_file.setframerate(rate)
         wav_file.writeframes(audio_content)
 
-    return {"message": "File uploaded successfully"}
+    audio_segment = RecitalAudioSegment(recital_session=recital_session, sequential=segment_id, filename=file_name)
+    recitals_ra.add_audio_segment(audio_segment)
+
+    return {"message": "Audio uploaded successfully"}
 
 
 @router.get("/status")
