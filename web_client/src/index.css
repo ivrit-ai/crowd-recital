@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  writing-mode: horizontal-tb;
+  direction: rtl;
+  text-orientation: inherit;
+}

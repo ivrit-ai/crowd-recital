@@ -61,11 +61,36 @@ class Paragraph {
 
     return new Paragraph(sentences, prev, next);
   }
+
+  static fromSentenceList(
+    sentenceList: string[],
+    prev: ParagraphPointer,
+    next: ParagraphPointer,
+  ): Paragraph {
+    if (!sentenceList.length) {
+      return new Paragraph([], null, null);
+    }
+
+    let prevSentence: SentencePointer = null;
+    const sentences: Sentence[] = [];
+    for (const s of sentenceList) {
+      const sentence: Sentence = new Sentence(s, prevSentence, null);
+      sentences.push(sentence);
+      if (prevSentence) {
+        prevSentence.next = sentence;
+      }
+      prevSentence = sentence;
+    }
+
+    return new Paragraph(sentences, prev, next);
+  }
 }
 
 type ParagraphPointer = Paragraph | null;
 
 class Document {
+  id?: string;
+  title?: string;
   paragraphs: Paragraph[];
   constructor(paragraphs: Paragraph[]) {
     this.paragraphs = paragraphs;
@@ -88,6 +113,37 @@ class Document {
     }
     return new Document(paragraphs);
   }
+
+  static fromParagraphsTextList(paragraphList: string[][]): Document {
+    let prevParagraph: ParagraphPointer = null;
+    const paragraphs: Paragraph[] = [];
+    for (const sentenceList of paragraphList) {
+      const paragraph: Paragraph = Paragraph.fromSentenceList(
+        sentenceList,
+        prevParagraph,
+        null,
+      );
+      paragraphs.push(paragraph);
+      if (prevParagraph) {
+        prevParagraph.next = paragraph;
+      }
+      prevParagraph = paragraph;
+    }
+    return new Document(paragraphs);
+  }
+
+  static fromTextDocument(textDocument: TextDocumentResponse): Document {
+    const document = Document.fromParagraphsTextList(textDocument.text);
+    document.id = textDocument.id;
+    document.title = textDocument.title;
+    return document;
+  }
 }
+
+export type TextDocumentResponse = {
+  id: string;
+  title: string;
+  text: string[][];
+};
 
 export { Sentence, Paragraph, Document };

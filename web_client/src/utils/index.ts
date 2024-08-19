@@ -34,3 +34,5 @@ export const useKeyPress = (
       targetNode && targetNode.removeEventListener("keydown", handleKeyPress);
   }, [handleKeyPress, node]);
 };
+
+export { getErrorMessage } from "./tsErrorMessage";
