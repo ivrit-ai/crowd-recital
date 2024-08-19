@@ -20,3 +20,4 @@ class User(SQLModel, table=True):
     group: Optional[str] = Field(default=None)
 
     recital_sessions: list["RecitalSession"] = Relationship(back_populates="user")
+    text_documents: list["TextDocument"] = Relationship(back_populates="owner")
