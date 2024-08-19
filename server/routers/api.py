@@ -5,11 +5,10 @@ import wave
 import pathlib
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, File, UploadFile, Path, Query
+from fastapi import APIRouter, Depends, FastAPI, File, UploadFile, Path, Query
 from fastapi.exceptions import HTTPException
 from nanoid import generate
 from pydantic import BaseModel
-from torch import Value
 
 
 from ..containers import Container
@@ -174,3 +173,6 @@ def get_status():
 
 
 router.include_router(users.router)
+
+api_app = FastAPI()
+api_app.include_router(router, prefix="")
