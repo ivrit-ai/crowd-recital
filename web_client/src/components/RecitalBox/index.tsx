@@ -331,7 +331,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
     recordingTimestamp,
     startRecording,
     stopRecording,
-  } = useRecordingUploader(4, audioDataUploadUrl);
+  } = useRecordingUploader(5, audioDataUploadUrl);
   const [uploadTextSegment] = useTextSegmentUploader(
     sessionId,
     recordingTimestamp,

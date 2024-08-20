@@ -66,20 +66,23 @@ const DocumentInput = ({
     validUrl,
   ]);
 
-  const loadExistingDocumentById = useCallback(async () => {
-    setProcessing(true);
-    try {
-      const doc = await loadDocumentById(existingId);
-      setActiveDocument(Document.fromTextDocument(doc));
-      setError("");
-      setWikiArticleUrl("");
-    } catch (error) {
-      setError(`${getErrorMessage(error)} - ארעה שגיאה בעת טעינת הטקסט`);
-      console.error(error);
-    } finally {
-      setProcessing(false);
-    }
-  }, [loadDocumentById, existingId]);
+  const loadExistingDocumentById = useCallback(
+    async (selectedDocumentId?: string) => {
+      setProcessing(true);
+      try {
+        const doc = await loadDocumentById(selectedDocumentId || existingId);
+        setActiveDocument(Document.fromTextDocument(doc));
+        setError("");
+        setWikiArticleUrl("");
+      } catch (error) {
+        setError(`${getErrorMessage(error)} - ארעה שגיאה בעת טעינת הטקסט`);
+        console.error(error);
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [loadDocumentById, existingId],
+  );
 
   if (processing) {
     return <div>Processing...</div>;
@@ -116,11 +119,14 @@ const DocumentInput = ({
               value={existingId}
               onChange={(e) => setExistingId(e.target.value)}
             />
-            <button onClick={loadExistingDocumentById}>טען טקסט</button>
+            <button onClick={() => loadExistingDocumentById()}>טען טקסט</button>
           </div>
           <div>
             {existingDocuments.map((doc) => (
-              <div key={doc.id}>
+              <div
+                key={doc.id}
+                onClick={() => loadExistingDocumentById(doc.id)}
+              >
                 {doc.title} - {doc.id}
               </div>
             ))}

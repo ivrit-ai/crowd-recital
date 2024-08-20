@@ -5,7 +5,6 @@ export const useRecordingSession = (
   documentId?: string,
 ) => {
   const createNewSession = useCallback(async () => {
-    console.log(JSON.stringify({ document_id: documentId }));
     const response = await fetch(createNewSessionUrl, {
       method: "PUT",
       body: JSON.stringify({ document_id: documentId }),
