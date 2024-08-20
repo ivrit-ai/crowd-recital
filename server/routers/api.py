@@ -1,3 +1,4 @@
+from mimetypes import guess_extension
 import re
 from typing import Annotated, Optional
 from uuid import UUID
@@ -28,6 +29,9 @@ class NewRecitalSessionRequestBody(BaseModel):
     document_id: Optional[UUID]
 
 
+recital_ids_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+
+
 @router.put("/new-recital-session")
 @inject
 async def new_recital_session(
@@ -36,7 +40,7 @@ async def new_recital_session(
     recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
 ):
     recital_session = RecitalSession(
-        id=generate(),
+        id=generate(alphabet=recital_ids_alphabet),
         user_id=speaker_user.id,
         document_id=new_session_request.document_id,
     )
@@ -92,31 +96,11 @@ async def upload_audio_segment(
     mime_type = audio_data.content_type
     print(f"MIME type: {mime_type}")
 
-    # Parse the MIME type to extract parameters
-    params = parse_mime_type(mime_type)
-    rate = int(params.get("rate", 16000))  # Default to 16000 if not provided
-    encoding = params.get("encoding", "signed-int")
-    bits = int(params.get("bits", 16))
-    channels = int(params.get("channels", 1))
-
-    print(f"Rate: {rate}, Encoding: {encoding}, Bits: {bits}")
-
-    if encoding != "signed-int":
-        return {"error": "Unsupported encoding - only PCM encoding is supported."}
-
-    # Read the audio file content
-    audio_content = await audio_data.read()
-
-    # Write the raw PCM data to a WAV file
-    file_name = f"{session_id}_{segment_id}.wav"
-    with wave.open(str(pathlib.Path("data", file_name)), "wb") as wav_file:
-        wav_file.setnchannels(channels)
-        wav_file.setsampwidth(bits // 8)  # Convert bits to bytes per sample
-        wav_file.setframerate(rate)
-        wav_file.writeframes(audio_content)
-
-    audio_segment = RecitalAudioSegment(recital_session=recital_session, sequential=segment_id, filename=file_name)
-    recitals_ra.add_audio_segment(audio_segment)
+    # write the file to disk
+    file_extension = guess_extension(mime_type.split(";")[0]) or ".bin"
+    file_name = f"{session_id}{file_extension}.seg.{segment_id}"
+    with open(str(pathlib.Path("data", file_name)), "wb") as buffer:
+        buffer.write(await audio_data.read())
 
     return {"message": "Audio uploaded successfully"}
 

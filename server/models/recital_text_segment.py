@@ -1,10 +1,14 @@
+from datetime import datetime
 from typing import Optional
 import uuid
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from .mixins.date_fields import DateFieldsMixin
+from .recital_session import RecitalSession
 
-class RecitalTextSegment(SQLModel, table=True):
+
+class RecitalTextSegment(DateFieldsMixin, SQLModel, table=True):
 
     __tablename__ = "recital_text_segments"
 

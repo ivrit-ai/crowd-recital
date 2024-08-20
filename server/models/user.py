@@ -3,11 +3,13 @@ from enum import Enum, IntEnum
 from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
 
+from .mixins.date_fields import DateFieldsMixin
+
 ADMIN_GROUP_NAME = "admin"
 SPEAKER_GROUP_NAME = "speaker"
 
 
-class User(SQLModel, table=True):
+class User(SQLModel, DateFieldsMixin, table=True):
     __tablename__ = "users"
 
     id: str = Field(default=None, primary_key=True)
