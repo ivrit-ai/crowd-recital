@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
-import { Meter, Label } from "react-aria-components";
 
 import { Document } from "../../models";
 import { useKeyPress } from "../../utils";
@@ -29,24 +28,6 @@ function secondsToMinuteSecondMillisecondString(seconds: number): string {
   // Concatenate minutes, seconds, and milliseconds as a mm:ss.zzz format
   return `${paddedMinutes}:${paddedSeconds}.${paddedMilliseconds}`;
 }
-
-type StyledKbdProps = {
-  children: React.ReactNode;
-  disabled?: boolean;
-};
-
-const StyledKbd = ({ children, disabled = false }: StyledKbdProps) => {
-  return (
-    <kbd
-      className={twJoin(
-        "inline-flex h-8 w-8 items-center justify-center rounded border border-slate-200 bg-white font-semibold text-gray-100 shadow-sm transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:ring-gray-300",
-        disabled && "opacity-20",
-      )}
-    >
-      {children}
-    </kbd>
-  );
-};
 
 type NavigationMoves = {
   nextParagraph: () => void;
@@ -365,36 +346,71 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   }, [activeParagraphIndex, activeSentenceIndex]);
 
   return (
-    <div>
-      <h2>טקסט: {document.title}</h2>
-      <h2 onClick={clearActiveDocument}>החלף טקסט</h2>
-      <h2>סשן: {sessionId}</h2>
-      <div className="grid grid-cols-4 gap-2">
-        <div className="col-span-1 flex flex-col items-center justify-center gap-4">
-          <StyledKbd>⏎</StyledKbd> {recording ? "עצור" : "התחל"} הקלטה
-          <StyledKbd disabled={recording}>&uarr;</StyledKbd> פסקה קודמת
-          <StyledKbd disabled={recording}>&darr;</StyledKbd> פסקה הבאה
-          <StyledKbd>&larr;</StyledKbd> משפט הבא
-          <StyledKbd disabled={recording}>&rarr;</StyledKbd> משפט קודם
-          <div>{ready ? "מוכן להקלטה" : "מתכונן להקלטה"}</div>
+    <div className="h-screen-minus-topbar flex w-full flex-col content-between">
+      <header className="bg-base-200 p-4">
+        <div className="mx-auto flex w-full max-w-4xl flex-col justify-center gap-2 md:flex-row md:items-center md:justify-around md:gap-4 md:px-6">
+          <div className="min-w-0">
+            <div className="text-sm font-bold md:text-lg">
+              מסמך טקסט{" "}
+              <a
+                className="btn btn-link btn-sm text-primary"
+                onClick={clearActiveDocument}
+              >
+                החלף
+              </a>
+            </div>
+            <div className="truncate text-sm">{document.title}</div>
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-bold md:text-lg">סשן הקלטה</div>
+            <div className="truncate text-sm">
+              {sessionId || "לא נוצר עדיין"}
+            </div>
+          </div>
         </div>
+      </header>
+
+      <div className="nokbd:hidden flex items-center justify-center gap-4 pt-4">
+        <span>
+          <kbd className="kbd kbd-sm">⏎</kbd> {recording ? "עצור" : "התחל"}{" "}
+          הקלטה
+        </span>
+        {!recording && (
+          <span>
+            <kbd className="kbd kbd-sm">&uarr;</kbd> פסקה קודמת
+          </span>
+        )}
+        {!recording && (
+          <span>
+            <kbd className="kbd kbd-sm">&darr;</kbd> פסקה הבאה
+          </span>
+        )}
+        <span>
+          <kbd className="kbd kbd-sm">&larr;</kbd> משפט הבא
+        </span>
+        <span>
+          <kbd className="kbd kbd-sm">&rarr;</kbd> משפט קודם
+        </span>
+      </div>
+
+      <div className="container mx-auto min-h-0 max-w-4xl grow self-stretch">
         <div
           tabIndex={0}
-          className="col-span-3 max-h-96 max-w-prose overflow-auto py-10 text-justify text-xl"
+          className="mx-auto h-full max-w-prose overflow-auto py-5 text-justify text-lg focus-visible:outline-none md:text-xl"
         >
           {document.paragraphs.map((p, pidx) => (
             <p
               key={pidx}
-              className={twJoin("px-3 leading-loose transition-all")}
+              className={twJoin("px-3 pb-3 leading-loose transition-all")}
             >
               {p.sentences.map((s, sidx) => (
                 <span
                   key={`${pidx}-${sidx}`}
                   className={twJoin(
-                    "border-1 border border-x-4 border-gray-300",
+                    "border-b-2 border-s-8 border-neutral-content me-2",
                     activeParagraphIndex == pidx &&
                       activeSentenceIndex == sidx &&
-                      "bg-green-200",
+                      "bg-primary text-primary-content",
                   )}
                   ref={
                     activeParagraphIndex == pidx && activeSentenceIndex == sidx
@@ -416,24 +432,25 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
         </div>
       </div>
 
-      <Meter value={recordingTimestamp} maxValue={30}>
-        {({ percentage }) => (
-          <>
-            <div className="h-4 w-full overflow-hidden rounded border-gray-300 shadow forced-color-adjust-none">
-              <div
-                className={twJoin("h-full bg-green-600")}
-                style={{ width: percentage + "%" }}
-              />
-            </div>
-            <div className="text-center">
-              <Label>משך הקלטה נוכחית </Label>
-              <span className="font-mono">
+      <div className="sm:mx-auto sm:max-w-xl">
+        <div
+          className="p-4 px-4 text-center"
+          onClick={() => onControl(NavigationControls.Record)}
+        >
+          {recording ? (
+            <div className="btn btn-error join-item mx-auto w-full">
+              <span>עצור הקלטה</span>
+              <span className="font-mono text-xs font-bold md:text-lg">
                 {secondsToMinuteSecondMillisecondString(recordingTimestamp)}
               </span>
             </div>
-          </>
-        )}
-      </Meter>
+          ) : (
+            <div className="btn btn-primary join-item mx-auto w-full">
+              התחל הקלטה
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

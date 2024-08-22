@@ -17,7 +17,7 @@ function App() {
 
   return (
     <UserContext.Provider value={{ user: activeUser, logout: onLogout }}>
-      <Layout header={!!activeUser}>
+      <Layout header={!!activeUser} footer={!activeUser}>
         {loggingIn ? (
           <WholePageLoading />
         ) : activeUser ? (

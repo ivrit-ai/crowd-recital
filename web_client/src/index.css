@@ -6,4 +6,5 @@
   writing-mode: horizontal-tb;
   direction: rtl;
   text-orientation: inherit;
+  --topbar-height: 4rem;
 }
