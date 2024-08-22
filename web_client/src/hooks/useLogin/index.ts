@@ -96,6 +96,11 @@ const logout = async () => {
   }
 };
 
+export type GoogleLoginProps = {
+  onCredential: (loginCredential: string) => void;
+  googleClientId: string;
+};
+
 export default function useLogin() {
   const [googleClientId, setGoogleClientId] = useState("");
   const [csrfToken, setCsrfToken] = useState("");

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-import type { TextDocumentResponse } from "@crct/models";
+import type { TextDocumentResponse } from "@/models";
 
 export enum SourceType {
   WikiArticle = "wiki-article",

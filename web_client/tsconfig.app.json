@@ -26,8 +26,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@crct/*": [
-        "src/*"
+      "@/*": [
+        "./src/*"
       ]
     }
   },

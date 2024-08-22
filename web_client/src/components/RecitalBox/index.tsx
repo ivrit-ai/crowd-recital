@@ -313,9 +313,10 @@ const useControlCallback = (
 
 type RecitalBoxProps = {
   document: Document;
+  clearActiveDocument: () => void;
 };
 
-const RecitalBox = ({ document }: RecitalBoxProps) => {
+const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   const [sessionId, setSessionId] = useState<string>("");
   const { activeParagraphIndex, activeSentenceIndex, activeSentence, move } =
     useDocumentNavigation(document);
@@ -366,6 +367,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   return (
     <div>
       <h2>טקסט: {document.title}</h2>
+      <h2 onClick={clearActiveDocument}>החלף טקסט</h2>
       <h2>סשן: {sessionId}</h2>
       <div className="grid grid-cols-4 gap-2">
         <div className="col-span-1 flex flex-col items-center justify-center gap-4">

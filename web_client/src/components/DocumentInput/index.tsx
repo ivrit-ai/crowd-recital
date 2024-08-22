@@ -1,139 +1,165 @@
 import { useCallback, useState, useEffect } from "react";
 import { twJoin } from "tailwind-merge";
 
-import type { TextDocumentResponse } from "@crct/models";
-import { getErrorMessage } from "@crct/utils";
-import { Document } from "@crct/models";
-import { useDocuments } from "@crct/hooks/documents";
+import type { TextDocumentResponse } from "@/models";
+import { getErrorMessage, tw } from "@/utils";
+import { Document } from "@/models";
+import { useDocuments } from "@/hooks/documents";
+import WikiArticleUpload from "./wikiUploadTab";
+import SelectExistingDocument from "./existingDocTab";
+import { EntryMethods } from "./types";
+import type { TabContentProps } from "./types";
 
 const createDocumentUrl = "/api/create_document_from_source";
 const loadDocumentsUrl = "/api/documents";
 
 type DocumentManagerProps = {
   setActiveDocument: (document: Document | null) => void;
-  activeDocument: Document | null;
 };
 
-const DocumentInput = ({
-  setActiveDocument,
-  activeDocument,
-}: DocumentManagerProps) => {
+type uploaderThunk<T extends unknown[] = unknown[]> = (
+  ...args: T
+) => Promise<string>;
+
+const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
   const [existingDocuments, setExistingDocuments] = useState<
     TextDocumentResponse[]
   >([]);
-  const [existingId, setExistingId] = useState("");
-  const [wikiArticleUrl, setWikiArticleUrl] = useState("");
+  const [entryMode, setEntryMode] = useState<EntryMethods>(
+    EntryMethods.EXISTING,
+  );
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
-  const [validUrl, setValidUrl] = useState(false);
 
   const { createWikiArticleDocument, loadDocumentById, loadUserDocuments } =
     useDocuments(createDocumentUrl, loadDocumentsUrl);
 
   useEffect(() => {
-    loadUserDocuments().then((documents) => setExistingDocuments(documents));
-  }, [loadUserDocuments, setExistingDocuments]);
+    setProcessing(true);
+    loadUserDocuments().then((documents) => {
+      setExistingDocuments(documents);
+      if (documents.length === 0) setEntryMode(EntryMethods.WIKI);
+      setProcessing(false);
+    });
+  }, [setProcessing, setEntryMode, loadUserDocuments, setExistingDocuments]);
 
   useEffect(() => {
-    setValidUrl(!wikiArticleUrl || URL.canParse(wikiArticleUrl));
-  }, [wikiArticleUrl, setValidUrl]);
+    setError("");
+  }, [entryMode]);
 
-  const loadNewDocumentFromWikiArticle = useCallback(async () => {
-    setProcessing(true);
-    try {
-      if (!validUrl) {
-        setError("זהו אינו קישור חוקי");
-        return;
-      }
-
-      const decodedUrl = decodeURIComponent(wikiArticleUrl);
-      const { id } = await createWikiArticleDocument(decodedUrl);
-      const doc = await loadDocumentById(id);
-      setActiveDocument(Document.fromTextDocument(doc));
-      setError("");
-      setWikiArticleUrl("");
-    } catch (error) {
-      setError(`${getErrorMessage(error)} - ארעה שגיאה בעת יצירת מסמך הטקסט`);
-      console.error(error);
-    } finally {
-      setProcessing(false);
-    }
-  }, [
-    createWikiArticleDocument,
-    loadDocumentById,
-    setActiveDocument,
-    wikiArticleUrl,
-    validUrl,
-  ]);
-
-  const loadExistingDocumentById = useCallback(
-    async (selectedDocumentId?: string) => {
+  const uploadWrapper = <T extends unknown[]>(uploader: uploaderThunk<T>) => {
+    return async (...args: T) => {
       setProcessing(true);
       try {
-        const doc = await loadDocumentById(selectedDocumentId || existingId);
+        const docId = await uploader(...args);
+        const doc = await loadDocumentById(docId);
         setActiveDocument(Document.fromTextDocument(doc));
         setError("");
-        setWikiArticleUrl("");
       } catch (error) {
-        setError(`${getErrorMessage(error)} - ארעה שגיאה בעת טעינת הטקסט`);
+        setError(`${getErrorMessage(error)} - ארעה שגיאה בעת יצירת מסמך הטקסט`);
         console.error(error);
       } finally {
         setProcessing(false);
       }
+    };
+  };
+
+  const loadNewDocumentFromWikiArticle = uploadWrapper(
+    async (wikiArticleUrl: string) => {
+      const decodedUrl = decodeURIComponent(wikiArticleUrl);
+      const { id } = await createWikiArticleDocument(decodedUrl);
+      return id;
     },
-    [loadDocumentById, existingId],
   );
 
-  if (processing) {
-    return <div>Processing...</div>;
-  }
+  const loadExistingDocumentById = uploadWrapper(
+    async (selectedDocumentId: string) => {
+      return selectedDocumentId;
+    },
+  );
+
+  const tabContentProps: TabContentProps = {
+    error,
+    setError,
+    processing,
+    setProcessing,
+    setEntryMode,
+  };
+
+  const baseTabStyles = tw("tab hidden md:flex");
 
   return (
-    <div>
-      {activeDocument ? (
-        <button onClick={() => setActiveDocument(null)}>טקסט אחר</button>
-      ) : (
-        <div>
-          <div>
-            <label>מאמר ויקיפדיה בעברית</label>
-            <input
-              type="url"
-              placeholder="קישור מלא למאמר"
-              className={twJoin("w-full", !validUrl && "border border-red-500")}
-              value={wikiArticleUrl}
-              onChange={(e) => setWikiArticleUrl(e.target.value)}
-            />
-            <button onClick={loadNewDocumentFromWikiArticle}>טען טקסט</button>
-            <ul dir="ltr" className="font-mono">
-              <li>https://he.wikipedia.org/wiki/מרגרט_המילטון_(מדענית)</li>
-              <li>https://he.wikipedia.org/wiki/פומפיי</li>
-            </ul>
-          </div>
-          <div>או - הזן מזהה מסמך קיים</div>
-          <div>
-            <label>מזהה מסמך קיים</label>
-            <input
-              type="text"
-              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              className={twJoin("w-full")}
-              value={existingId}
-              onChange={(e) => setExistingId(e.target.value)}
-            />
-            <button onClick={() => loadExistingDocumentById()}>טען טקסט</button>
-          </div>
-          <div>
-            {existingDocuments.map((doc) => (
-              <div
-                key={doc.id}
-                onClick={() => loadExistingDocumentById(doc.id)}
-              >
-                {doc.title} - {doc.id}
-              </div>
-            ))}
-          </div>
-          <div>{error}</div>
+    <div className="container mx-auto max-w-4xl self-stretch px-4 py-12">
+      <h1 className="pb-6 text-2xl">בחירת טקסט להקראה</h1>
+
+      {/* Tab title in smaller screens uses an horizontal menu */}
+      <ul className="menu menu-horizontal menu-xs md:hidden [&>li]:mb-1 [&>li]:ms-1 [&>li]:rounded [&>li]:bg-slate-100">
+        <li onClick={() => setEntryMode(EntryMethods.EXISTING)}>
+          <a
+            className={twJoin(entryMode === EntryMethods.EXISTING && "active")}
+          >
+            מסמך קיים
+          </a>
+        </li>
+        <li onClick={() => setEntryMode(EntryMethods.WIKI)}>
+          <a className={twJoin(entryMode === EntryMethods.WIKI && "active")}>
+            טען מאמר ויקיפדיה
+          </a>
+        </li>
+        <li className="disabled">
+          <a>
+            העלה מסמך <span className="badge badge-info badge-sm">בקרוב</span>
+          </a>
+        </li>
+        <li className="disabled">
+          <a>
+            הדבק טקסט חופשי{" "}
+            <span className="badge badge-info badge-sm">בקרוב</span>
+          </a>
+        </li>
+      </ul>
+
+      <div role="tablist" className="tabs tabs-xs md:tabs-lifted md:tabs-md">
+        <div
+          role="tab"
+          className={twJoin(
+            baseTabStyles,
+            entryMode === EntryMethods.EXISTING && "tab-active",
+          )}
+          onClick={() => setEntryMode(EntryMethods.EXISTING)}
+        >
+          מסמך קיים
         </div>
-      )}
+        <div role="tabpanel" className="tab-content">
+          <SelectExistingDocument
+            {...tabContentProps}
+            existingDocuments={existingDocuments}
+            loadExistingDocumentById={loadExistingDocumentById}
+          />
+        </div>
+        <div
+          role="tab"
+          className={twJoin(
+            baseTabStyles,
+            entryMode === EntryMethods.WIKI && "tab-active",
+          )}
+          onClick={() => setEntryMode(EntryMethods.WIKI)}
+        >
+          טען מאמר ויקיפדיה
+        </div>
+        <div role="tabpanel" className="tab-content">
+          <WikiArticleUpload
+            {...tabContentProps}
+            loadNewDocumentFromWikiArticle={loadNewDocumentFromWikiArticle}
+          />
+        </div>
+        <div role="tab" className={twJoin(baseTabStyles, "tab-disabled")}>
+          העלה מסמך (בקרוב)
+        </div>
+        <div role="tab" className={twJoin(baseTabStyles, "tab-disabled")}>
+          הדבק טקסט חופשי (בקרוב)
+        </div>
+      </div>
     </div>
   );
 };

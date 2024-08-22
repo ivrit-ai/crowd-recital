@@ -144,6 +144,8 @@ export type TextDocumentResponse = {
   id: string;
   title: string;
   text: string[][];
+  source: string;
+  created_at: string;
 };
 
 export { Sentence, Paragraph, Document };
