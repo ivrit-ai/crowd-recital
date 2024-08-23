@@ -5,7 +5,11 @@ const Footer = () => {
     <footer className="footer self-end bg-base-200 p-10 text-base-content">
       <aside>
         <a href="https://www.ivrit.ai/">
-          <img className="avatar w-24 rounded-xl" src={ivritAiLogo} />
+          <img
+            className="avatar w-24 rounded-xl"
+            src={ivritAiLogo}
+            alt="ivrit.ai logo"
+          />
         </a>
         <p>
           עברית.ai
