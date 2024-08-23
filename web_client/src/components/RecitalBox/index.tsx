@@ -345,8 +345,10 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     });
   }, [activeParagraphIndex, activeSentenceIndex]);
 
+  console.log(`TODO - handle ready flag: ${ready}`);
+
   return (
-    <div className="h-screen-minus-topbar flex w-full flex-col content-between">
+    <div className="flex h-screen-minus-topbar w-full flex-col content-between">
       <header className="bg-base-200 p-4">
         <div className="mx-auto flex w-full max-w-4xl flex-col justify-center gap-2 md:flex-row md:items-center md:justify-around md:gap-4 md:px-6">
           <div className="min-w-0">
@@ -370,7 +372,7 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
         </div>
       </header>
 
-      <div className="nokbd:hidden flex items-center justify-center gap-4 pt-4">
+      <div className="flex items-center justify-center gap-4 pt-4 nokbd:hidden">
         <span>
           <kbd className="kbd kbd-sm">⏎</kbd> {recording ? "עצור" : "התחל"}{" "}
           הקלטה
@@ -407,7 +409,7 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
                 <span
                   key={`${pidx}-${sidx}`}
                   className={twJoin(
-                    "border-b-2 border-s-8 border-neutral-content me-2",
+                    "me-2 border-b-2 border-s-8 border-neutral-content",
                     activeParagraphIndex == pidx &&
                       activeSentenceIndex == sidx &&
                       "bg-primary text-primary-content",

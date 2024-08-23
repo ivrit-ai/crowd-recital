@@ -14,9 +14,6 @@ interface Props extends TabContentProps {
 const WikiArticleUpload = ({
   error,
   setError,
-  processing,
-  setProcessing,
-  setEntryMode,
   loadNewDocumentFromWikiArticle,
 }: Props) => {
   const [wikiArticleUrl, setWikiArticleUrl] = useState("");

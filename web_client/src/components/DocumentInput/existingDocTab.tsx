@@ -10,10 +10,7 @@ interface Props extends TabContentProps {
 }
 
 const SelectExistingDocument = ({
-  error,
-  setError,
   processing,
-  setProcessing,
   setEntryMode,
   existingDocuments,
   loadExistingDocumentById,
