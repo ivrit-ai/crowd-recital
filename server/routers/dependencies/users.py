@@ -6,10 +6,10 @@ from jwt.exceptions import InvalidTokenError
 from nanoid import generate
 from pydantic import BaseModel
 
-from ...containers import Container
-from ...utility.authentication.users import decode_access_token, get_access_token_expire_minutes
-from ...resource_access.users_ra import UsersRA
-from ...models.user import User
+from containers import Container
+from utility.authentication.users import decode_access_token, get_access_token_expire_minutes
+from resource_access.users_ra import UsersRA
+from models.user import User
 
 AUTH_COOKIE_NAME = "access_token"
 

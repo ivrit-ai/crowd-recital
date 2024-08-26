@@ -4,8 +4,8 @@ from dependency_injector.wiring import Provide, inject
 import jwt
 from pydantic import BaseModel
 
-from ...containers import Container
-from ...models.user import User
+from containers import Container
+from models.user import User
 from .google_login import GoogleIdentification
 
 ALGORITHM = "HS256"
@@ -43,6 +43,9 @@ def encode_access_token(
 def decode_access_token(
     token: str, access_token_secret_key: str = Provide[Container.config.auth.access_token_secret_key]
 ):
+    print(token)
+    print(access_token_secret_key)
+    print(ALGORITHM)
     payload = jwt.decode(token, access_token_secret_key, algorithms=[ALGORITHM])
     return payload
 

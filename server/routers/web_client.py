@@ -4,7 +4,7 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from ..containers import Container
+from containers import Container
 
 
 @inject

@@ -3,9 +3,9 @@ from typing import Callable, Iterator
 
 from sqlmodel import Session, select
 
-from ..models.recital_session import RecitalSession
-from ..models.recital_text_segment import RecitalTextSegment
-from ..models.recital_audio_segment import RecitalAudioSegment
+from models.recital_session import RecitalSession
+from models.recital_text_segment import RecitalTextSegment
+from models.recital_audio_segment import RecitalAudioSegment
 
 
 class RecitalsRA:

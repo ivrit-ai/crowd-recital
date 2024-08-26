@@ -4,10 +4,10 @@ from uuid import UUID
 from dependency_injector.wiring import Provide, inject
 from fastapi.exceptions import HTTPException
 
-from ..models.user import User
-from ..models.text_document import WIKI_ARTICLE_SOURCE_TYPE, TextDocument
-from ..engines.extraction_engine import ExtractionEngine, ExtractedText
-from ..resource_access.documents_ra import DocumentsRA
+from models.user import User
+from models.text_document import WIKI_ARTICLE_SOURCE_TYPE, TextDocument
+from engines.extraction_engine import ExtractionEngine, ExtractedText
+from resource_access.documents_ra import DocumentsRA
 
 
 class DocumentManager:

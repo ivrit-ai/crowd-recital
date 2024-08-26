@@ -64,4 +64,4 @@ COPY --from=build-stage /app/dist web_client_dist/
 # Specify the volume where uploaded data us to be stored
 VOLUME /data
 
-ENTRYPOINT [ "uvicorn", "server.application:app", "--host", "0.0.0.0", "--port", "80"]
+ENTRYPOINT [ "uvicorn", "--app-dir=server", "application:app", "--host", "0.0.0.0", "--port", "80"]

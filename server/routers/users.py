@@ -12,26 +12,26 @@ from fastapi import (
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 
-from ..containers import Container
-from ..models.user import User
+from containers import Container
+from models.user import User
 from .dependencies.users import (
     get_valid_user,
     set_access_token_cookie,
     unset_access_token_cookie,
     AuthCookie,
 )
-from ..utility.authentication.google_login import (
+from utility.authentication.google_login import (
     GoogleIdentification,
     validate_csrf_token,
     get_google_identification,
 )
-from ..utility.authentication.users import (
+from utility.authentication.users import (
     create_user_from_google_id,
     create_access_token_payload_from_user,
     encode_access_token,
     get_access_token_expire_minutes,
 )
-from ..resource_access.users_ra import UsersRA
+from resource_access.users_ra import UsersRA
 
 router = APIRouter()
 

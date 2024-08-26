@@ -12,13 +12,13 @@ from nanoid import generate
 from pydantic import BaseModel
 
 
-from ..containers import Container
-from ..models.recital_session import RecitalSession
-from ..models.recital_text_segment import RecitalTextSegment
-from ..models.recital_audio_segment import RecitalAudioSegment
-from ..models.text_document import TextDocumentResponse
-from ..resource_access.recitals_ra import RecitalsRA
-from ..managers.document_manager import DocumentManager
+from containers import Container
+from models.recital_session import RecitalSession
+from models.recital_text_segment import RecitalTextSegment
+from models.recital_audio_segment import RecitalAudioSegment
+from models.text_document import TextDocumentResponse
+from resource_access.recitals_ra import RecitalsRA
+from managers.document_manager import DocumentManager
 from .dependencies.users import User, get_speaker_user
 from . import users
 

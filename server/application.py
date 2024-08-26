@@ -5,9 +5,9 @@ from environs import Env
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .containers import Container
-from .routers.api import api_app
-from .routers.web_client import get_web_client_app
+from containers import Container
+from routers.api import api_app
+from routers.web_client import get_web_client_app
 
 env = Env()
 env.read_env()

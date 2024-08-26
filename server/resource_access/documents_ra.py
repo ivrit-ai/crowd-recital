@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy.orm import defer
 from sqlmodel import Session, select
 
-from ..models.text_document import TextDocument
+from models.text_document import TextDocument
 
 
 class DocumentsRA:

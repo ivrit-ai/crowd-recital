@@ -6,7 +6,7 @@ import wikipediaapi
 
 from .nlp_pipeline import NlpPipeline
 
-from ..models.text_document import WIKI_ARTICLE_SOURCE_TYPE
+from models.text_document import WIKI_ARTICLE_SOURCE_TYPE
 
 APP_USER_AGENT = "Ivrit.ai-Crowd-Recital/0.0.0 (https://www.ivrit.ai)"
 WIKI_HE_ARTICLE_URL_PREFIX = r"^(https?://he.wikipedia.org/wiki/)(.+)$"
