@@ -8,6 +8,6 @@ pyjwt
 psycopg2-binary
 sqlalchemy
 sqlmodel
-stanza
+stanza==1.8.2
 uvicorn[standard]
 wikipedia-api

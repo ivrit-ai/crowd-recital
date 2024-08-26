@@ -6,6 +6,7 @@ from .resource_access.users_ra import UsersRA
 from .resource_access.recitals_ra import RecitalsRA
 from .resource_access.documents_ra import DocumentsRA
 from .engines.extraction_engine import ExtractionEngine
+from .engines.nlp_pipeline import NlpPipeline
 from .managers.document_manager import DocumentManager
 
 
@@ -30,7 +31,9 @@ class Container(containers.DeclarativeContainer):
         session_factory=db.provided.session,
     )
 
-    extraction_engine = providers.Factory(ExtractionEngine)
+    nlp_pipeline = providers.Singleton(NlpPipeline)
+
+    extraction_engine = providers.Factory(ExtractionEngine, nlp_pipeline=nlp_pipeline)
 
     document_manager = providers.Factory(
         DocumentManager,

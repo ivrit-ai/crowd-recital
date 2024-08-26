@@ -53,7 +53,7 @@ celerybeat-schedule
 celerybeat.pid
 
 # Environments
-.env
+.*env
 .venv
 env/
 venv/

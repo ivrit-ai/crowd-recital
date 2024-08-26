@@ -2,8 +2,9 @@ import re
 
 from pydantic import BaseModel
 import stanza
-from stanza.models.common.doc import Document
 import wikipediaapi
+
+from .nlp_pipeline import NlpPipeline
 
 from ..models.text_document import WIKI_ARTICLE_SOURCE_TYPE
 
@@ -17,11 +18,11 @@ class ExtractedText(BaseModel):
 
 
 class ExtractionEngine:
-    def __init__(self):
+    def __init__(self, nlp_pipeline: NlpPipeline):
         self.lang = "he"
         self.wiki_lang = self.lang
         self.wiki_wiki = wikipediaapi.Wikipedia(APP_USER_AGENT, self.wiki_lang)
-        self.nlp = stanza.Pipeline(lang=self.lang, processors="tokenize,mwt")
+        self.nlp = nlp_pipeline.get_pipeline()
 
     def extract_text_document(self, source: str, source_type: str) -> ExtractedText:
         if source_type == WIKI_ARTICLE_SOURCE_TYPE:
