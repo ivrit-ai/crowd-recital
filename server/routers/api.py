@@ -49,6 +49,23 @@ async def new_recital_session(
     return {"session_id": recital_session.id}
 
 
+@router.post("/end-recital-session/{session_id}")
+@inject
+async def end_recital_session(
+    session_id: Annotated[str, Path(title="Session id of the transcript")],
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
+    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
+):
+    recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
+    if not recital_session:
+        raise HTTPException(status_code=404, detail="Recital session not found")
+
+    recital_session.status = "ended"
+    recitals_ra.upsert(recital_session)
+
+    return {"message": "Recital session ended successfully"}
+
+
 class TextSegmentRequestBody(BaseModel):
     seek_end: float
     text: str

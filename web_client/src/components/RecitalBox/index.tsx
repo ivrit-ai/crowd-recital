@@ -10,6 +10,7 @@ import { useRecordingSession } from "../../hooks/useRecordingSession";
 const textDataUploadUrl = "/api/upload-text-segment";
 const audioDataUploadUrl = "/api/upload-audio-segment";
 const createNewSessionUrl = "/api/new-recital-session";
+const endSessionUrl = "/api/end-recital-session";
 
 function secondsToMinuteSecondMillisecondString(seconds: number): string {
   // Rounded seconds to ms
@@ -32,7 +33,7 @@ function secondsToMinuteSecondMillisecondString(seconds: number): string {
 type NavigationMoves = {
   nextParagraph: () => void;
   prevParagraph: () => void;
-  nextSentence: () => void;
+  nextSentence: () => boolean;
   prevSentence: () => void;
   toParagraphSentence: (paragraphIndex: number, sentenceIndex: number) => void;
 };
@@ -68,13 +69,15 @@ const useDocumentNavigation = (document: Document) => {
       activeSentenceIndex === activeParagraph.sentences.length - 1;
     if (isLastSentence) {
       if (isLastParagraph) {
-        return; // No where to go further
+        return false; // No where to go further
       }
       setActiveParagraphIndex((prev) => prev + 1);
       setActiveSentenceIndex(0);
     } else {
       setActiveSentenceIndex((prev) => prev + 1);
     }
+
+    return true;
   }, [
     setActiveParagraphIndex,
     setActiveSentenceIndex,
@@ -224,7 +227,9 @@ type NavigationArgs = {
 const useControlCallback = (
   move: NavigationMoves,
   recording: boolean,
+  sessionId: string,
   createNewSession: () => Promise<string>,
+  endSession: (sessionId: string) => Promise<void>,
   setSessionId: (sessionId: string) => void,
   startRecording: (sessionId: string) => void,
   stopRecording: () => void,
@@ -232,12 +237,15 @@ const useControlCallback = (
 ) => {
   const onControl = useCallback(
     async (control: NavigationControls, navigationArgs?: NavigationArgs) => {
+      let shouldStopRecording = false;
       switch (control) {
         case NavigationControls.NextSentence:
           if (recording) {
             uploadActiveSentence();
           }
-          move.nextSentence();
+          if (!move.nextSentence()) {
+            shouldStopRecording = true;
+          }
           break;
         case NavigationControls.PrevSentence:
           if (!recording) {
@@ -264,8 +272,7 @@ const useControlCallback = (
           break;
         case NavigationControls.Record:
           if (recording) {
-            uploadActiveSentence();
-            stopRecording();
+            shouldStopRecording = true;
           } else {
             createNewSession().then((sessionId) => {
               setSessionId(sessionId);
@@ -276,6 +283,12 @@ const useControlCallback = (
 
         default:
           break;
+      }
+
+      if (shouldStopRecording) {
+        uploadActiveSentence();
+        stopRecording();
+        endSession(sessionId);
       }
     },
     [
@@ -303,8 +316,9 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     useDocumentNavigation(document);
   const activeSentenceElementRef = useRef<HTMLSpanElement>(null);
 
-  const [createNewSession] = useRecordingSession(
+  const [createNewSession, endSession] = useRecordingSession(
     createNewSessionUrl,
+    endSessionUrl,
     document?.id,
   );
   const {
@@ -329,7 +343,9 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   const onControl = useControlCallback(
     move,
     recording,
+    sessionId,
     createNewSession,
+    endSession,
     setSessionId,
     startRecording,
     stopRecording,

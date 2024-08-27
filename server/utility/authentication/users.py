@@ -43,9 +43,6 @@ def encode_access_token(
 def decode_access_token(
     token: str, access_token_secret_key: str = Provide[Container.config.auth.access_token_secret_key]
 ):
-    print(token)
-    print(access_token_secret_key)
-    print(ALGORITHM)
     payload = jwt.decode(token, access_token_secret_key, algorithms=[ALGORITHM])
     return payload
 

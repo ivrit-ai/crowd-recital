@@ -2,6 +2,7 @@ import { useCallback } from "react";
 
 export const useRecordingSession = (
   createNewSessionUrl: string,
+  endSessionUrl: string,
   documentId?: string,
 ) => {
   const createNewSession = useCallback(async () => {
@@ -21,5 +22,21 @@ export const useRecordingSession = (
     return session_id as string;
   }, [documentId, createNewSessionUrl]);
 
-  return [createNewSession];
+  const endSession = useCallback(
+    async (sessionId: string) => {
+      const response = await fetch(`${endSessionUrl}/${sessionId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to end session");
+      }
+    },
+    [endSessionUrl],
+  );
+
+  return [createNewSession, endSession] as const;
 };

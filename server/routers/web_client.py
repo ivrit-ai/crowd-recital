@@ -27,7 +27,6 @@ class ClientEnv(BaseModel):
 @env.get("/config.js", response_class=PlainTextResponse)
 @inject
 def get_env_config(response: Response, google_client_id: str = Provide[Container.config.auth.google.client_id]) -> str:
-    print(google_client_id)
     client_env = ClientEnv(config=ClientConfig(auth_google_client_id=google_client_id))
     config_script_content = f"window.__env__ = {client_env.model_dump_json()}"
     return PlainTextResponse(content=config_script_content, headers={"Content-Type": "application/javascript"})
