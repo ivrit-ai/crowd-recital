@@ -22,7 +22,6 @@ const nonSystemPrefThemeMode = isLight(systemPreferredThemeMode)
 const initiallyStoredThemeMode = localStorage.getItem(
   themeModeStorageKey,
 ) as ThemeMode;
-console.log({ initiallyStoredThemeMode });
 
 const ThemeModeSelector = () => {
   const [overridingThemeMode, setOverridingThemeMode] = useState<ThemeMode>(

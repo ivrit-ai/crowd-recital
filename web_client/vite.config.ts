@@ -36,6 +36,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      "/env": {
+        target: "https://127.0.0.1:8000",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

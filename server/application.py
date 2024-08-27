@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from containers import Container
 from routers.api import api_app
-from routers.web_client import get_web_client_app
+from routers.web_client import get_web_client_app, get_web_client_env_app
 
 env = Env()
 env.read_env()
@@ -51,6 +51,7 @@ def create_app() -> FastAPI:
 
     app.container = container
     app.mount("/api", api_app)  # Serves the backend api root
+    app.mount("/env", get_web_client_env_app())  # Serves the web client dynamic configuration
     app.mount("/", get_web_client_app())  # Serves the web client root
 
     return app
