@@ -60,7 +60,9 @@ WORKDIR /
 # Copy the built static assets from the build-stage
 COPY --from=build-stage /app/dist web_client_dist/
 
-# Specify the volume where uploaded data us to be stored
+# Specify the volume where uploaded data is to be stored
 VOLUME /data
+
+EXPOSE 80
 
 ENTRYPOINT [ "uvicorn", "--app-dir=server", "application:app", "--host", "0.0.0.0", "--port", "80"]
