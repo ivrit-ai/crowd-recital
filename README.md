@@ -28,7 +28,7 @@ ACCESS_TOKEN_SECRET_KEY=<Generated secret to sign the JWT session tokens>
 - Build the Docker image that handles the web site static assets building
 
 ```
-docker build -t recital-web-app-builder . && \
+docker build -t recital-web-app-builder . -f web.Dockerfile && \
 docker run --rm -v $(PWD)/web_client_dist:/app/dist recital-web-app-builder && \
 docker image rm recital-web-app-builder
 ```
