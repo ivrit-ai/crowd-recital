@@ -11,7 +11,7 @@ const keyAndCertFilesExists =
 
 if (!keyAndCertFilesExists) {
   console.warn(
-    "SSL key and cert files not found. Local Dev server will not server over HTTPS.",
+    "SSL key and cert files not found. Local Dev server will not serve over HTTPS.",
   );
 }
 

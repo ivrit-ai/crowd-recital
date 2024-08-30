@@ -24,6 +24,6 @@ COPY ./web_client .
 # Cache the build deps for pnpm - subsequent builds should be faster
 RUN --mount=type=cache,target=${PNPM_HOME}/store \
     pnpm config set store-dir ${PNPM_HOME}/store && \
-    pnpm install --frozen-lockfile --prefer-offline=
+    pnpm install --frozen-lockfile --prefer-offline
 
 ENTRYPOINT [ "pnpm", "run", "build", "--", "--outDir", "dist" ]

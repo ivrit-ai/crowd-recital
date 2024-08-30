@@ -13,7 +13,7 @@
 # Build the Vite app static site
 ##
 
-FROM node:20-slim AS build-stage
+FROM --platform=$BUILDPLATFORM node:20-slim AS build-stage
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -42,6 +42,7 @@ WORKDIR /server
 COPY server/requirements.txt .
 # Pre install torch using offical pytorch wheel - to match target platform
 # RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir "torch<=2.3.0" --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Download and store the stanza models into the image
