@@ -119,6 +119,15 @@ async def upload_audio_segment(
     with open(str(pathlib.Path("data", file_name)), "wb") as buffer:
         buffer.write(await audio_data.read())
 
+    recitals_ra.add_audio_segment(
+        RecitalAudioSegment(
+            filename=file_name,
+            mime_type=mime_type,
+            recital_session=recital_session,
+            sequential=segment_id,
+        )
+    )
+
     return {"message": "Audio uploaded successfully"}
 
 
