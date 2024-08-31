@@ -1,0 +1,6 @@
+{
+    "isort.args": [
+        "--settings-path",
+        "server/pyproject.toml"
+    ]
+}

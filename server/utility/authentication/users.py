@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
-from dependency_injector.wiring import Provide, inject
 import jwt
+from dependency_injector.wiring import Provide, inject
 from pydantic import BaseModel
 
 from containers import Container
 from models.user import User
+
 from .google_login import GoogleIdentification
 
 ALGORITHM = "HS256"

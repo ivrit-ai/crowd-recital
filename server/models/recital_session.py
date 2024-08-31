@@ -1,13 +1,12 @@
-from datetime import datetime
 from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin
-from .user import User
 from .text_document import TextDocument
+from .user import User
 
 
 class SessionStatus(str, Enum):

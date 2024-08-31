@@ -1,8 +1,5 @@
-from pathlib import Path
-from datetime import datetime, timedelta
-from contextlib import AbstractContextManager
 import os
-from typing import Callable, Iterator
+from pathlib import Path
 
 import boto3
 from botocore.exceptions import ClientError

@@ -1,4 +1,4 @@
-from stanza import Pipeline, DownloadMethod
+from stanza import DownloadMethod, Pipeline
 
 
 class NlpPipeline:

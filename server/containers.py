@@ -1,17 +1,16 @@
 from dependency_injector import containers, providers
 
-
-from models.database import Database
-from resource_access.users_ra import UsersRA
-from resource_access.recitals_ra import RecitalsRA
-from resource_access.recitals_content_ra import RecitalsContentRA
-from resource_access.documents_ra import DocumentsRA
-from engines.nlp_pipeline import NlpPipeline
-from engines.extraction_engine import ExtractionEngine
 from engines.aggregation_engine import AggregationEngine
+from engines.extraction_engine import ExtractionEngine
+from engines.nlp_pipeline import NlpPipeline
 from engines.transform_engine import TransformEngine
 from managers.document_manager import DocumentManager
 from managers.recital_manager import RecitalManager
+from models.database import Database
+from resource_access.documents_ra import DocumentsRA
+from resource_access.recitals_content_ra import RecitalsContentRA
+from resource_access.recitals_ra import RecitalsRA
+from resource_access.users_ra import UsersRA
 
 
 class Container(containers.DeclarativeContainer):

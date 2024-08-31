@@ -1,7 +1,7 @@
-from enum import StrEnum
 import uuid
-
+from enum import StrEnum
 from typing import Optional
+
 from sqlmodel import Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin

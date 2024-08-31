@@ -1,13 +1,8 @@
 from typing import Annotated
 
-from fastapi import (
-    Cookie,
-    HTTPException,
-    status,
-    Form,
-)
-from google.oauth2 import id_token
+from fastapi import Cookie, Form, HTTPException, status
 from google.auth.transport import requests
+from google.oauth2 import id_token
 from pydantic import BaseModel
 
 

@@ -1,24 +1,15 @@
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
+from pathlib import Path
 from time import gmtime, strftime
-from typing import Optional
-from uuid import UUID
 
+from webvtt import Caption, WebVTT
 
-from dependency_injector.wiring import Provide, inject
-from fastapi.exceptions import HTTPException
-from webvtt import WebVTT, Caption
-
-from errors import MissingSessionError
-from models.user import User
-from models.recital_session import RecitalSession
 from models.recital_text_segment import RecitalTextSegment
 from resource_access.recitals_ra import RecitalsRA
-from resource_access.documents_ra import DocumentsRA
 
 
 def normalize_text_as_caption_text(text: str) -> str:

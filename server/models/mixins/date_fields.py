@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 
-
-from sqlmodel import SQLModel, Field, Column, func, DateTime, TIMESTAMP, text
+from sqlmodel import TIMESTAMP, Field, func
 
 
 class DateFieldsMixin:

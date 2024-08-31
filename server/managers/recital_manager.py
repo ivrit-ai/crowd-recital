@@ -1,26 +1,12 @@
-import json
-import os
-from pathlib import Path
-import re
-import subprocess
-from time import gmtime, strftime
-from typing import Optional
-from uuid import UUID
 
 
-from dependency_injector.wiring import Provide, inject
-from fastapi.exceptions import HTTPException
-from webvtt import WebVTT, Caption
 
-from errors import MissingSessionError
-from models.user import User
-from models.recital_session import SessionStatus
-from models.recital_text_segment import RecitalTextSegment
-from resource_access.recitals_ra import RecitalsRA
-from resource_access.recitals_content_ra import RecitalsContentRA
-from resource_access.documents_ra import DocumentsRA
-from engines.transform_engine import TransformEngine
 from engines.aggregation_engine import AggregationEngine
+from engines.transform_engine import TransformEngine
+from errors import MissingSessionError
+from models.recital_session import SessionStatus
+from resource_access.recitals_content_ra import RecitalsContentRA
+from resource_access.recitals_ra import RecitalsRA
 
 
 class RecitalManager:

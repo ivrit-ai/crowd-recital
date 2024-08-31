@@ -1,16 +1,15 @@
 import argparse
 from enum import StrEnum
 
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import Provide, inject
 
-
-from containers import Container
 from configuration import configure
-from utility.authentication import users
-from models.database import Database
+from containers import Container
 from managers.recital_manager import RecitalManager
-from resource_access.users_ra import UsersRA
+from models.database import Database
 from models.user import UserGroups
+from resource_access.users_ra import UsersRA
+from utility.authentication import users
 
 
 class AdminCommands(StrEnum):

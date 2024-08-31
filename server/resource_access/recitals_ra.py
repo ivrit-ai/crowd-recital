@@ -1,12 +1,12 @@
-from datetime import datetime, timedelta
 from contextlib import AbstractContextManager
+from datetime import datetime, timedelta
 from typing import Callable, Iterator
 
-from sqlmodel import Session, select, or_, and_
+from sqlmodel import Session, and_, or_, select
 
+from models.recital_audio_segment import RecitalAudioSegment
 from models.recital_session import RecitalSession, SessionStatus
 from models.recital_text_segment import RecitalTextSegment
-from models.recital_audio_segment import RecitalAudioSegment
 
 
 class RecitalsRA:

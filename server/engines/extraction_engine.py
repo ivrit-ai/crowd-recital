@@ -1,12 +1,11 @@
 import re
 
-from pydantic import BaseModel
-import stanza
 import wikipediaapi
-
-from .nlp_pipeline import NlpPipeline
+from pydantic import BaseModel
 
 from models.text_document import WIKI_ARTICLE_SOURCE_TYPE
+
+from .nlp_pipeline import NlpPipeline
 
 APP_USER_AGENT = "Ivrit.ai-Crowd-Recital/0.0.0 (https://www.ivrit.ai)"
 WIKI_HE_ARTICLE_URL_PREFIX = r"^(https?://he.wikipedia.org/wiki/)(.+)$"

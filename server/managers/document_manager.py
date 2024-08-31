@@ -1,12 +1,11 @@
 from typing import Optional
 from uuid import UUID
 
-from dependency_injector.wiring import Provide, inject
-from fastapi.exceptions import HTTPException
+from dependency_injector.wiring import inject
 
-from models.user import User
+from engines.extraction_engine import ExtractionEngine
 from models.text_document import WIKI_ARTICLE_SOURCE_TYPE, TextDocument
-from engines.extraction_engine import ExtractionEngine, ExtractedText
+from models.user import User
 from resource_access.documents_ra import DocumentsRA
 
 

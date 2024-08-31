@@ -1,12 +1,10 @@
-from datetime import datetime
-from typing import Optional
 import uuid
+from typing import Optional
 
-from sqlmodel import Field, Relationship, SQLModel, JSON, Column
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin
 from .user import User
-
 
 WIKI_ARTICLE_SOURCE_TYPE = "wiki-article"
 

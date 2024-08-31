@@ -1,5 +1,3 @@
-from datetime import datetime
-from typing import Optional
 import uuid
 
 from sqlmodel import Field, Relationship, SQLModel

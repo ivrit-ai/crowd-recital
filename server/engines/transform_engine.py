@@ -1,7 +1,7 @@
 import json
 import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 from resource_access.recitals_ra import RecitalsRA
 

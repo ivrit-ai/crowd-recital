@@ -1,16 +1,19 @@
-from dependency_injector.wiring import inject, Provide
 from typing import Annotated
 from uuid import UUID
+
+from dependency_injector.wiring import Provide, inject
 from fastapi import Cookie, Depends, HTTPException, Response, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCookie
+from fastapi.security import (APIKeyCookie, HTTPAuthorizationCredentials,
+                              HTTPBearer)
 from jwt.exceptions import InvalidTokenError
 from nanoid import generate
 from pydantic import BaseModel
 
 from containers import Container
-from utility.authentication.users import decode_access_token, get_access_token_expire_minutes
-from resource_access.users_ra import UsersRA
 from models.user import User
+from resource_access.users_ra import UsersRA
+from utility.authentication.users import (decode_access_token,
+                                          get_access_token_expire_minutes)
 
 AUTH_COOKIE_NAME = "access_token"
 

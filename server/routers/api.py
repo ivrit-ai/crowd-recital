@@ -1,25 +1,25 @@
-from mimetypes import guess_extension
+import pathlib
 import re
+from mimetypes import guess_extension
 from typing import Annotated, Optional
 from uuid import UUID
-import pathlib
 
-from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, FastAPI, File, UploadFile, Path, Query
+from dependency_injector.wiring import Provide, inject
+from fastapi import APIRouter, Depends, FastAPI, File, Path, Query, UploadFile
 from fastapi.exceptions import HTTPException
 from nanoid import generate
 from pydantic import BaseModel
 
-
 from containers import Container
+from managers.document_manager import DocumentManager
+from models.recital_audio_segment import RecitalAudioSegment
 from models.recital_session import RecitalSession, SessionStatus
 from models.recital_text_segment import RecitalTextSegment
-from models.recital_audio_segment import RecitalAudioSegment
 from models.text_document import TextDocumentResponse
 from resource_access.recitals_ra import RecitalsRA
-from managers.document_manager import DocumentManager
-from .dependencies.users import User, get_speaker_user
+
 from . import users
+from .dependencies.users import User, get_speaker_user
 
 router = APIRouter()
 

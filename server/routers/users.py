@@ -1,37 +1,24 @@
 from datetime import timedelta
 from typing import Annotated
 
-
-from dependency_injector.wiring import inject, Provide
-from fastapi import (
-    APIRouter,
-    Depends,
-    Response,
-    status,
-)
+from dependency_injector.wiring import Provide, inject
+from fastapi import APIRouter, Depends, Response, status
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 
 from containers import Container
 from models.user import User
-from .dependencies.users import (
-    get_valid_user,
-    set_access_token_cookie,
-    unset_access_token_cookie,
-    AuthCookie,
-)
-from utility.authentication.google_login import (
-    GoogleIdentification,
-    validate_csrf_token,
-    get_google_identification,
-)
-from utility.authentication.users import (
-    create_user_from_google_id,
-    create_access_token_payload_from_user,
-    encode_access_token,
-    get_access_token_expire_minutes,
-)
 from resource_access.users_ra import UsersRA
+from utility.authentication.google_login import (GoogleIdentification,
+                                                 get_google_identification,
+                                                 validate_csrf_token)
+from utility.authentication.users import (
+    create_access_token_payload_from_user, create_user_from_google_id,
+    encode_access_token, get_access_token_expire_minutes)
+
+from .dependencies.users import (AuthCookie, get_valid_user,
+                                 set_access_token_cookie,
+                                 unset_access_token_cookie)
 
 router = APIRouter()
 
