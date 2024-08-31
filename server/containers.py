@@ -9,6 +9,7 @@ from resource_access.documents_ra import DocumentsRA
 from engines.nlp_pipeline import NlpPipeline
 from engines.extraction_engine import ExtractionEngine
 from engines.aggregation_engine import AggregationEngine
+from engines.transform_engine import TransformEngine
 from managers.document_manager import DocumentManager
 from managers.recital_manager import RecitalManager
 
@@ -41,6 +42,7 @@ class Container(containers.DeclarativeContainer):
     nlp_pipeline = providers.Singleton(NlpPipeline)
 
     extraction_engine = providers.Factory(ExtractionEngine, nlp_pipeline=nlp_pipeline)
+    transform_engine = providers.Factory(TransformEngine, recitals_ra=recitals_ra, data_folder=config.data.root_folder)
     aggregation_engine = providers.Factory(
         AggregationEngine, recitals_ra=recitals_ra, data_folder=config.data.root_folder
     )
@@ -56,4 +58,5 @@ class Container(containers.DeclarativeContainer):
         recitals_ra=recitals_ra,
         recitals_content_ra=recitals_content_ra,
         aggregation_engine=aggregation_engine,
+        transform_engine=transform_engine,
     )
