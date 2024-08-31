@@ -38,6 +38,9 @@ RUN pnpm run build
 # Python base image
 FROM python:3.11-slim-bookworm AS final-stage
 
+# FFMPEG is needed for the audio processing
+RUN apt-get -y update && apt-get -y upgrade && apt-get install -y --no-install-recommends ffmpeg
+
 WORKDIR /server
 COPY server/requirements.txt .
 # Pre install torch using offical pytorch wheel - to match target platform
