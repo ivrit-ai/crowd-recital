@@ -75,14 +75,14 @@ class RecitalManager:
                     self.recitals_ra.upsert(recital_session)
 
                 # Transcode the audio into the target formats if not done yet
-                if not recital_session.audio_filename:
-                    audio_filename, light_audio_filename = self.transform_engine.transcode_session_audio(
+                if not recital_session.main_audio_filename:
+                    main_audio_filename, light_audio_filename = self.transform_engine.transcode_session_audio(
                         recital_session.id
                     )
 
-                    if audio_filename:
+                    if main_audio_filename:
                         recital_session.light_audio_filename = light_audio_filename
-                        recital_session.audio_filename = audio_filename
+                        recital_session.main_audio_filename = main_audio_filename
                         recital_session.status = SessionStatus.AGGREGATED  # done aggregating
                     else:
                         print(f"Could not transcode audio for session {session_id} - discarding")

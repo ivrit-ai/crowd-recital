@@ -25,7 +25,7 @@ class RecitalSession(DateFieldsMixin, SQLModel, table=True):
     user_id: UUID = Field(index=True, foreign_key="users.id")
     document_id: Optional[UUID] = Field(index=True, nullable=True, foreign_key="text_documents.id")
     source_audio_filename: str = Field(nullable=True)
-    audio_filename: str = Field(nullable=True)
+    main_audio_filename: str = Field(nullable=True)
     light_audio_filename: str = Field(nullable=True)
     text_filename: str = Field(nullable=True)
     status: str = Field(index=True, default=SessionStatus.ACTIVE)

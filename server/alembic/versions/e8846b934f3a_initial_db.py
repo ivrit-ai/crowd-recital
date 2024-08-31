@@ -1,8 +1,8 @@
-"""initial db schema
+"""initial db
 
-Revision ID: 721be705653a
+Revision ID: e8846b934f3a
 Revises: 
-Create Date: 2024-08-31 10:30:34.935814
+Create Date: 2024-08-31 20:55:26.743936
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision: str = "721be705653a"
+revision: str = "e8846b934f3a"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -57,7 +57,9 @@ def upgrade() -> None:
         sa.Column("id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("user_id", sa.Uuid(), nullable=False),
         sa.Column("document_id", sa.Uuid(), nullable=True),
-        sa.Column("audio_filename", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source_audio_filename", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("main_audio_filename", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("light_audio_filename", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("text_filename", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("status", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.ForeignKeyConstraint(

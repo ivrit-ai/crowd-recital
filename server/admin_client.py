@@ -108,7 +108,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="admin_client.py", description="Crowd Recital Admin Client")
 
     # Based on the main command - decide what to run
-    parser.add_argument("command", type=str, choices=[cmd for cmd in AdminCommands], help="Command to run")
+    parser.add_argument("command", type=str, choices=[str(cmd) for cmd in AdminCommands], help="Command to run")
     parser.add_argument("--speaker-email", type=str, help="Email of the speaker to approve", default=None)
     parser.add_argument("-y", action="store_true", help="Skips confirmation prompts with a y response", default=False)
 
