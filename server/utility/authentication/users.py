@@ -49,7 +49,6 @@ def decode_access_token(
 
 def create_user_from_google_id(google_identification: GoogleIdentification):
     return User(
-        id=f"google:{google_identification.sub}",
         email=google_identification.email,
         email_verified=google_identification.email_verified,
         name=google_identification.name,
@@ -60,8 +59,12 @@ def create_user_from_google_id(google_identification: GoogleIdentification):
 
 def create_access_token_payload_from_user(user: User):
     return AccessTokenPayload(
-        sub=user.id,
+        sub=str(user.id),
         email=user.email,
         name=user.name,
         picture=user.picture,
     )
+
+
+def create_empty_speaker_user(email: str):
+    return User(email=email, email_verified=False, name=f"Pre Approved Speaker {email}", picture="")

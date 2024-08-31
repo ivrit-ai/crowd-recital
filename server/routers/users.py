@@ -51,7 +51,14 @@ async def login_user(
     users_ra: UsersRA = Depends(Provide[Container.users_ra]),
 ):
     derived_user_from_google_id = create_user_from_google_id(google_identification)
-    existing_user = users_ra.get_by_id(derived_user_from_google_id.id)
+    # NOTE: we are not checking the email_verified flag
+    # This is to simplify the implementation - but poses a security risk.
+    # In theory - a user can take on an unverified email of another user and assume
+    # control of that user.
+    # In practice - this is not a big problem since we only use google login
+    # and anyway not expect users to try and hack this system (famous last words - blame Yair.L)
+    existing_user = users_ra.get_by_email(derived_user_from_google_id.email)
+
     if not existing_user:
         users_ra.upsert(derived_user_from_google_id)
     else:
@@ -60,7 +67,9 @@ async def login_user(
         existing_user.email_verified = derived_user_from_google_id.email_verified
         users_ra.upsert(existing_user)
 
-    user_token_payload = create_access_token_payload_from_user(derived_user_from_google_id)
+    existing_user = users_ra.get_by_email(existing_user.email)
+
+    user_token_payload = create_access_token_payload_from_user(existing_user)
     access_token_expires = timedelta(minutes=get_access_token_expire_minutes())
     access_token = encode_access_token(user_token_payload.model_dump(), expires_delta=access_token_expires)
     set_access_token_cookie(response, access_token)

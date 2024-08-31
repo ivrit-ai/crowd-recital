@@ -1,23 +1,25 @@
-from enum import Enum, IntEnum
+from enum import StrEnum
+import uuid
 
 from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin
 
-ADMIN_GROUP_NAME = "admin"
-SPEAKER_GROUP_NAME = "speaker"
+
+class UserGroups(StrEnum):
+    ADMIN = "admin"
+    SPEAKER = "speaker"
 
 
 class User(SQLModel, DateFieldsMixin, table=True):
     __tablename__ = "users"
 
-    id: str = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     email: str
     email_verified: bool = Field(default=False)
     name: str
     picture: Optional[str]
-    is_active: bool = Field(default=True)
 
     group: Optional[str] = Field(default=None)
 

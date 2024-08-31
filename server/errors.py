@@ -1,0 +1,2 @@
+class MissingSessionError(ValueError):
+    pass

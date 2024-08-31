@@ -2,7 +2,6 @@ from mimetypes import guess_extension
 import re
 from typing import Annotated, Optional
 from uuid import UUID
-import wave
 import pathlib
 
 from dependency_injector.wiring import inject, Provide
@@ -13,7 +12,7 @@ from pydantic import BaseModel
 
 
 from containers import Container
-from models.recital_session import RecitalSession
+from models.recital_session import RecitalSession, SessionStatus
 from models.recital_text_segment import RecitalTextSegment
 from models.recital_audio_segment import RecitalAudioSegment
 from models.text_document import TextDocumentResponse
@@ -60,7 +59,7 @@ async def end_recital_session(
     if not recital_session:
         raise HTTPException(status_code=404, detail="Recital session not found")
 
-    recital_session.status = "ended"
+    recital_session.status = SessionStatus.ENDED
     recitals_ra.upsert(recital_session)
 
     return {"message": "Recital session ended successfully"}
@@ -103,6 +102,7 @@ async def upload_audio_segment(
     segment_id: Annotated[str, Path(title="Id of the audio segment")],
     speaker_user: Annotated[User, Depends(get_speaker_user)],
     audio_data: UploadFile = File(...),
+    data_folder: str = Depends(Provide[Container.config.data.root_folder]),
     recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
 ):
     recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
@@ -116,7 +116,7 @@ async def upload_audio_segment(
     # write the file to disk
     file_extension = guess_extension(mime_type.split(";")[0]) or ".bin"
     file_name = f"{session_id}{file_extension}.seg.{segment_id}"
-    with open(str(pathlib.Path("data", file_name)), "wb") as buffer:
+    with open(str(pathlib.Path(data_folder, file_name)), "wb") as buffer:
         buffer.write(await audio_data.read())
 
     recitals_ra.add_audio_segment(

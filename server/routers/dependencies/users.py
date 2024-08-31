@@ -1,5 +1,6 @@
 from dependency_injector.wiring import inject, Provide
 from typing import Annotated
+from uuid import UUID
 from fastapi import Cookie, Depends, HTTPException, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCookie
 from jwt.exceptions import InvalidTokenError
@@ -52,7 +53,7 @@ def get_authenticated_user_id(
     credentials_bearer: CredentialsBearer,
     credentials_cookie: CredentialsCookie,
     google_client_id: str = Provide[Container.config.auth.google.client_id],
-) -> str:
+) -> UUID:
     try:
         if credentials_bearer:
             credentials = credentials_bearer.credentials
@@ -60,7 +61,7 @@ def get_authenticated_user_id(
             credentials = credentials_cookie
         if credentials:
             payload = decode_access_token(credentials)
-            user_id: str = payload.get("sub")
+            user_id: UUID = payload.get("sub")
             if user_id:
                 return user_id
     except InvalidTokenError:

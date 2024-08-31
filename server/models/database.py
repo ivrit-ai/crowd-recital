@@ -26,6 +26,13 @@ class Database:
     def create_database(self) -> None:
         SQLModel.metadata.create_all(self._engine)
 
+    def drop_database(self) -> None:
+        SQLModel.metadata.drop_all(self._engine)
+
+    def clear_database(self) -> None:
+        self.drop_database()
+        self.create_database()
+
     @contextmanager
     def session(self) -> Callable[..., AbstractContextManager[Session]]:
         session: Session = self._session_factory()

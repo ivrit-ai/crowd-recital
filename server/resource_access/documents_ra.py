@@ -13,7 +13,7 @@ class DocumentsRA:
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]) -> None:
         self.session_factory = session_factory
 
-    def get_all(self, include_text: bool = False) -> Iterator[TextDocument]:
+    def get_all(self) -> Iterator[TextDocument]:
         with self.session_factory() as session:
             return session.exec(select(TextDocument))
 

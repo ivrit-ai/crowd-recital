@@ -22,7 +22,7 @@ class TextDocumentBase(DateFieldsMixin, SQLModel):
 
 
 class TextDocument(TextDocumentBase, table=True):
-    owner_id: Optional[str] = Field(default=None, foreign_key="users.id")
+    owner_id: Optional[uuid.UUID] = Field(default=None, foreign_key="users.id")
     owner: Optional[User] = Relationship(back_populates="text_documents")
 
     recital_sessions: list["RecitalSession"] = Relationship(back_populates="document")
