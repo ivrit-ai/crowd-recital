@@ -54,6 +54,17 @@ class RecitalsRA:
             )
             return results.all()
 
+    def get_aggregated_sessions(self, limit: int = 100) -> Iterator[RecitalSession]:
+        with self.session_factory() as session:
+            results = session.exec(
+                select(RecitalSession)
+                .filter(
+                    RecitalSession.status == SessionStatus.AGGREGATED,
+                )
+                .limit(limit)
+            )
+            return results.all()
+
     def add_text_segment(self, recital_text_segment: RecitalTextSegment):
         with self.session_factory() as session:
             session.add(recital_text_segment)

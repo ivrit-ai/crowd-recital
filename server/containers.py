@@ -4,6 +4,7 @@ from dependency_injector import containers, providers
 from models.database import Database
 from resource_access.users_ra import UsersRA
 from resource_access.recitals_ra import RecitalsRA
+from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.documents_ra import DocumentsRA
 from engines.nlp_pipeline import NlpPipeline
 from engines.extraction_engine import ExtractionEngine
@@ -29,6 +30,9 @@ class Container(containers.DeclarativeContainer):
     recitals_ra = providers.Factory(
         RecitalsRA, session_factory=db.provided.session, data_folder=config.data.root_folder
     )
+    recitals_content_ra = providers.Factory(
+        RecitalsContentRA, data_folder=config.data.root_folder, content_s3_bucket=config.data.content_s3_bucket
+    )
     users_ra = providers.Factory(
         UsersRA,
         session_factory=db.provided.session,
@@ -50,5 +54,6 @@ class Container(containers.DeclarativeContainer):
     recital_manager = providers.Factory(
         RecitalManager,
         recitals_ra=recitals_ra,
+        recitals_content_ra=recitals_content_ra,
         aggregation_engine=aggregation_engine,
     )

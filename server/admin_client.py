@@ -15,6 +15,7 @@ from models.user import UserGroups
 
 class AdminCommands(StrEnum):
     AGGREGATE_SESSIONS = "aggregate_sessions"
+    UPLOAD_SESSIONS = "upload_sessions"
     DROP_DB = "drop_db"
     CLEAR_DB = "clear_db"
     APPROVE_SPEAKER = "approve_speaker"
@@ -24,6 +25,14 @@ class AdminCommands(StrEnum):
 def aggregate_ended_sessions(recital_manager: RecitalManager = Provide(Container.recital_manager)):
     print("Aggregating ended sessions.")
     recital_manager.aggregate_ended_sessions()
+    print("Done.")
+
+
+@inject
+def upload_aggregated_sessions(recital_manager: RecitalManager = Provide(Container.recital_manager)):
+    print("Uploading aggregated sessions.")
+    recital_manager.upload_aggregated_sessions()
+    print("Done.")
 
 
 @inject
@@ -83,6 +92,8 @@ def run_command(command: str, parser: argparse.ArgumentParser):
 
     if command == AdminCommands.AGGREGATE_SESSIONS:
         aggregate_ended_sessions()
+    elif command == AdminCommands.UPLOAD_SESSIONS:
+        upload_aggregated_sessions()
     elif command == AdminCommands.DROP_DB:
         drop_database(parser)
     elif command == AdminCommands.CLEAR_DB:

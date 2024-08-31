@@ -17,13 +17,17 @@ from models.user import User
 from models.recital_session import SessionStatus
 from models.recital_text_segment import RecitalTextSegment
 from resource_access.recitals_ra import RecitalsRA
+from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.documents_ra import DocumentsRA
 from engines.aggregation_engine import AggregationEngine
 
 
 class RecitalManager:
-    def __init__(self, recitals_ra: RecitalsRA, aggregation_engine: AggregationEngine) -> None:
+    def __init__(
+        self, recitals_ra: RecitalsRA, recitals_content_ra: RecitalsContentRA, aggregation_engine: AggregationEngine
+    ) -> None:
         self.recitals_ra = recitals_ra
+        self.recitals_content_ra = recitals_content_ra
         self.aggregation_engine = aggregation_engine
 
     def aggregate_ended_sessions(self) -> None:
@@ -62,5 +66,36 @@ class RecitalManager:
 
             except Exception as e:
                 print(f"Error aggregating session {session_id} - skipping")
+                print(e)
+                continue
+
+    def upload_aggregated_sessions(self) -> None:
+        aggregated_sessions = self.recitals_ra.get_aggregated_sessions()
+
+        if len(aggregated_sessions) == 0:
+            print("No aggregated sessions found")
+
+        for aggregated_session in aggregated_sessions:
+            session_id = aggregated_session.id
+            try:
+                recital_session = self.recitals_ra.get_by_id(session_id)
+                if not recital_session:
+                    raise MissingSessionError()
+
+                text_filename = recital_session.text_filename
+                audio_filename = recital_session.audio_filename
+
+                # Upload the files to the content storage
+                if not self.recitals_content_ra.upload_text_to_storage(session_id, text_filename):
+                    raise Exception("Error uploading session text to storage")
+                if not self.recitals_content_ra.upload_audio_to_storage(session_id, audio_filename):
+                    raise Exception("Error uploading session audio to storage")
+
+                # Delete the source files after they were uploaded
+                os.remove(text_filename)
+                os.remove(audio_filename)
+
+            except Exception as e:
+                print(f"Error uploading session {session_id} - skipping")
                 print(e)
                 continue

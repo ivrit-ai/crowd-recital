@@ -22,6 +22,7 @@ def configure(container: Container):
     container.config.auth.access_token_secret_key.from_value(env("ACCESS_TOKEN_SECRET_KEY"))
     container.config.debug_mode.from_value(env.bool("DEBUG", default=False))
     container.config.data.root_folder.from_value(env("ROOT_DATA_FOLDER", default="data"))
+    container.config.data.content_s3_bucket.from_value(env("CONTENT_STORAGE_S3_BUCKET"))
 
     configure_logging(container)
 
