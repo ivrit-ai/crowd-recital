@@ -7,11 +7,13 @@ Crowd-sourced Text Recital Acquisition
 
 - Python >= 3.10 and < 3.12 Installed
 - Docker (To build the web client static site)
+- ffmpeg available on the path of the running python process (For transcoding)
+- AWS bucket to upload content and keys for the principal which can upload objects to that bucket
 
 ### Setup
 
 - Clone this repo
-- Inside the `/server` direction
+- Inside the `/server` directory
 - Create a virtual environment and install the requirements
 
 `pip install -r requirements.txt`
@@ -22,6 +24,9 @@ Crowd-sourced Text Recital Acquisition
 DB_CONNECTION_STR=<PostgreSQL Connection String>
 GOOGLE_CLIENT_ID=<Google client id for the Google login app>
 ACCESS_TOKEN_SECRET_KEY=<Generated secret to sign the JWT session tokens>
+AWS_ACCESS_KEY_ID=<AWS access key>
+AWS_SECRET_ACCESS_KEY=<AWS secret access key>
+CONTENT_STORAGE_S3_BUCKET=<AWS S3 bucket name for the uploaded content>
 ```
 
 - Back on the root folder
@@ -35,11 +40,43 @@ docker image rm recital-web-app-builder
 
 - This will create the `web_client_dist` folder with the static assets inside
 
+## DB Migration
+
+If this is not the first deployment - migrate the DB in case schema changes were made.
+
+*note:* Ensure the python venv is active before running the following.
+
+```sh
+cd server
+alembic upgrade head
+```
+
+### Running the server
 - Starting the server using uvicorn (Default port is 8000) (Make sure the virtual environment is activated)
 
 `uvicorn --app-dir=server application:app`
 
 **Note:** The uvicorn command runs from the root folder NOT the `server` folder.
+
+### Running the background jobs
+
+- Schedule a job to execute the following admin scripts:
+
+`python server/admin_client.py aggregate_sessions`
+
+This will aggregate "ended" sessions or "active" sessions that are too old into "vtt" and "audio" files.
+
+It will also transcode the audio into a "main" audio format (the best quality data) and "light" audio format (suitable for web playback).
+
+This script deletes the audio segment files and replaces them with a single "raw source" audio file which is also kept.
+
+- Schedule a job to upload the artifacts of the session to AWS S3
+
+`python server/admin_client.py upload_sessions`
+
+This script uploads text and audio artifacts into the S3 bucket under a "folder" prefix named after the session id.
+
+Each such folder will contain a vtt file and 3 audio files (source, main and light).
 
 ## Development
 
