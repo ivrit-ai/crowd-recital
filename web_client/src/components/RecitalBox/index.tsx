@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
 
+import { EnvConfig } from "@/config";
 import { Document } from "../../models";
 import { useKeyPress } from "../../utils";
 import { useRecordingUploader } from "../../hooks/recodingUploader";
@@ -327,7 +328,10 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     recordingTimestamp,
     startRecording,
     stopRecording,
-  } = useRecordingUploader(5, audioDataUploadUrl);
+  } = useRecordingUploader(
+    EnvConfig.getInteger("audio_segment_upload_length_seconds"),
+    audioDataUploadUrl,
+  );
   const [uploadTextSegment] = useTextSegmentUploader(
     sessionId,
     recordingTimestamp,
@@ -360,8 +364,6 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
       block: "center",
     });
   }, [activeParagraphIndex, activeSentenceIndex]);
-
-  console.log(`TODO - handle ready flag: ${ready}`);
 
   return (
     <div className="flex h-screen-minus-topbar w-full flex-col content-between">
@@ -450,24 +452,31 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
         </div>
       </div>
 
-      <div className="sm:mx-auto sm:max-w-xl">
-        <div
-          className="p-4 px-4 text-center"
-          onClick={() => onControl(NavigationControls.Record)}
-        >
-          {recording ? (
-            <div className="btn btn-error join-item mx-auto w-full">
-              <span>עצור הקלטה</span>
-              <span className="font-mono text-xs font-bold md:text-lg">
-                {secondsToMinuteSecondMillisecondString(recordingTimestamp)}
-              </span>
-            </div>
-          ) : (
-            <div className="btn btn-primary join-item mx-auto w-full">
-              התחל הקלטה
-            </div>
-          )}
-        </div>
+      <div className="sm:mx-auto sm:max-w-xl sm:px-2">
+        {ready ? (
+          <div
+            className="p-4 px-4 text-center"
+            onClick={() => onControl(NavigationControls.Record)}
+          >
+            {recording ? (
+              <div className="btn btn-error join-item mx-auto w-full">
+                <span>עצור הקלטה</span>
+                <span className="font-mono text-xs font-bold md:text-lg">
+                  {secondsToMinuteSecondMillisecondString(recordingTimestamp)}
+                </span>
+              </div>
+            ) : (
+              <div className="btn btn-primary join-item mx-auto w-full">
+                התחל הקלטה
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="btn btn-disabled mx-auto my-4 flex w-full items-center">
+            <span>מאתחל מיקרופון</span>
+            <span className="loading loading-dots loading-md mx-4"></span>
+          </div>
+        )}
       </div>
     </div>
   );

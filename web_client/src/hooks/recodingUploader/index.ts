@@ -66,7 +66,6 @@ export function useRecordingUploader(
         microphoneRef.current &&
         segmentedAudioDataUploaderRef.current
       ) {
-        console.log(`StartRecording->`);
         let startedRecodingWithSuccess = false;
         if (!microphoneRef.current.isRecording()) {
           try {
@@ -93,7 +92,6 @@ export function useRecordingUploader(
 
   const stopRecording = useCallback(async () => {
     if (microphoneRef.current && segmentedAudioDataUploaderRef.current) {
-      console.log(`StopRecording->`);
       if (microphoneRef.current.isRecording()) {
         await microphoneRef.current.stopRecording();
         await segmentedAudioDataUploaderRef.current.stop();
