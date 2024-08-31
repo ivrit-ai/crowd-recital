@@ -16,6 +16,7 @@ from models.recital_audio_segment import RecitalAudioSegment
 from models.recital_session import RecitalSession, SessionStatus
 from models.recital_text_segment import RecitalTextSegment
 from models.text_document import TextDocumentResponse
+from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 
 from . import users
@@ -102,8 +103,8 @@ async def upload_audio_segment(
     segment_id: Annotated[str, Path(title="Id of the audio segment")],
     speaker_user: Annotated[User, Depends(get_speaker_user)],
     audio_data: UploadFile = File(...),
-    data_folder: str = Depends(Provide[Container.config.data.root_folder]),
     recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
+    recitals_content_ra: RecitalsContentRA = Depends(Provide[Container.recitals_content_ra]),
 ):
     recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
     if not recital_session:
@@ -111,12 +112,11 @@ async def upload_audio_segment(
 
     # Read the MIME type
     mime_type = audio_data.content_type
-    print(f"MIME type: {mime_type}")
 
     # write the file to disk
     file_extension = guess_extension(mime_type.split(";")[0]) or ".bin"
     file_name = f"{session_id}{file_extension}.seg.{segment_id}"
-    with open(str(pathlib.Path(data_folder, file_name)), "wb") as buffer:
+    with open(str(pathlib.Path(recitals_content_ra.get_data_folder(), file_name)), "wb") as buffer:
         buffer.write(await audio_data.read())
 
     recitals_ra.add_audio_segment(

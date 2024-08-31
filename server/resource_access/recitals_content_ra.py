@@ -15,6 +15,12 @@ class RecitalsContentRA:
         self.data_folder = data_folder
         self.content_s3_bucket = content_s3_bucket
 
+        # Create the data folder if it does not exist
+        Path(self.data_folder).mkdir(parents=True, exist_ok=True)
+
+    def get_data_folder(self) -> str:
+        return self.data_folder
+
     def upload_to_storage(self, source: str, target: str, metadata: dict[str, str], content_type: str = None) -> bool:
         if not self.content_s3_bucket:
             print("Warning S3 target bucket is not configured. Aborting.")

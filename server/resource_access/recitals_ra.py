@@ -101,9 +101,6 @@ class RecitalsRA:
             session.commit()
             return recital_session
 
-    def get_data_folder(self) -> str:
-        return self.data_folder
-
     def store_session_text(self, text_content: str, filename: str) -> str:
         with open(f"{self.data_folder}/{filename}", "w") as f:
             f.write(text_content)
