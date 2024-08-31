@@ -40,7 +40,7 @@ const ThemeModeSelector = () => {
     : [MoonStar, Sun];
 
   return (
-    <div>
+    <div className="flex items-center">
       <label className="swap swap-rotate">
         {/* this hidden checkbox controls the state of the swap controle the theme */}
         <input

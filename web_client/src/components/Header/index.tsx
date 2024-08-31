@@ -1,10 +1,12 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 import { UserContext } from "@/context/user";
 import ThemeModeSelector from "./ThemeModeSelector";
+import { LucideMenu } from "lucide-react";
 
 const Header = () => {
   const { user, logout } = useContext(UserContext);
+  const [imgError, setImgError] = useState(false);
 
   if (!user) {
     return "no user";
@@ -15,7 +17,7 @@ const Header = () => {
       <div className="flex-1 select-none">
         <span className="text-xl font-bold">עברית.ai</span>
       </div>
-      <div className="flex-none gap-5">
+      <div className="flex flex-none items-stretch gap-5">
         <ThemeModeSelector />
         <div className="dropdown dropdown-end">
           <div
@@ -23,8 +25,17 @@ const Header = () => {
             role="button"
             className="avatar placeholder btn btn-circle btn-ghost"
           >
-            <div className="w-10 rounded-full">
-              <img alt="user avatar" src={user.picture} />
+            <div className="placeholder w-10 rounded-full">
+              {imgError ? (
+                <LucideMenu />
+              ) : (
+                <img
+                  alt="menu"
+                  src={user.picture}
+                  aria-hidden="true"
+                  onError={() => setImgError(true)}
+                />
+              )}
             </div>
           </div>
 
