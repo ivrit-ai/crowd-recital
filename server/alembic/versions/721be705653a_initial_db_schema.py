@@ -1,8 +1,8 @@
 """initial db schema
 
-Revision ID: 5c3cc046f421
+Revision ID: 721be705653a
 Revises: 
-Create Date: 2024-08-30 21:36:02.486731
+Create Date: 2024-08-31 10:30:34.935814
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision: str = '5c3cc046f421'
+revision: str = '721be705653a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,12 +24,11 @@ def upgrade() -> None:
     op.create_table('users',
     sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('email_verified', sa.Boolean(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('picture', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('group', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -41,7 +40,7 @@ def upgrade() -> None:
     sa.Column('source_type', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('text', sa.JSON(), nullable=True),
     sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('owner_id', sa.Uuid(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -49,8 +48,10 @@ def upgrade() -> None:
     sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('document_id', sa.Uuid(), nullable=True),
+    sa.Column('audio_filename', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('text_filename', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('status', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.ForeignKeyConstraint(['document_id'], ['text_documents.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
