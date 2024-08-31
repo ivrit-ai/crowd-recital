@@ -19,6 +19,8 @@ def get_web_client_env_app() -> FastAPI:
 class ClientConfig(BaseModel):
     auth_google_client_id: str
 
+    audio_segment_upload_length_seconds: int
+
 
 class ClientEnv(BaseModel):
     config: ClientConfig
@@ -27,7 +29,9 @@ class ClientEnv(BaseModel):
 @env.get("/config.js", response_class=PlainTextResponse)
 @inject
 def get_env_config(response: Response, google_client_id: str = Provide[Container.config.auth.google.client_id]) -> str:
-    client_env = ClientEnv(config=ClientConfig(auth_google_client_id=google_client_id))
+    client_env = ClientEnv(
+        config=ClientConfig(auth_google_client_id=google_client_id, audio_segment_upload_length_seconds=10)
+    )
     config_script_content = f"window.__env__ = {client_env.model_dump_json()}"
     return PlainTextResponse(content=config_script_content, headers={"Content-Type": "application/javascript"})
 
