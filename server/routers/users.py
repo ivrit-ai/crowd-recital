@@ -54,7 +54,8 @@ async def login_user(
         existing_user.email_verified = derived_user_from_google_id.email_verified
         users_ra.upsert(existing_user)
 
-    existing_user = users_ra.get_by_email(existing_user.email)
+    user_email = existing_user.email if existing_user else derived_user_from_google_id.email
+    existing_user = users_ra.get_by_email(user_email)
 
     user_token_payload = create_access_token_payload_from_user(existing_user)
     access_token_expires = timedelta(minutes=get_access_token_expire_minutes())
