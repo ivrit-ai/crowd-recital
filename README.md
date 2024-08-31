@@ -60,6 +60,8 @@ alembic upgrade head
 
 ### Running the background jobs
 
+*note:* Ensure the python venv is active before running the following.
+
 - Schedule a job to execute the following admin scripts:
 
 `python server/admin_client.py aggregate_sessions`
@@ -77,6 +79,20 @@ This script deletes the audio segment files and replaces them with a single "raw
 This script uploads text and audio artifacts into the S3 bucket under a "folder" prefix named after the session id.
 
 Each such folder will contain a vtt file and 3 audio files (source, main and light).
+
+## Operations
+
+### Speaker Users
+
+Only "speaker" and "admin" users can use the recital web UI.
+
+To approve (or pre approve if the user did not sign up yet) a speaker user - obtain their email address. Then run:
+
+*note:* Ensure the python venv is active before running the following.
+
+`python server/admin_client.py approve_speaker --speaker-email their@email.com`
+
+from the root folder.
 
 ## Development
 
