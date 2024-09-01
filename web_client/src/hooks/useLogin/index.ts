@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import type { User } from "../../types/user";
+import type { UserType } from "../../types/user";
+import { User } from "../../types/user";
 
 type FailedFetchMeResponse = {
   googleClientId: string;
@@ -7,7 +8,7 @@ type FailedFetchMeResponse = {
 };
 
 type SuccessFetchMeResponse = {
-  user: User;
+  user: UserType;
 };
 
 type FetchMeResponse = {
@@ -120,7 +121,7 @@ export default function useLogin() {
       } else {
         // If user is already logged in
         const { user } = fetchMeResponse as SuccessFetchMeResponse;
-        setActiveUser(user);
+        setActiveUser(new User(user));
       }
     };
     setLoggingIn(true);

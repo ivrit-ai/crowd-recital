@@ -1,15 +1,25 @@
-import { useContext, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 
 import { UserContext } from "@/context/user";
+import { RouteContext, Routes } from "@/context/route";
 import ThemeModeSelector from "./ThemeModeSelector";
 import { LucideMenu } from "lucide-react";
 
 const Header = () => {
   const { user, logout } = useContext(UserContext);
+  const { activeRoute, setActiveRoute } = useContext(RouteContext);
   const [imgError, setImgError] = useState(false);
+  const menuButtonRef = useRef<HTMLUListElement>(null);
+  const goTo = useCallback(
+    (route: Routes) => {
+      setActiveRoute(route);
+      menuButtonRef.current?.blur();
+    },
+    [menuButtonRef, setActiveRoute],
+  );
 
   if (!user) {
-    return "no user";
+    return null; // Not expected
   }
 
   return (
@@ -41,9 +51,20 @@ const Header = () => {
 
           <ul
             tabIndex={0}
+            ref={menuButtonRef}
             className="menu dropdown-content menu-sm z-[1] mt-3 w-44 rounded-box bg-base-100 p-2 shadow"
           >
             <li className="menu-title">{user.name}</li>
+            {user.isAdmin() && activeRoute === Routes.Recital && (
+              <li>
+                <a onClick={() => goTo(Routes.Admin)}>ממשק ניהול</a>
+              </li>
+            )}
+            {user.isAdmin() && activeRoute === Routes.Admin && (
+              <li>
+                <a onClick={() => goTo(Routes.Recital)}>ממשק הקלטה</a>
+              </li>
+            )}
             <li>
               <a onClick={() => logout()}>התנתק</a>
             </li>

@@ -1,25 +1,22 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 
-import type { User } from "@/types/user";
-import { UserGroups } from "@/types/user";
+import { UserContext } from "@/context/user";
 import { Document } from "@/models";
 import DocumentInput from "@/components/DocumentInput";
 import RecitalBox from "@/components/RecitalBox";
 import NotASpeaker from "./NotASpeaker";
 
-interface Props {
-  activeUser: User;
-}
-
-const Recite = ({ activeUser }: Props) => {
+const Recite = () => {
   const [activeDocument, setActiveDocument] = useState<Document | null>(null);
+  const { user: activeUser } = useContext(UserContext);
+
+  if (!activeUser) {
+    return null; // This is not expected
+  }
 
   const clearActiveDocument = () => setActiveDocument(null);
 
-  if (
-    !activeUser.group ||
-    ![(UserGroups.Admin, UserGroups.Speaker)].includes(activeUser.group)
-  ) {
+  if (!activeUser.isSpaker()) {
     return <NotASpeaker userEmail={activeUser.email} />;
   }
 
