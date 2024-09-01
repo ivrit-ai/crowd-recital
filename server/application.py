@@ -1,6 +1,5 @@
 from typing import List
 
-from environs import Env
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,9 +7,6 @@ from configuration import configure
 from containers import Container
 from routers.api import api_app
 from routers.web_client import get_web_client_app, get_web_client_env_app
-
-env = Env()
-env.read_env()
 
 
 def setup_cors(app: FastAPI, origins: List[str]):
