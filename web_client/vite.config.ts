@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import fs from "fs";
@@ -15,9 +15,38 @@ if (!keyAndCertFilesExists) {
   );
 }
 
+const injectEnvConfigScriptPlugin: () => PluginOption = () => {
+  return {
+    name: "build-html",
+    transformIndexHtml: (html) => {
+      return {
+        html,
+        tags: [
+          {
+            tag: "link",
+            attrs: {
+              rel: "preload",
+              as: "script",
+              href: "env/config.js",
+            },
+            injectTo: "head-prepend",
+          },
+          {
+            tag: "script",
+            attrs: {
+              src: "env/config.js",
+            },
+            injectTo: "head",
+          },
+        ],
+      };
+    },
+  };
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), injectEnvConfigScriptPlugin()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
