@@ -20,6 +20,7 @@ from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 
 from . import users
+from . import admin
 from .dependencies.users import User, get_speaker_user
 
 router = APIRouter()
@@ -183,6 +184,7 @@ def get_status():
 
 
 router.include_router(users.router)
+router.include_router(admin.router, prefix="/admin")
 
 api_app = FastAPI()
 api_app.include_router(router, prefix="")

@@ -2,8 +2,6 @@ import logging
 
 from environs import Env
 
-from containers import Container
-
 env = Env()
 env.read_env()
 
@@ -14,9 +12,14 @@ def configure_logging(container):
         logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 
-def configure(container: Container):
+# For out-of-di usage (See Async DB module for the CRUD api stack)
+def get_db_connection_str() -> str:
+    return env("DB_CONNECTION_STR")
+
+
+def configure(container: "Container"):
     container.config.web_client_dist_folder.from_value(env("WEB_CLIENT_DIST_FOLDER", default="web_client_dist"))
-    container.config.db.connection_str.from_value(env("DB_CONNECTION_STR"))
+    container.config.db.connection_str.from_value(get_db_connection_str())
     container.config.cors.allow_origins.from_value(env.list("CORS_ALLOW_ORIGINS", []))
     container.config.auth.google.client_id.from_value(env("GOOGLE_CLIENT_ID"))
     container.config.auth.access_token_secret_key.from_value(env("ACCESS_TOKEN_SECRET_KEY"))

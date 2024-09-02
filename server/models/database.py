@@ -1,11 +1,15 @@
 """Database module."""
 
 import logging
-from contextlib import AbstractContextManager, contextmanager
-from typing import Callable
+from contextlib import AbstractContextManager, asynccontextmanager, contextmanager
+from typing import AsyncGenerator, Callable
 
 from sqlalchemy import orm
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from configuration import get_db_connection_str
 
 logger = logging.getLogger(__name__)
 
@@ -44,3 +48,17 @@ class Database:
             raise
         finally:
             session.close()
+
+
+# FastCRUD only works with async sessions and expects them in a very
+# particular way which does not jive with the DI container we use.
+# For that - we expose this async DB connection directly.
+
+async_engine = create_async_engine(get_db_connection_str().replace("postgresql://", "postgresql+asyncpg://"))
+async_session = orm.sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+
+
+# Database session dependency
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session() as session:
+        yield session

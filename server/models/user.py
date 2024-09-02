@@ -12,7 +12,16 @@ class UserGroups(StrEnum):
     SPEAKER = "speaker"
 
 
-class User(SQLModel, DateFieldsMixin, table=True):
+class UserBase(SQLModel):
+    email: str
+    email_verified: bool = Field(default=False)
+    name: str
+    picture: Optional[str]
+
+    group: Optional[str] = Field(default=None)
+
+
+class User(UserBase, DateFieldsMixin, table=True):
     __tablename__ = "users"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -25,3 +34,23 @@ class User(SQLModel, DateFieldsMixin, table=True):
 
     recital_sessions: list["RecitalSession"] = Relationship(back_populates="user")
     text_documents: list["TextDocument"] = Relationship(back_populates="owner")
+
+
+class UserCreate(UserBase):
+    pass
+
+
+# class UserRead(UserBase):
+#     id: uuid.UUID
+
+
+class UserUpdate(SQLModel):
+    email: Optional[str] = None
+    email_verified: Optional[bool] = None
+    name: Optional[str] = None
+    picture: Optional[str] = None
+    group: Optional[str] = None
+
+
+class UserDelete(SQLModel):
+    pass
