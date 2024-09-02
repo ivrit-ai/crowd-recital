@@ -86,5 +86,14 @@ def upload_sessions(
     recital_manager.upload_aggregated_sessions()
 
 
+@sessions_router.post("/aggregate_and_upload")
+@inject
+def aggregate_and_upload_sessions(
+    recital_manager: RecitalManager = Depends(Provide[Container.recital_manager]),
+) -> None:
+    recital_manager.aggregate_ended_sessions()
+    recital_manager.upload_aggregated_sessions()
+
+
 router.include_router(user_router)
 router.include_router(sessions_router)
