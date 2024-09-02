@@ -2,8 +2,8 @@ from typing import Annotated
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import Cookie, Depends, HTTPException, Response, status
-from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Cookie, Depends, HTTPException, Header, Response, status
+from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer, APIKeyHeader
 from jwt.exceptions import InvalidTokenError
 from nanoid import generate
 from pydantic import BaseModel
@@ -20,10 +20,13 @@ AUTH_COOKIE_NAME = "access_token"
 
 http_bearer_security = HTTPBearer(auto_error=False)
 api_key_cookie_security = APIKeyCookie(name=AUTH_COOKIE_NAME, auto_error=False)
+identity_delegation_security = APIKeyHeader(name="x-delegation-secret-key", auto_error=False)
 
 AuthCookie = Annotated[str | None, Cookie(alias=AUTH_COOKIE_NAME, alias_priority=1)]
 CredentialsBearer = Annotated[HTTPAuthorizationCredentials, Depends(http_bearer_security)]
 CredentialsCookie = Annotated[str, Depends(api_key_cookie_security)]
+IdentityDelegationSecurity = Annotated[str, Depends(identity_delegation_security)]
+DelegatedUserEmail = Annotated[str, Header(alias=f"x-delegated-user-email")]
 
 
 def set_access_token_cookie(response: Response, access_token: str):
@@ -53,11 +56,10 @@ class AuthenticationErrorDetails(BaseModel):
 
 @inject
 def get_authenticated_user_id(
-    response: Response,
     credentials_bearer: CredentialsBearer,
     credentials_cookie: CredentialsCookie,
-    google_client_id: str = Provide[Container.config.auth.google.client_id],
-) -> UUID:
+) -> str:
+    user_id: str = None
     try:
         if credentials_bearer:
             credentials = credentials_bearer.credentials
@@ -65,32 +67,52 @@ def get_authenticated_user_id(
             credentials = credentials_cookie
         if credentials:
             payload = decode_access_token(credentials)
-            user_id: UUID = payload.get("sub")
-            if user_id:
-                return user_id
+            user_id = payload.get("sub")
+            return user_id
     except InvalidTokenError:
         pass
 
-    auth_error_details = AuthenticationErrorDetails(google_client_id=google_client_id, g_csrf_token=generate(size=16))
-    auth_error_details_dump = auth_error_details.model_dump()
-    response.set_cookie("g_csrf_token", value=auth_error_details.g_csrf_token)
-    headers = {
-        "set-cookie": response.headers["set-cookie"],
-        "Cache-Control": "no-store",
-        "x-g-csrf-token": auth_error_details.g_csrf_token,
-    }
-    auth_error_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail=auth_error_details_dump, headers=headers
-    )
-    raise auth_error_exception
+    return None
+
+
+@inject
+def get_delegated_user_email(
+    delegation_secret_key: IdentityDelegationSecurity,
+    delegated_email: DelegatedUserEmail = None,
+    delegated_identity_secret_key: str = Provide[Container.config.auth.delegated_identity_secret_key],
+) -> str:
+    if delegation_secret_key == delegated_identity_secret_key and delegated_email:
+        return delegated_email
+
+    return None
 
 
 @inject
 async def get_valid_user(
+    response: Response,
     authenticated_user_id: Annotated[str, Depends(get_authenticated_user_id)],
+    delegated_user_email: Annotated[str, Depends(get_delegated_user_email)],
+    google_client_id: str = Provide[Container.config.auth.google.client_id],
     users_ra: UsersRA = Depends(Provide[Container.users_ra]),
 ):
-    user = users_ra.get_by_id(authenticated_user_id)
+    user: User = None
+    if authenticated_user_id:
+        user = users_ra.get_by_id(authenticated_user_id)
+    elif delegated_user_email:
+        user = users_ra.get_by_email(delegated_user_email)
+    else:  # Not authenticated
+        auth_error_details = AuthenticationErrorDetails(
+            google_client_id=google_client_id, g_csrf_token=generate(size=16)
+        )
+        auth_error_details_dump = auth_error_details.model_dump()
+        response.set_cookie("g_csrf_token", value=auth_error_details.g_csrf_token)
+        headers = {
+            "set-cookie": response.headers["set-cookie"],
+            "Cache-Control": "no-store",
+            "x-g-csrf-token": auth_error_details.g_csrf_token,
+        }
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=auth_error_details_dump, headers=headers)
+
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 

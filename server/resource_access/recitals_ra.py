@@ -22,7 +22,7 @@ class RecitalsRA:
     def get_by_id(self, recital_session_id: str) -> RecitalSession | None:
         with self.session_factory() as session:
             results = session.exec(select(RecitalSession).filter(RecitalSession.id == recital_session_id))
-            return results.one()
+            return results.first()
 
     # More secure - to be used for authenticated API calls
     def get_by_id_and_user_id(self, recital_session_id: str, user_id: str) -> RecitalSession | None:
@@ -32,7 +32,7 @@ class RecitalsRA:
                     RecitalSession.id == recital_session_id, RecitalSession.user_id == user_id
                 )
             )
-            return results.one()
+            return results.first()
 
     def get_ended_sessions(self, limit: int = 100, consider_abandoned_after_hours: int = 2) -> Iterator[RecitalSession]:
         with self.session_factory() as session:

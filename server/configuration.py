@@ -22,6 +22,7 @@ def configure(container: "Container"):
     container.config.db.connection_str.from_value(get_db_connection_str())
     container.config.cors.allow_origins.from_value(env.list("CORS_ALLOW_ORIGINS", []))
     container.config.auth.google.client_id.from_value(env("GOOGLE_CLIENT_ID"))
+    container.config.auth.delegated_identity_secret_key.from_value(env("DELEGATED_IDENTITY_SECRET_KEY"))
     container.config.auth.access_token_secret_key.from_value(env("ACCESS_TOKEN_SECRET_KEY"))
     container.config.debug_mode.from_value(env.bool("DEBUG", default=False))
     container.config.data.root_folder.from_value(env("ROOT_DATA_FOLDER", default="data"))

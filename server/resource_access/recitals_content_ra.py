@@ -56,7 +56,7 @@ class RecitalsContentRA:
     ) -> bool:
         filename_in_data_folder = Path(self.data_folder, filename)
         extension_of_file = os.path.splitext(filename)[1]
-        target_object_name = f"{session_id}/{target_filename_prefix}.{extension_of_file}"
+        target_object_name = f"{session_id}/{target_filename_prefix}{extension_of_file}"
         return self.upload_to_storage(
             filename_in_data_folder, target_object_name, metadata={"session": session_id}, content_type=content_type
         )
@@ -74,3 +74,29 @@ class RecitalsContentRA:
         filename_in_data_folder = Path(self.data_folder, filename)
         if filename_in_data_folder.exists():
             filename_in_data_folder.unlink()
+
+    def get_url_to_storage_object(self, target: str, expires_in: int = 1200) -> str:
+        if not self.content_s3_bucket:
+            print("Warning S3 target bucket is not configured. Aborting.")
+            return ""
+
+        # Get presigned URL
+        s3 = boto3.client("s3")
+        try:
+            response = s3.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.content_s3_bucket, "Key": target},
+                ExpiresIn=expires_in,
+            )
+        except ClientError as e:
+            print(e)
+            return ""
+        return response
+
+    def get_url_to_light_audio(self, session_id: str, **kwargs) -> str:
+        target_object_name = f"{session_id}/light.audio.mp3"
+        return self.get_url_to_storage_object(target_object_name, **kwargs)
+
+    def get_url_to_transcript(self, session_id: str, **kwargs) -> str:
+        target_object_name = f"{session_id}/transcript.vtt"
+        return self.get_url_to_storage_object(target_object_name, **kwargs)

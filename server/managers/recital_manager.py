@@ -1,6 +1,3 @@
-
-
-
 from engines.aggregation_engine import AggregationEngine
 from engines.transform_engine import TransformEngine
 from errors import MissingSessionError
@@ -96,7 +93,7 @@ class RecitalManager:
 
                 text_filename = recital_session.text_filename
                 source_audio_filename = recital_session.source_audio_filename
-                audio_filename = recital_session.audio_filename
+                audio_filename = recital_session.main_audio_filename
                 light_audio_filename = recital_session.light_audio_filename
 
                 # Upload the files to the content storage
