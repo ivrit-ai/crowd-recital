@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
-import googleAccounts from "../../services/googleAccounts";
+import { EnvConfig } from "@/config";
+import googleAccounts from "@/services/googleAccounts";
 
 type credentialsResponseCallback = (
   response: google.accounts.id.CredentialResponse,
@@ -25,23 +26,28 @@ const initializeGoogleAccountsIdentity = async (
 type OnCredentialCallback = (credential: string) => void;
 
 type LoginProps = {
-  googleClientId: string;
   onCredential: OnCredentialCallback;
 };
 
-const Login = ({ googleClientId, onCredential }: LoginProps) => {
+const Login = ({ onCredential }: LoginProps) => {
   const loginButtonParentRef = useRef(null);
+  const onCredentialCallback = useRef(onCredential);
+
+  useLayoutEffect(() => {
+    onCredentialCallback.current = onCredential;
+  });
 
   useEffect(() => {
-    if (googleClientId) {
-      initializeGoogleAccountsIdentity(googleClientId, (response) => {
-        onCredential(response.credential);
-      });
-      googleAccounts.id.renderButton(loginButtonParentRef.current!, {
-        type: "standard",
-      });
-    }
-  }, [googleClientId, onCredential]);
+    initializeGoogleAccountsIdentity(
+      EnvConfig.get("auth_google_client_id"),
+      (response) => {
+        onCredentialCallback.current(response.credential);
+      },
+    );
+    googleAccounts.id.renderButton(loginButtonParentRef.current!, {
+      type: "standard",
+    });
+  }, []);
 
   return (
     <div>

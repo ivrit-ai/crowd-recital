@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { UserType } from "../../types/user";
 import { User } from "../../types/user";
+import { useLocalStorage } from "@uidotdev/usehooks";
 
 type FailedFetchMeResponse = {
   googleClientId: string;
@@ -35,6 +36,7 @@ const fetchMe = async () => {
         g_csrf_token: gCsrfToken,
       };
     } else {
+      console.log(await response.text());
       throw new Error(
         `Fetch Me Failed - ${response.status} - ${response.statusText}`,
       );
@@ -99,24 +101,20 @@ const logout = async () => {
 
 export type GoogleLoginProps = {
   onCredential: (loginCredential: string) => void;
-  googleClientId: string;
 };
 
 export default function useLogin() {
-  const [googleClientId, setGoogleClientId] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
   const [activeUser, setActiveUser] = useState<User | null>(null);
-  const [loggingIn, setLoggingIn] = useState(false);
-  const [accessToken, setAccessToken] = useState<string>("");
+  const [loggingIn, setLoggingIn] = useState(true);
+  const [accessToken, setAccessToken] = useLocalStorage<string>("actk", "");
 
   useEffect(() => {
     const init = async () => {
       const fetchMeResponse = await fetchMe();
       // If login is required
       if (!fetchMeResponse.success) {
-        const { googleClientId, g_csrf_token } =
-          fetchMeResponse as FailedFetchMeResponse;
-        setGoogleClientId(googleClientId);
+        const { g_csrf_token } = fetchMeResponse as FailedFetchMeResponse;
         setCsrfToken(g_csrf_token);
       } else {
         // If user is already logged in
@@ -126,35 +124,45 @@ export default function useLogin() {
     };
     setLoggingIn(true);
     init().finally(() => setLoggingIn(false));
-  }, [setGoogleClientId, setActiveUser, setLoggingIn, accessToken]);
+  }, [setActiveUser, setLoggingIn, accessToken]);
+
+  const onLogout = useCallback(
+    (reload: boolean = false) => {
+      logout().then(() => {
+        setActiveUser(null);
+        setAccessToken("");
+        if (reload) window.location.reload();
+      });
+    },
+    [setActiveUser, setAccessToken],
+  );
 
   const onGoogleLoginCredential = useCallback(
     (loginCredential: string) => {
-      const doLogin = async () => {
-        const loginResponse = await loginUsingGoogleCredential(
-          loginCredential,
-          csrfToken,
+      if (!csrfToken) {
+        console.warn(
+          "CSRF token not acquired in this session. Logging out to try again.",
         );
+        onLogout(true);
+      } else {
+        const doLogin = async () => {
+          const loginResponse = await loginUsingGoogleCredential(
+            loginCredential,
+            csrfToken,
+          );
 
-        if (loginResponse) {
-          setAccessToken(loginResponse.accessToken);
-        }
-      };
+          if (loginResponse) {
+            setAccessToken(loginResponse.accessToken);
+          }
+        };
 
-      doLogin();
+        doLogin();
+      }
     },
-    [setAccessToken, csrfToken],
+    [setAccessToken, onLogout, csrfToken],
   );
 
-  const onLogout = useCallback(() => {
-    logout().then(() => {
-      setActiveUser(null);
-      setAccessToken("");
-    });
-  }, [setActiveUser, setAccessToken]);
-
   const googleLoginProps = {
-    googleClientId,
     onCredential: onGoogleLoginCredential,
   };
 

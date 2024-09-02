@@ -28,20 +28,25 @@ function renderRoute(route: Routes) {
 
 function App() {
   const [route, setRoute] = useState<Routes>(Routes.Recital);
-  const { activeUser, googleLoginProps, onLogout, loggingIn } = useLogin();
+  const { activeUser, googleLoginProps, accessToken, onLogout, loggingIn } =
+    useLogin();
+
+  const loginRequired = !activeUser || !accessToken;
 
   return (
-    <UserContext.Provider value={{ user: activeUser, logout: onLogout }}>
+    <UserContext.Provider
+      value={{ user: activeUser, accessToken, logout: onLogout }}
+    >
       <RouteContext.Provider
         value={{ activeRoute: route, setActiveRoute: setRoute }}
       >
-        <Layout header={!!activeUser} footer={!activeUser}>
+        <Layout header={!loginRequired} footer={loginRequired}>
           {loggingIn ? (
             <WholePageLoading />
-          ) : activeUser ? (
-            renderRoute(route)
-          ) : (
+          ) : loginRequired ? (
             <Login googleLoginProps={googleLoginProps} />
+          ) : (
+            renderRoute(route)
           )}
         </Layout>
       </RouteContext.Provider>

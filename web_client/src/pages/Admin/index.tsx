@@ -1,33 +1,17 @@
+import useAdminClient from "@/hooks/useAdminClient";
+import UsersAdmin from "./users";
+
 const Admin = () => {
+  const client = useAdminClient();
+
+  if (!client) {
+    return null; // Not Expected
+  }
+
   return (
-    <div>
-      <h1 className="text-xl">Users</h1>
-      <div>
-        <table className="table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Group</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>1</th>
-              <td>Cy Ganderton</td>
-              <td>Quality Control Specialist</td>
-              <td>Blue</td>
-            </tr>
-            <tr>
-              <th>1</th>
-              <td>Cy Ganderton</td>
-              <td>Quality Control Specialist</td>
-              <td>Blue</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div className="flex-grow p-5">
+      <h1 className="mb-4 text-3xl">ממשק ניהול</h1>
+      <UsersAdmin client={client} />
     </div>
   );
 };
