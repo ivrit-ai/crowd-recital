@@ -46,4 +46,24 @@ export const useKeyPress = (
   }, [handleKeyPress, node]);
 };
 
+export function secondsToMinuteSecondMillisecondString(
+  seconds: number,
+): string {
+  // Rounded seconds to ms
+  const roundedSeconds = Math.round(seconds * 1000) / 1000;
+  // Extract whole minutes, remaining whole seconds, and milliseconds
+  const minutes = Math.floor(roundedSeconds / 60);
+  const completeSeconds = Math.floor(roundedSeconds);
+  const remainingSeconds = completeSeconds % 60;
+  const milliseconds = Math.round((roundedSeconds - completeSeconds) * 1000);
+
+  // Pad the minutes, seconds, and milliseconds with zeros to ensure correct length
+  const paddedMinutes = minutes.toString().padStart(2, "0");
+  const paddedSeconds = remainingSeconds.toString().padStart(2, "0");
+  const paddedMilliseconds = milliseconds.toString().padStart(3, "0");
+
+  // Concatenate minutes, seconds, and milliseconds as a mm:ss.zzz format
+  return `${paddedMinutes}:${paddedSeconds}.${paddedMilliseconds}`;
+}
+
 export { getErrorMessage } from "./tsErrorMessage";

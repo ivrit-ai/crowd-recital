@@ -1,13 +1,15 @@
 import { useCallback, useContext, useRef, useState } from "react";
+import { LucideMenu, MicIcon } from "lucide-react";
 
 import { UserContext } from "@/context/user";
 import { RouteContext, Routes } from "@/context/route";
+import { MicCheckContext } from "@/context/micCheck";
 import ThemeModeSelector from "./ThemeModeSelector";
-import { LucideMenu } from "lucide-react";
 
 const Header = () => {
   const { user, logout } = useContext(UserContext);
   const { activeRoute, setActiveRoute } = useContext(RouteContext);
+  const { setMicCheckActive } = useContext(MicCheckContext);
   const [imgError, setImgError] = useState(false);
   const menuButtonRef = useRef<HTMLUListElement>(null);
   const goTo = useCallback(
@@ -60,6 +62,11 @@ const Header = () => {
                 <a onClick={() => goTo(Routes.Admin)}>ממשק ניהול</a>
               </li>
             )}
+            <li>
+              <a onClick={() => setMicCheckActive(true)}>
+                בדיקת מיקרופון <MicIcon className="h-4 w-4" />
+              </a>
+            </li>
             {user.isAdmin() && activeRoute === Routes.Admin && (
               <li>
                 <a onClick={() => goTo(Routes.Recital)}>ממשק הקלטה</a>

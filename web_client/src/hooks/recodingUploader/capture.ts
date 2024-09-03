@@ -20,6 +20,8 @@ console.log("Using media type", targetRecordingMediaType || "default");
 
 class Microphone extends EventTarget {
   private audioSegmentLengthSec: number;
+  private createAnalyzer: boolean;
+  private analyzer: AnalyserNode | null = null;
   private stream: MediaStream | null = null;
   private audioContext?: AudioContext;
   private mediaRecorder?: MediaRecorder;
@@ -32,9 +34,13 @@ class Microphone extends EventTarget {
   private recording: boolean = false;
   private stopping: boolean = false;
 
-  constructor(audioSegmentLength: number = 30) {
+  constructor(
+    audioSegmentLength: number = 30,
+    createAnalyzer: boolean = false,
+  ) {
     super();
     this.audioSegmentLengthSec = audioSegmentLength;
+    this.createAnalyzer = createAnalyzer;
   }
 
   public isRecording() {
@@ -73,6 +79,11 @@ class Microphone extends EventTarget {
 
     // Create the nodes
     this.source = this.audioContext.createMediaStreamSource(this.stream);
+    if (this.createAnalyzer) {
+      this.analyzer = this.audioContext.createAnalyser();
+      this.analyzer.fftSize = 256;
+      this.source.connect(this.analyzer);
+    }
     const dest = this.audioContext.createMediaStreamDestination();
     dest.channelCount = 1; // We record mono speaking
     this.mediaRecorder = new MediaRecorder(dest.stream, {
@@ -83,14 +94,18 @@ class Microphone extends EventTarget {
     this.waitForMediaRecorderStop = new Promise<void>((resolve) => {
       this.notifyMediaRecorderStopped = resolve;
     });
-    this.mediaRecorder.start(this.audioSegmentLengthSec * 1000);
+    if (this.audioSegmentLengthSec > 0) {
+      this.mediaRecorder.start(this.audioSegmentLengthSec * 1000);
+    } else {
+      // No slicing
+      this.mediaRecorder.start();
+    }
     const mediaRecoderMimeType = this.mediaRecorder.mimeType;
 
     // Connect nodes
     this.source.connect(dest);
 
     this.mediaRecorder.ondataavailable = (evt) => {
-      console.log(`blob data evt - tc: ${evt.timecode}`);
       if (onAudioCallback) onAudioCallback(evt.data, mediaRecoderMimeType);
     };
 
@@ -130,12 +145,17 @@ class Microphone extends EventTarget {
 
     this.stream = null;
     this.recording = false;
+    this.analyzer = null;
     console.log("stopRecording()-Done.");
     this.stopping = false;
   }
 
   public getCurrentTime() {
     return this.audioContext?.currentTime;
+  }
+
+  public getAnalyser() {
+    return this.analyzer;
   }
 
   private emitTimestampEvent() {

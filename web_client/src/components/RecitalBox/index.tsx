@@ -1,9 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { MicIcon } from "lucide-react";
 import { twJoin } from "tailwind-merge";
 
 import { EnvConfig } from "@/config";
-import { Document } from "../../models";
-import { useKeyPress } from "../../utils";
+import { Document } from "@/models";
+import { useKeyPress, secondsToMinuteSecondMillisecondString } from "@/utils";
+import { MicCheckContext } from "@/context/micCheck";
 import { useRecordingUploader } from "../../hooks/recodingUploader";
 import { useTextSegmentUploader } from "../../hooks/textSegmentUploader";
 import { useRecordingSession } from "../../hooks/useRecordingSession";
@@ -12,24 +21,6 @@ const textDataUploadUrl = "/api/upload-text-segment";
 const audioDataUploadUrl = "/api/upload-audio-segment";
 const createNewSessionUrl = "/api/new-recital-session";
 const endSessionUrl = "/api/end-recital-session";
-
-function secondsToMinuteSecondMillisecondString(seconds: number): string {
-  // Rounded seconds to ms
-  const roundedSeconds = Math.round(seconds * 1000) / 1000;
-  // Extract whole minutes, remaining whole seconds, and milliseconds
-  const minutes = Math.floor(roundedSeconds / 60);
-  const completeSeconds = Math.floor(roundedSeconds);
-  const remainingSeconds = completeSeconds % 60;
-  const milliseconds = Math.round((roundedSeconds - completeSeconds) * 1000);
-
-  // Pad the minutes, seconds, and milliseconds with zeros to ensure correct length
-  const paddedMinutes = minutes.toString().padStart(2, "0");
-  const paddedSeconds = remainingSeconds.toString().padStart(2, "0");
-  const paddedMilliseconds = milliseconds.toString().padStart(3, "0");
-
-  // Concatenate minutes, seconds, and milliseconds as a mm:ss.zzz format
-  return `${paddedMinutes}:${paddedSeconds}.${paddedMilliseconds}`;
-}
 
 type NavigationMoves = {
   nextParagraph: () => void;
@@ -316,6 +307,7 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   const { activeParagraphIndex, activeSentenceIndex, activeSentence, move } =
     useDocumentNavigation(document);
   const activeSentenceElementRef = useRef<HTMLSpanElement>(null);
+  const { setMicCheckActive } = useContext(MicCheckContext);
 
   const [createNewSession, endSession] = useRecordingSession(
     createNewSessionUrl,
@@ -368,24 +360,34 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   return (
     <div className="flex h-screen-minus-topbar w-full flex-col content-between">
       <header className="bg-base-200 p-4">
-        <div className="mx-auto flex w-full max-w-4xl flex-col justify-center gap-2 md:flex-row md:items-center md:justify-around md:gap-4 md:px-6">
-          <div className="min-w-0">
-            <div className="text-sm font-bold md:text-lg">
-              מסמך טקסט{" "}
-              <a
-                className="btn btn-link btn-sm text-primary"
-                onClick={clearActiveDocument}
-              >
-                החלף
-              </a>
+        <div className="flex flex-row justify-between">
+          <div className="mx-auto flex w-full max-w-4xl flex-col justify-center gap-2 md:flex-row md:items-center md:justify-around md:gap-4 md:px-6">
+            <div className="min-w-0">
+              <div className="text-sm font-bold md:text-lg">
+                מסמך טקסט{" "}
+                <a
+                  className="btn btn-link btn-sm text-primary"
+                  onClick={clearActiveDocument}
+                >
+                  החלף
+                </a>
+              </div>
+              <div className="truncate text-sm">{document.title}</div>
             </div>
-            <div className="truncate text-sm">{document.title}</div>
+            <div className="min-w-0">
+              <div className="text-sm font-bold md:text-lg">סשן הקלטה</div>
+              <div className="truncate text-sm">
+                {sessionId || "לא נוצר עדיין"}
+              </div>
+            </div>
           </div>
-          <div className="min-w-0">
-            <div className="text-sm font-bold md:text-lg">סשן הקלטה</div>
-            <div className="truncate text-sm">
-              {sessionId || "לא נוצר עדיין"}
-            </div>
+          <div className="flex-shrink-0">
+            <span
+              className="btn btn-outline btn-sm sm:btn-xs"
+              onClick={() => setMicCheckActive(true)}
+            >
+              בדיקה <MicIcon className="inline-block h-4 w-4" />
+            </span>
           </div>
         </div>
       </header>

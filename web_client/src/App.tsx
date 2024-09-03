@@ -1,11 +1,14 @@
+import { useCallback, useState } from "react";
+
 import { UserContext } from "@/context/user";
 import { RouteContext, Routes } from "./context/route";
+import { MicCheckContext } from "./context/micCheck";
 import useLogin from "@/hooks/useLogin";
 import Layout from "@/components/Layout";
 import Login from "@/pages/Login";
 import Recite from "@/pages/Recite";
 import Admin from "@/pages/Admin";
-import { useState } from "react";
+import { MicCheckModal } from "@/components/MicCheck";
 
 const WholePageLoading = () => {
   return (
@@ -27,6 +30,10 @@ function renderRoute(route: Routes) {
 }
 
 function App() {
+  const [micCheckActive, setMicCheckActive] = useState(false);
+  const onCloseMicCheck = useCallback(() => {
+    setMicCheckActive(false);
+  }, []);
   const [route, setRoute] = useState<Routes>(Routes.Recital);
   const { activeUser, googleLoginProps, accessToken, onLogout, loggingIn } =
     useLogin();
@@ -40,15 +47,18 @@ function App() {
       <RouteContext.Provider
         value={{ activeRoute: route, setActiveRoute: setRoute }}
       >
-        <Layout header={!loginRequired} footer={loginRequired}>
-          {loggingIn ? (
-            <WholePageLoading />
-          ) : loginRequired ? (
-            <Login googleLoginProps={googleLoginProps} />
-          ) : (
-            renderRoute(route)
-          )}
-        </Layout>
+        <MicCheckContext.Provider value={{ micCheckActive, setMicCheckActive }}>
+          <Layout header={!loginRequired} footer={loginRequired}>
+            {loggingIn ? (
+              <WholePageLoading />
+            ) : loginRequired ? (
+              <Login googleLoginProps={googleLoginProps} />
+            ) : (
+              renderRoute(route)
+            )}
+          </Layout>
+        </MicCheckContext.Provider>
+        <MicCheckModal open={micCheckActive} onClose={onCloseMicCheck} />
       </RouteContext.Provider>
     </UserContext.Provider>
   );
