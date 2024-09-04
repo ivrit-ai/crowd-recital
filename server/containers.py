@@ -23,7 +23,7 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     posthog = providers.Singleton(
-        ConfiguredPosthog, api_key=config.analytics.posthog.api_key, host=config.analytics.posthog.host, debug=True
+        ConfiguredPosthog, api_key=config.analytics.posthog.api_key, host=config.analytics.posthog.host
     )
 
     db = providers.Singleton(Database, connection_str=config.db.connection_str)
