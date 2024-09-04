@@ -34,17 +34,26 @@ export function useRecordingUploader(
   audioDataUploadUrl: string,
 ) {
   const [ready, setReady] = useState(false);
+  const [uploaderError, setUploaderError] = useState<Error | null>(null);
   const [recording, setRecording] = useState(false);
   const microphoneRef = useRef<Microphone | null>(null);
   const segmentedAudioDataUploaderRef =
     useRef<SegmentedAudioDataUploader | null>(null);
 
   useEffect(() => {
+    const uploadErrorHandler = (e: Event) => {
+      const errorEvent = e as ErrorEvent;
+      setUploaderError(errorEvent.error);
+    };
     const init = async () => {
       const mic = new Microphone(uploadSegmentSizeSeconds);
       microphoneRef.current = mic;
       const uploader = new SegmentedAudioDataUploader(audioDataUploadUrl);
       segmentedAudioDataUploaderRef.current = uploader;
+      segmentedAudioDataUploaderRef.current.addEventListener(
+        "error",
+        uploadErrorHandler,
+      );
 
       try {
         await mic.requestPermission();
@@ -59,6 +68,10 @@ export function useRecordingUploader(
     return () => {
       microphoneRef.current?.stopRecording();
       segmentedAudioDataUploaderRef.current?.stop();
+      segmentedAudioDataUploaderRef.current?.removeEventListener(
+        "error",
+        uploadErrorHandler,
+      );
       microphoneRef.current = null;
       segmentedAudioDataUploaderRef.current = null;
     };
@@ -83,6 +96,7 @@ export function useRecordingUploader(
               ),
             );
             setReady(true);
+            setUploaderError(null);
             startedRecodingWithSuccess = true;
           } catch {
             setReady(false);
@@ -109,6 +123,7 @@ export function useRecordingUploader(
 
   return {
     ready,
+    uploaderError,
     recording,
     recordingTimestamp,
     startRecording,

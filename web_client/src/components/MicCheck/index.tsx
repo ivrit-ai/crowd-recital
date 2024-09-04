@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePostHog } from "posthog-js/react";
 import { MicOffIcon } from "lucide-react";
 import { twMerge } from "tailwind-merge";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 import { secondsToMinuteSecondMillisecondString } from "@/utils";
 import { useRecorder } from "@/hooks/recodingUploader";
@@ -87,6 +88,7 @@ type Props = {
 };
 
 const MicCheck = ({ open, onClose }: Props) => {
+  const posthog = usePostHog();
   const [hasAudio, setHasAudio] = useState(false);
   const audioHtmlElemRef = useRef<HTMLMediaElement>(null);
   const analyserCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -105,10 +107,12 @@ const MicCheck = ({ open, onClose }: Props) => {
   useEffect(() => {
     if (audioHtmlElemRef.current) {
       if (playing) {
+        posthog?.capture("Mic Check Recording Played");
         audioHtmlElemRef.current.currentTime = 0;
         setPlayLoading(true);
         audioHtmlElemRef.current.play().then(() => setPlayLoading(false));
       } else {
+        posthog?.capture("Mic Check Recording Stopped");
         audioHtmlElemRef.current.pause();
       }
     }
@@ -128,6 +132,7 @@ const MicCheck = ({ open, onClose }: Props) => {
   const analyserDrawingActive = useRef(false);
 
   const start = useCallback(async () => {
+    posthog?.capture("Mic Check Started");
     setHasAudio(false);
     setStarting(true);
     await startRecording();
@@ -142,6 +147,7 @@ const MicCheck = ({ open, onClose }: Props) => {
   }, [startRecording]);
 
   const stop = useCallback(async () => {
+    posthog?.capture("Mic Check Stopped");
     setStopping(true);
     analyserDrawingActive.current = false;
     await stopRecording();
@@ -243,13 +249,16 @@ type ModalProps = {
 
 export const MicCheckModal = ({ open, onClose }: ModalProps) => {
   const modalRef = useRef<HTMLDialogElement>(null);
+  const posthog = usePostHog();
 
   useEffect(() => {
     if (modalRef.current) {
       if (open) {
         modalRef.current?.showModal();
+        posthog?.capture("Mic Check Displayed");
       } else {
         modalRef.current?.close();
+        posthog?.capture("Mic Check Dismissed");
       }
     }
   }, [open]);

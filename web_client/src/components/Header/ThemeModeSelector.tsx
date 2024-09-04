@@ -1,5 +1,6 @@
-import { MoonStar, Sun } from "lucide-react";
 import { useState, useEffect } from "react";
+import { usePostHog } from "posthog-js/react";
+import { MoonStar, Sun } from "lucide-react";
 
 enum ThemeModes {
   Dark = "dark",
@@ -24,6 +25,7 @@ const initiallyStoredThemeMode = localStorage.getItem(
 ) as ThemeMode;
 
 const ThemeModeSelector = () => {
+  const posthog = usePostHog();
   const [overridingThemeMode, setOverridingThemeMode] = useState<ThemeMode>(
     initiallyStoredThemeMode,
   );
@@ -33,6 +35,9 @@ const ThemeModeSelector = () => {
     } else {
       localStorage.removeItem(themeModeStorageKey);
     }
+    posthog?.capture("Set Theme", {
+      theme_mode: overridingThemeMode || "System Default",
+    });
   }, [overridingThemeMode]);
 
   const [OffIcon, OnIcon] = isLight(systemPreferredThemeMode)

@@ -1,6 +1,9 @@
-import { Link2Off } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { usePostHog } from "posthog-js/react";
+import { Link2Off } from "lucide-react";
 import { twJoin } from "tailwind-merge";
+
+import { captureError } from "@/analytics";
 import type { TabContentProps } from "./types";
 
 interface Props extends TabContentProps {
@@ -16,6 +19,7 @@ const WikiArticleUpload = ({
   setError,
   loadNewDocumentFromWikiArticle,
 }: Props) => {
+  const posthog = usePostHog();
   const [wikiArticleUrl, setWikiArticleUrl] = useState("");
   const [validUrl, setValidUrl] = useState(false);
 
@@ -32,8 +36,10 @@ const WikiArticleUpload = ({
       loadNewDocumentFromWikiArticle(wikiArticleUrl).then(() => {
         setWikiArticleUrl("");
       });
+      posthog?.capture("Upload Wiki URL", { wiki_url: wikiArticleUrl });
     } else {
       setError("זהו אינו קישור חוקי");
+      posthog?.capture("Invalid Upload Wiki URL", { wiki_url: wikiArticleUrl });
     }
   }, [loadNewDocumentFromWikiArticle, wikiArticleUrl, validUrl]);
 

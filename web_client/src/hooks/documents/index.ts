@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import { reportResponseError } from "@/analytics";
 import type { TextDocumentResponse } from "@/models";
 
 export enum SourceType {
@@ -22,13 +23,12 @@ const createDocument = async (
     }),
   });
   if (!response.ok) {
-    let errorMessage = "Failed to create document.";
-    try {
-      const errorDetails = await response.json();
-      errorMessage = errorDetails.detail;
-    } catch (error) {
-      console.error("Failed to parse error details:", error);
-    }
+    const errorMessage = await reportResponseError(
+      response,
+      "documents",
+      "createDocument",
+      "Failed to create document.",
+    );
 
     throw new Error(errorMessage);
   }
@@ -50,7 +50,14 @@ const loadDocument = async (loadDocumentsUrl: string, documentId: string) => {
     credentials: "include",
   });
   if (!response.ok) {
-    throw new Error(`Load Document ${documentId} Failed.`);
+    const errorMessage = await reportResponseError(
+      response,
+      "documents",
+      "loadDocument",
+      `Load Document ${documentId} Failed.`,
+    );
+
+    throw new Error(errorMessage);
   } else {
     const documentInfo: TextDocumentResponse = await response.json();
     return documentInfo;
@@ -66,7 +73,14 @@ const loadDocuments = async (loadDocumentsUrl: string) => {
     credentials: "include",
   });
   if (!response.ok) {
-    throw new Error(`Load Documents.`);
+    const errorMessage = await reportResponseError(
+      response,
+      "documents",
+      "loadDocuments",
+      "Load documents failed",
+    );
+
+    throw new Error(errorMessage);
   } else {
     const documentsInfo: TextDocumentResponse[] = await response.json();
     return documentsInfo;

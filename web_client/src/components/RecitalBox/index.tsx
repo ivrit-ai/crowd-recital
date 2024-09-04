@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { MicIcon } from "lucide-react";
+import { InfoIcon, MicIcon } from "lucide-react";
 import { twJoin } from "tailwind-merge";
 
 import { EnvConfig } from "@/config";
@@ -226,6 +226,8 @@ const useControlCallback = (
   startRecording: (sessionId: string) => void,
   stopRecording: () => void,
   uploadActiveSentence: () => void,
+  setSessionStartError: (error: Error | null) => void,
+  clearTextUploaderError: () => void,
 ) => {
   const onControl = useCallback(
     async (control: NavigationControls, navigationArgs?: NavigationArgs) => {
@@ -266,10 +268,14 @@ const useControlCallback = (
           if (recording) {
             shouldStopRecording = true;
           } else {
-            createNewSession().then((sessionId) => {
-              setSessionId(sessionId);
-              startRecording(sessionId);
-            });
+            clearTextUploaderError();
+            setSessionStartError(null);
+            createNewSession()
+              .then((sessionId) => {
+                setSessionId(sessionId);
+                startRecording(sessionId);
+              })
+              .catch((err) => setSessionStartError(err));
           }
           break;
 
@@ -303,6 +309,9 @@ type RecitalBoxProps = {
 };
 
 const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
+  const [sessionStartError, setSessionStartError] = useState<Error | null>(
+    null,
+  );
   const [sessionId, setSessionId] = useState<string>("");
   const { activeParagraphIndex, activeSentenceIndex, activeSentence, move } =
     useDocumentNavigation(document);
@@ -316,6 +325,7 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   );
   const {
     ready,
+    uploaderError: audioUploaderError,
     recording,
     recordingTimestamp,
     startRecording,
@@ -324,11 +334,11 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     EnvConfig.getInteger("audio_segment_upload_length_seconds"),
     audioDataUploadUrl,
   );
-  const [uploadTextSegment] = useTextSegmentUploader(
-    sessionId,
-    recordingTimestamp,
-    textDataUploadUrl,
-  );
+  const {
+    uploadTextSegment,
+    uploaderError: textUploaderError,
+    clearUploaderError: clearTextUploaderError,
+  } = useTextSegmentUploader(sessionId, recordingTimestamp, textDataUploadUrl);
 
   const uploadActiveSentence = useCallback(() => {
     uploadTextSegment(activeSentence.text).then(() => {
@@ -346,6 +356,8 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     startRecording,
     stopRecording,
     uploadActiveSentence,
+    setSessionStartError,
+    clearTextUploaderError,
   );
 
   useKeyboardControl(onControl);
@@ -356,6 +368,13 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
       block: "center",
     });
   }, [activeParagraphIndex, activeSentenceIndex]);
+
+  useEffect(() => {
+    if (audioUploaderError || textUploaderError) {
+      stopRecording();
+    }
+  }, [stopRecording, audioUploaderError, textUploaderError]);
+  const uploaderError = audioUploaderError || textUploaderError;
 
   return (
     <div className="flex h-screen-minus-topbar w-full flex-col content-between">
@@ -392,28 +411,44 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
         </div>
       </header>
 
-      <div className="flex items-center justify-center gap-4 pt-4 nokbd:hidden">
-        <span>
-          <kbd className="kbd kbd-sm">⏎</kbd> {recording ? "עצור" : "התחל"}{" "}
-          הקלטה
-        </span>
-        {!recording && (
+      {uploaderError ? (
+        <div className="alert alert-error mx-auto max-w-2xl">
+          <InfoIcon className="h-8 w-8 flex-shrink-0" />
+          <div>
+            <div>ארעה שגיאה בזמן ההקלטה - עצרנו את ההקלטה ליתר ביטחון.</div>
+            <div>
+              מה שהוקלט עד כה, ככל הנראה נשמר - על כל פנים, אנא יידע אותנו
+              בבעיה.
+            </div>
+            <div>
+              נודה לך אם תתחיל הקלטה מהמקום בו זו נעצרה, משפט אחד אחורה.
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center gap-4 pt-4 nokbd:hidden">
           <span>
-            <kbd className="kbd kbd-sm">&uarr;</kbd> פסקה קודמת
+            <kbd className="kbd kbd-sm">⏎</kbd> {recording ? "עצור" : "התחל"}{" "}
+            הקלטה
           </span>
-        )}
-        {!recording && (
+          {!recording && (
+            <span>
+              <kbd className="kbd kbd-sm">&uarr;</kbd> פסקה קודמת
+            </span>
+          )}
+          {!recording && (
+            <span>
+              <kbd className="kbd kbd-sm">&darr;</kbd> פסקה הבאה
+            </span>
+          )}
           <span>
-            <kbd className="kbd kbd-sm">&darr;</kbd> פסקה הבאה
+            <kbd className="kbd kbd-sm">&larr;</kbd> משפט הבא
           </span>
-        )}
-        <span>
-          <kbd className="kbd kbd-sm">&larr;</kbd> משפט הבא
-        </span>
-        <span>
-          <kbd className="kbd kbd-sm">&rarr;</kbd> משפט קודם
-        </span>
-      </div>
+          <span>
+            <kbd className="kbd kbd-sm">&rarr;</kbd> משפט קודם
+          </span>
+        </div>
+      )}
 
       <div className="container mx-auto min-h-0 max-w-4xl grow self-stretch">
         <div
@@ -454,6 +489,11 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
         </div>
       </div>
 
+      {!!sessionStartError && (
+        <div className="text-center text-error">
+          ארעה תקלה ביצירת סשן ההקלטה
+        </div>
+      )}
       <div className="sm:mx-auto sm:max-w-xl sm:px-2">
         {ready ? (
           <div

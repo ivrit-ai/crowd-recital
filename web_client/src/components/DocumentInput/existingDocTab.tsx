@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Link2Off } from "lucide-react";
 
 import { TextDocumentResponse } from "@/models";
 import { EntryMethods } from "./types";
@@ -10,6 +11,7 @@ interface Props extends TabContentProps {
 }
 
 const SelectExistingDocument = ({
+  error,
   processing,
   setEntryMode,
   existingDocuments,
@@ -104,6 +106,11 @@ const SelectExistingDocument = ({
             טען טקסט
           </button>
         </div>
+        {!!error && (
+          <div role="alert" className="alert alert-error text-sm">
+            <Link2Off /> {error}
+          </div>
+        )}
       </div>
     </>
   );

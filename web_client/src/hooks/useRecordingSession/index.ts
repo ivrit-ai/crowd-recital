@@ -1,5 +1,7 @@
 import { useCallback } from "react";
 
+import { reportResponseError } from "@/analytics";
+
 export const useRecordingSession = (
   createNewSessionUrl: string,
   endSessionUrl: string,
@@ -15,7 +17,13 @@ export const useRecordingSession = (
     });
 
     if (!response.ok) {
-      throw new Error("Failed to create new session");
+      const errorMessage = await reportResponseError(
+        response,
+        "session",
+        "createNewSession",
+        "Failed to create new session",
+      );
+      throw new Error(errorMessage);
     }
 
     const { session_id } = await response.json();
@@ -32,7 +40,13 @@ export const useRecordingSession = (
       });
 
       if (!response.ok) {
-        throw new Error("Failed to end session");
+        const errorMessage = await reportResponseError(
+          response,
+          "session",
+          "endSession",
+          "Failed to end session",
+        );
+        throw new Error(errorMessage);
       }
     },
     [endSessionUrl],

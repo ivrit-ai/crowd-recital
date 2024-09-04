@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 import { PostHogProvider } from "posthog-js/react";
 
-import getPosthogClient from "@/analytics";
+import { getPosthogClient } from "@/analytics";
+import { withTrackedErrorBoundary } from "@/analytics/TrackedErrorBoundary";
 import { UserContext } from "@/context/user";
 import { RouteContext, Routes } from "./context/route";
 import { MicCheckContext } from "./context/micCheck";
@@ -69,4 +70,6 @@ if (posthog) {
   );
 }
 
-export default ExportedApp;
+const WrappedErrorBoundedApp = withTrackedErrorBoundary(ExportedApp);
+
+export default WrappedErrorBoundedApp;

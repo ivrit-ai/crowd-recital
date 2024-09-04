@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { usePostHog } from "posthog-js/react";
 import { twJoin } from "tailwind-merge";
 
 import type { TextDocumentResponse } from "@/models";
@@ -22,6 +23,7 @@ type uploaderThunk<T extends unknown[] = unknown[]> = (
 ) => Promise<string>;
 
 const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
+  const posthog = usePostHog();
   const [existingDocuments, setExistingDocuments] = useState<
     TextDocumentResponse[]
   >([]);
@@ -45,6 +47,7 @@ const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
 
   useEffect(() => {
     setError("");
+    posthog?.capture("Set Document Upload Method", { method: entryMode });
   }, [entryMode]);
 
   const uploadWrapper = <T extends unknown[]>(uploader: uploaderThunk<T>) => {
@@ -56,7 +59,7 @@ const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
         setActiveDocument(Document.fromTextDocument(doc));
         setError("");
       } catch (error) {
-        setError(`${getErrorMessage(error)} - ארעה שגיאה בעת יצירת מסמך הטקסט`);
+        setError(`ארעה שגיאה - ${getErrorMessage(error)}`);
         console.error(error);
       } finally {
         setProcessing(false);

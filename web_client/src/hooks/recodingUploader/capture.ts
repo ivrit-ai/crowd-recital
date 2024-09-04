@@ -39,7 +39,7 @@ class Microphone extends EventTarget {
     createAnalyzer: boolean = false,
   ) {
     super();
-    this.audioSegmentLengthSec = audioSegmentLength;
+    this.audioSegmentLengthSec = 3;//audioSegmentLength;
     this.createAnalyzer = createAnalyzer;
   }
 

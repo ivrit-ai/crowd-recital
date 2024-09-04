@@ -1,6 +1,6 @@
 export enum EntryMethods {
-  WIKI = 1,
-  EXISTING = 2,
+  WIKI = "wiki",
+  EXISTING = "existing",
 }
 
 export interface TabContentProps {

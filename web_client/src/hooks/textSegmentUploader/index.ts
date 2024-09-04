@@ -1,4 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+
+import { reportResponseError } from "@/analytics";
 
 const upload = async (
   textDataUploadUrl: string,
@@ -17,7 +19,13 @@ const upload = async (
     }),
   });
   if (!response.ok) {
-    throw new Error("Failed to upload text segment");
+    const errorMessage = await reportResponseError(
+      response,
+      "uploader",
+      "uploadTextSegment",
+      "Failed to upload text segment",
+    );
+    throw new Error(errorMessage);
   }
 };
 
@@ -26,12 +34,19 @@ export function useTextSegmentUploader(
   recordingTimestamp: number,
   textDataUploadUrl: string,
 ) {
+  const [uploaderError, setUploaderError] = useState<Error | null>(null);
+  const clearUploaderError = useCallback(() => setUploaderError(null), []);
   const uploadTextSegment = useCallback(
     async (text: string) => {
-      await upload(textDataUploadUrl, sessionId, recordingTimestamp, text);
+      try {
+        await upload(textDataUploadUrl, sessionId, recordingTimestamp, text);
+      } catch (err) {
+        console.error(err);
+        setUploaderError(err as Error);
+      }
     },
     [sessionId, textDataUploadUrl, recordingTimestamp],
   );
 
-  return [uploadTextSegment];
+  return { uploadTextSegment, uploaderError, clearUploaderError };
 }

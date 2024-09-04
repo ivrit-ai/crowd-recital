@@ -1,4 +1,5 @@
 import { useCallback, useContext, useRef, useState } from "react";
+import { usePostHog } from "posthog-js/react";
 import { LucideMenu, MicIcon } from "lucide-react";
 
 import { UserContext } from "@/context/user";
@@ -7,6 +8,7 @@ import { MicCheckContext } from "@/context/micCheck";
 import ThemeModeSelector from "./ThemeModeSelector";
 
 const Header = () => {
+  const posthog = usePostHog();
   const { user, logout } = useContext(UserContext);
   const { activeRoute, setActiveRoute } = useContext(RouteContext);
   const { setMicCheckActive } = useContext(MicCheckContext);
@@ -14,6 +16,7 @@ const Header = () => {
   const menuButtonRef = useRef<HTMLUListElement>(null);
   const goTo = useCallback(
     (route: Routes) => {
+      posthog?.capture("Navigate", { route });
       setActiveRoute(route);
       menuButtonRef.current?.blur();
     },

@@ -1,10 +1,12 @@
+import { reportResponseError } from "@/analytics";
+
 type UploadQueueItem = {
   segmentId: number;
   audioDataBlob: Blob;
   mimeType: string;
 };
 
-class SegmentedAudioDataUploader {
+class SegmentedAudioDataUploader extends EventTarget {
   private shuttingDown: boolean = false;
   private stopped: boolean = true;
   private nextSegmentId = 0;
@@ -19,6 +21,7 @@ class SegmentedAudioDataUploader {
   private notifyPendingUploaTask!: (value: void | PromiseLike<void>) => void;
 
   constructor(uploadEndpointUrl: string) {
+    super();
     this.uploadEndpointUrl = uploadEndpointUrl;
   }
 
@@ -58,15 +61,11 @@ class SegmentedAudioDataUploader {
   }
 
   public addAudioBlob(audioBlob: Blob, mimeType: string) {
-    console.log(`<Uploader> Got audio Blob (${audioBlob.size}) [${mimeType}]`);
-
     if (audioBlob.size === 0) {
-      console.log("<Uploader> Ignoring empty audio blob");
       return;
     }
 
     if (this.shuttingDown || this.stopped) {
-      console.log("<Uploader> While Sutting down - ignoring");
       return;
     }
 
@@ -79,7 +78,6 @@ class SegmentedAudioDataUploader {
     audioBlob: Blob,
     mimeType: string,
   ) {
-    console.log("<Uploader> Queueing segment for upload");
     const uploadQueueItem: UploadQueueItem = {
       segmentId,
       audioDataBlob: audioBlob,
@@ -90,9 +88,6 @@ class SegmentedAudioDataUploader {
   }
 
   private async processUploadQueue() {
-    console.log(
-      `<Uploader> Starting upload queue processor for session ${this.sessionId}`,
-    );
     while (!this.stopped && !this.shuttingDown) {
       // Wait until signalled that uploads are waiting
       await this.waitForPendingUploadTask;
@@ -112,9 +107,6 @@ class SegmentedAudioDataUploader {
         );
       }
     }
-    console.log(
-      `<Uploader> Stopping upload queue processor for session ${this.sessionId}`,
-    );
   }
 
   private async uploadAudioSegment(
@@ -140,10 +132,22 @@ class SegmentedAudioDataUploader {
       );
 
       if (!response.ok) {
-        console.error("Upload failed:", response.statusText);
+        const errorMessage = await reportResponseError(
+          response,
+          "uploader",
+          "uploadAudioSegment",
+          "Upload Segment Failed",
+        );
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Error:", error);
+      this.dispatchEvent(
+        new ErrorEvent("error", {
+          error: error,
+          message: "Error uploading audio segment",
+        }),
+      );
     }
   }
 }
