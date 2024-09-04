@@ -4,11 +4,15 @@ import {
   useErrorBoundary,
   FallbackProps,
 } from "react-error-boundary";
+import { useCopyToClipboard } from "@uidotdev/usehooks";
 
 import { getPosthogClient } from "@/analytics";
 
 const FallbackErrorPage = ({ error }: FallbackProps) => {
   const { resetBoundary } = useErrorBoundary();
+  const [copiedText, copyToClipboard] = useCopyToClipboard();
+
+  const errorText = `${error?.message || "unknown error"}\n${error?.stack || "no stack"}`;
 
   return (
     <div className="flex min-h-screen w-full flex-col justify-center">
@@ -33,16 +37,19 @@ const FallbackErrorPage = ({ error }: FallbackProps) => {
           </button>
         </div>
       </div>
-      {error?.stack && (
-        <code
-          dir="ltr"
-          className="inset-2 m-4 max-h-28 overflow-auto border px-1 text-xs"
-        >
-          {error.message}
-          <br />
-          {error.stack}
-        </code>
-      )}
+
+      <code
+        dir="ltr"
+        className="inset-2 m-4 max-h-28 overflow-auto border px-1 text-xs"
+      >
+        {errorText}
+      </code>
+      <button
+        className="btn btn-outline mx-auto max-w-40"
+        onClick={() => copyToClipboard(errorText)}
+      >
+        {copiedText ? "הועתק!" : "העתק"}
+      </button>
     </div>
   );
 };
