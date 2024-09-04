@@ -6,6 +6,7 @@ fastapi
 fastcrud
 google-auth[requests]
 nanoid
+posthog
 python-multipart
 pyjwt
 psycopg2-binary

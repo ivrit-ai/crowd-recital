@@ -9,16 +9,25 @@ from pydantic import BaseModel
 from containers import Container
 from models.user import User
 from resource_access.users_ra import UsersRA
-from utility.authentication.google_login import (GoogleIdentification,
-                                                 get_google_identification,
-                                                 validate_csrf_token)
+from utility.authentication.google_login import (
+    GoogleIdentification,
+    get_google_identification,
+    validate_csrf_token,
+)
 from utility.authentication.users import (
-    create_access_token_payload_from_user, create_user_from_google_id,
-    encode_access_token, get_access_token_expire_minutes)
+    create_access_token_payload_from_user,
+    create_user_from_google_id,
+    encode_access_token,
+    get_access_token_expire_minutes,
+)
 
-from .dependencies.users import (AuthCookie, get_valid_user,
-                                 set_access_token_cookie,
-                                 unset_access_token_cookie)
+from .dependencies.analytics import AnonTracker, RawTracker, Tracker
+from .dependencies.users import (
+    AuthCookie,
+    get_valid_user,
+    set_access_token_cookie,
+    unset_access_token_cookie,
+)
 
 router = APIRouter()
 
@@ -33,6 +42,7 @@ class LoginResponse(BaseModel):
 @router.post("/login", dependencies=[Depends(validate_csrf_token)], response_model=LoginResponse)
 @inject
 async def login_user(
+    track_event: RawTracker,
     google_identification: Annotated[GoogleIdentification, Depends(get_google_identification)],
     response: Response,
     users_ra: UsersRA = Depends(Provide[Container.users_ra]),
@@ -48,6 +58,7 @@ async def login_user(
 
     if not existing_user:
         users_ra.upsert(derived_user_from_google_id)
+        track_event(derived_user_from_google_id.id, "User Signed Up")
     else:
         existing_user.picture = derived_user_from_google_id.picture
         existing_user.name = derived_user_from_google_id.name
@@ -63,17 +74,21 @@ async def login_user(
     set_access_token_cookie(response, access_token)
     response.headers["Cache-Control"] = "no-store"
     response.status_code = status.HTTP_200_OK
+
+    track_event(existing_user.id, "User Logged In")
     return LoginResponse(
         access_token=access_token, token_type="bearer", expires_in=int(access_token_expires.total_seconds()), scope=""
     )
 
 
 @router.post("/logout")
-def logout(response: Response, auth_cookie: AuthCookie = None):
+def logout(track_event: AnonTracker, response: Response, auth_cookie: AuthCookie = None):
     if auth_cookie:
         unset_access_token_cookie(response)
         response.headers["Cache-Control"] = "no-store"
         response.status_code = status.HTTP_200_OK
+
+    track_event("User Logged Out")
     return {"message": "Logged out"}
 
 

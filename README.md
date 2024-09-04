@@ -28,6 +28,8 @@ DELEGATED_IDENTITY_SECRET_KEY=<Secret key to for id delegation authentication (S
 AWS_ACCESS_KEY_ID=<AWS access key>
 AWS_SECRET_ACCESS_KEY=<AWS secret access key>
 CONTENT_STORAGE_S3_BUCKET=<AWS S3 bucket name for the uploaded content>
+PUBLIC_POSTHOG_KEY=<optional - tracking to posthog>
+PUBLIC_POSTHOG_HOST=<optional - tracking to posthog>
 ```
 
 - Back on the root folder
@@ -54,6 +56,11 @@ The two are sent with each API call on the following two headers respectively:
 *Note:* This is not a very strong method, but it works. Fore reference, the way to implement this is to have an identity provider that would implement an OAuth flow that would provide Retool with the credentials to work on behalf of the user.
 Retool (for example) supports OAuth 2.0 authentication, it's just the implementation of the IDp on the Python server that is currently missing.
 Btw, An external service provider (Like Auth0 could be used, but might cost something)
+
+### About Analytics
+
+This project can integrate with a [PostHog](https://posthog.com/) project got analytics.
+Set the proper env vars to enable this integration.
 
 ## DB Migration
 

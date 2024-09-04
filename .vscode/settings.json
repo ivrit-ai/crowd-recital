@@ -4,6 +4,7 @@
         "server/pyproject.toml"
     ],
     "cSpell.words": [
+        "fastapi",
         "posthog"
     ]
 }

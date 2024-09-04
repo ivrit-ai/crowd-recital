@@ -11,6 +11,7 @@ from resource_access.documents_ra import DocumentsRA
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 from resource_access.users_ra import UsersRA
+from utility.analytics.posthog import ConfiguredPosthog
 
 
 class Container(containers.DeclarativeContainer):
@@ -20,6 +21,10 @@ class Container(containers.DeclarativeContainer):
     )
 
     config = providers.Configuration()
+
+    posthog = providers.Singleton(
+        ConfiguredPosthog, api_key=config.analytics.posthog.api_key, host=config.analytics.posthog.host, debug=True
+    )
 
     db = providers.Singleton(Database, connection_str=config.db.connection_str)
 
