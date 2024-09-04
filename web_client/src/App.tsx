@@ -1,22 +1,17 @@
 import { useCallback, useState } from "react";
+import { PostHogProvider } from "posthog-js/react";
 
+import getPosthogClient from "@/analytics";
 import { UserContext } from "@/context/user";
 import { RouteContext, Routes } from "./context/route";
 import { MicCheckContext } from "./context/micCheck";
 import useLogin from "@/hooks/useLogin";
 import Layout from "@/components/Layout";
+import WholePageLoading from "@/components/WholePageLoading";
 import Login from "@/pages/Login";
 import Recite from "@/pages/Recite";
 import Admin from "@/pages/Admin";
 import { MicCheckModal } from "@/components/MicCheck";
-
-const WholePageLoading = () => {
-  return (
-    <div className="hero">
-      <span className="loading loading-infinity w-40"></span>
-    </div>
-  );
-};
 
 function renderRoute(route: Routes) {
   switch (route) {
@@ -64,4 +59,14 @@ function App() {
   );
 }
 
-export default App;
+let ExportedApp = App;
+const posthog = getPosthogClient();
+if (posthog) {
+  ExportedApp = () => (
+    <PostHogProvider client={posthog}>
+      <App />
+    </PostHogProvider>
+  );
+}
+
+export default ExportedApp;

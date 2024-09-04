@@ -2,5 +2,8 @@
     "isort.args": [
         "--settings-path",
         "server/pyproject.toml"
+    ],
+    "cSpell.words": [
+        "posthog"
     ]
 }

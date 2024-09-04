@@ -21,6 +21,9 @@ class ClientConfig(BaseModel):
 
     audio_segment_upload_length_seconds: int
 
+    analytics_posthog_api_key: str | None = None
+    analytics_posthog_host: str | None = None
+
 
 class ClientEnv(BaseModel):
     config: ClientConfig
@@ -28,9 +31,21 @@ class ClientEnv(BaseModel):
 
 @env.get("/config.js", response_class=PlainTextResponse)
 @inject
-def get_env_config(response: Response, google_client_id: str = Provide[Container.config.auth.google.client_id]) -> str:
+def get_env_config(
+    # For safety - we bother to list each configuration entry we want to expose,
+    # and in multiple places - so exposing anything from the server env to the client
+    # is (hopefully) a deliberate decision.
+    google_client_id: str = Provide[Container.config.auth.google.client_id],
+    posthog_api_key: str = Provide[Container.config.analytics.posthog.api_key],
+    posthog_host: str = Provide[Container.config.analytics.posthog.host],
+) -> str:
     client_env = ClientEnv(
-        config=ClientConfig(auth_google_client_id=google_client_id, audio_segment_upload_length_seconds=10)
+        config=ClientConfig(
+            auth_google_client_id=google_client_id,
+            audio_segment_upload_length_seconds=10,
+            analytics_posthog_api_key=posthog_api_key,
+            analytics_posthog_host=posthog_host,
+        )
     )
     config_script_content = f"window.__env__ = {client_env.model_dump_json()}"
     return PlainTextResponse(content=config_script_content, headers={"Content-Type": "application/javascript"})

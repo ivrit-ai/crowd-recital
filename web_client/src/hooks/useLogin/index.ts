@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import { usePostHog } from "posthog-js/react";
+import type { PostHog } from "posthog-js/react";
+
 import type { UserType } from "../../types/user";
 import { User } from "../../types/user";
 import { useLocalStorage } from "@uidotdev/usehooks";
@@ -15,6 +19,10 @@ type SuccessFetchMeResponse = {
 type FetchMeResponse = {
   success: boolean;
 } & (FailedFetchMeResponse | SuccessFetchMeResponse);
+
+type LoginResponse = {
+  accessToken: string;
+};
 
 const fetchMe = async () => {
   let fetchMeResponse: FetchMeResponse;
@@ -52,10 +60,6 @@ const fetchMe = async () => {
   return fetchMeResponse;
 };
 
-type LoginResponse = {
-  accessToken: string;
-};
-
 const loginUsingGoogleCredential = async (
   googleCredential: string,
   gCsrfToken: string,
@@ -72,8 +76,8 @@ const loginUsingGoogleCredential = async (
     credentials: "include",
   });
   if (!response.ok) {
-    console.log(response);
-    console.log("Login Failed.");
+    console.error(response);
+    console.error("Login Failed.");
     return null;
   } else {
     const loginResponseBody = await response.json();
@@ -99,11 +103,25 @@ const logout = async () => {
   }
 };
 
+const reportLogin = (posthog: PostHog, loginResponse: LoginResponse) => {
+  try {
+    jwtDecode<JwtPayload & { email: string; name: string }>(
+      loginResponse.accessToken,
+    );
+    posthog?.capture("logged_in");
+  } catch (e) {
+    // This is a non critical error supposedly.
+    posthog?.capture("decode_access_token_failed");
+    console.error(e);
+  }
+};
+
 export type GoogleLoginProps = {
   onCredential: (loginCredential: string) => void;
 };
 
 export default function useLogin() {
+  const posthog = usePostHog();
   const [csrfToken, setCsrfToken] = useState("");
   const [activeUser, setActiveUser] = useState<User | null>(null);
   const [loggingIn, setLoggingIn] = useState(true);
@@ -120,14 +138,21 @@ export default function useLogin() {
         // If user is already logged in
         const { user } = fetchMeResponse as SuccessFetchMeResponse;
         setActiveUser(new User(user));
+        posthog?.identify(user.id, {
+          email: user.email,
+          name: user.name,
+          group: user.group,
+        });
       }
     };
     setLoggingIn(true);
     init().finally(() => setLoggingIn(false));
-  }, [setActiveUser, setLoggingIn, accessToken]);
+  }, [accessToken]);
 
   const onLogout = useCallback(
     (reload: boolean = false) => {
+      posthog?.capture("logout");
+      posthog?.reset();
       logout().then(() => {
         setActiveUser(null);
         setAccessToken("");
@@ -146,12 +171,14 @@ export default function useLogin() {
         onLogout(true);
       } else {
         const doLogin = async () => {
+          posthog?.capture("authenticate_using_google_id");
           const loginResponse = await loginUsingGoogleCredential(
             loginCredential,
             csrfToken,
           );
 
           if (loginResponse) {
+            reportLogin(posthog, loginResponse);
             setAccessToken(loginResponse.accessToken);
           }
         };

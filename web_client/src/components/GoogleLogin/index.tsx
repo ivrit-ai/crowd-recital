@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { usePostHog } from "posthog-js/react";
 
 import { EnvConfig } from "@/config";
 import googleAccounts from "@/services/googleAccounts";
@@ -30,12 +31,17 @@ type LoginProps = {
 };
 
 const Login = ({ onCredential }: LoginProps) => {
+  const posthog = usePostHog();
   const loginButtonParentRef = useRef(null);
   const onCredentialCallback = useRef(onCredential);
 
   useLayoutEffect(() => {
     onCredentialCallback.current = onCredential;
   });
+
+  const onLoginClicked = () => {
+    posthog?.capture("login_button_clicked");
+  };
 
   useEffect(() => {
     initializeGoogleAccountsIdentity(
@@ -46,6 +52,7 @@ const Login = ({ onCredential }: LoginProps) => {
     );
     googleAccounts.id.renderButton(loginButtonParentRef.current!, {
       type: "standard",
+      click_listener: onLoginClicked,
     });
   }, []);
 
