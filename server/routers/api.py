@@ -67,15 +67,16 @@ async def end_recital_session(
     if not recital_session:
         raise HTTPException(status_code=404, detail="Recital session not found")
 
-    recital_session.status = SessionStatus.ENDED
-    recitals_ra.upsert(recital_session)
+    if recital_session.status == SessionStatus.ACTIVE:
+        recital_session.status = SessionStatus.ENDED
+        recitals_ra.upsert(recital_session)
 
-    track_event(
-        "Recital Session Ended",
-        {
-            "session_id": session_id,
-        },
-    )
+        track_event(
+            "Recital Session Ended",
+            {
+                "session_id": session_id,
+            },
+        )
     return {"message": "Recital session ended successfully"}
 
 
