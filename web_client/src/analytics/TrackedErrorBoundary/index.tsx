@@ -1,15 +1,10 @@
 import { ComponentType, ErrorInfo } from "react";
-import {
-  withErrorBoundary,
-  useErrorBoundary,
-  FallbackProps,
-} from "react-error-boundary";
+import { withErrorBoundary, FallbackProps } from "react-error-boundary";
 import { useCopyToClipboard } from "@uidotdev/usehooks";
 
 import { getPosthogClient } from "@/analytics";
 
-const FallbackErrorPage = ({ error }: FallbackProps) => {
-  const { resetBoundary } = useErrorBoundary();
+const FallbackErrorPage = ({ error, resetErrorBoundary }: FallbackProps) => {
   const [copiedText, copyToClipboard] = useCopyToClipboard();
 
   const errorText = `${error?.message || "unknown error"}\n${error?.stack || "no stack"}`;
@@ -32,7 +27,10 @@ const FallbackErrorPage = ({ error }: FallbackProps) => {
               אם תחליט לצרף גם את הטקסט הקריפטי שמופיע למטה - זה יעזור
             </p>
           </div>
-          <button className="btn btn-primary" onClick={() => resetBoundary()}>
+          <button
+            className="btn btn-primary"
+            onClick={() => resetErrorBoundary()}
+          >
             רענן
           </button>
         </div>
@@ -57,7 +55,12 @@ const FallbackErrorPage = ({ error }: FallbackProps) => {
 export const withTrackedErrorBoundary = (app: ComponentType) => {
   const posthog = getPosthogClient();
   return withErrorBoundary(app, {
-    fallbackRender: ({ error }) => <FallbackErrorPage error={error} />,
+    fallbackRender: ({ error, resetErrorBoundary }) => (
+      <FallbackErrorPage
+        error={error}
+        resetErrorBoundary={resetErrorBoundary}
+      />
+    ),
     onError(error: Error | null, info: ErrorInfo) {
       posthog?.capture("web_client_react_error", {
         $exception_message: error?.message,
