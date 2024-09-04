@@ -24,6 +24,7 @@ Crowd-sourced Text Recital Acquisition
 DB_CONNECTION_STR=<PostgreSQL Connection String>
 GOOGLE_CLIENT_ID=<Google client id for the Google login app>
 ACCESS_TOKEN_SECRET_KEY=<Generated secret to sign the JWT session tokens>
+DELEGATED_IDENTITY_SECRET_KEY=<Secret key to for id delegation authentication (See Below)>
 AWS_ACCESS_KEY_ID=<AWS access key>
 AWS_SECRET_ACCESS_KEY=<AWS secret access key>
 CONTENT_STORAGE_S3_BUCKET=<AWS S3 bucket name for the uploaded content>
@@ -39,6 +40,20 @@ docker image rm recital-web-app-builder
 ```
 
 - This will create the `web_client_dist` folder with the static assets inside
+
+### About ID Delegation Authentication
+
+Trusted system who needs to access the API on behalf of another user will use a method which is not a normal OAuth flow for simplicity.
+
+In that method, the delegating system (For this project, this is a Retool admin app) will send this secret key (Which you can randomly generate just like `ACCESS_TOKEN_SECRET_KEY`) and the email of the user it asks to operate on behalf of.
+The two are sent with each API call on the following two headers respectively:
+
+- `x-delegation-secret-key`
+- `x-delegated-user-email`
+
+*Note:* This is not a very strong method, but it works. Fore reference, the way to implement this is to have an identity provider that would implement an OAuth flow that would provide Retool with the credentials to work on behalf of the user.
+Retool (for example) supports OAuth 2.0 authentication, it's just the implementation of the IDp on the Python server that is currently missing.
+Btw, An external service provider (Like Auth0 could be used, but might cost something)
 
 ## DB Migration
 
