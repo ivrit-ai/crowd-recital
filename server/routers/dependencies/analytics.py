@@ -13,6 +13,9 @@ from .users import get_valid_user
 
 
 def _invoke_capture(posthog: Posthog, boundArgs: BoundArguments):
+    if not boundArgs.arguments.get("properties"):
+        boundArgs.arguments["properties"] = {}
+
     boundArgs.arguments["properties"]["source"] = "server"
     posthog.capture(**boundArgs.arguments)
 
