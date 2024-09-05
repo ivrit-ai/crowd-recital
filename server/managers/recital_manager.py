@@ -1,23 +1,53 @@
+from datetime import datetime, timedelta
+
+from apscheduler.triggers.combining import OrTrigger
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+
 from engines.aggregation_engine import AggregationEngine
 from engines.transform_engine import TransformEngine
 from errors import MissingSessionError
 from models.recital_session import SessionStatus
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
+from utility.scheduler import JobScheduler
 
 
 class RecitalManager:
     def __init__(
         self,
+        session_finalization_job_interval: int,
+        job_scheduler: JobScheduler,
         recitals_ra: RecitalsRA,
         recitals_content_ra: RecitalsContentRA,
         aggregation_engine: AggregationEngine,
         transform_engine: TransformEngine,
     ) -> None:
+        self.session_finalization_job_interval = session_finalization_job_interval
+        self.job_scheduler = job_scheduler
+        self.session_finalization_job_id = "session_finalization_job"
         self.recitals_ra = recitals_ra
         self.recitals_content_ra = recitals_content_ra
         self.aggregation_engine = aggregation_engine
         self.transform_engine = transform_engine
+
+    def schedule_session_finalization_job(self, defer=False) -> None:
+        # Run now, and every specified internal
+        # If the job exists - reschedule it
+        run_soon_at = DateTrigger(run_date=datetime.now() + timedelta(seconds=2))
+        run_every = IntervalTrigger(seconds=self.session_finalization_job_interval)
+        now_and_onward = OrTrigger([run_soon_at, run_every])
+        trigger = run_every if defer else now_and_onward
+        self.job_scheduler.add_job(
+            self._session_finalization_task,
+            id=self.session_finalization_job_id,
+            replace_existing=True,
+            trigger=trigger,
+        )
+
+    def _session_finalization_task(self) -> None:
+        self.aggregate_ended_sessions()
+        self.upload_aggregated_sessions()
 
     def aggregate_ended_sessions(self) -> None:
         ended_sessions = self.recitals_ra.get_ended_sessions()
@@ -43,7 +73,7 @@ class RecitalManager:
                     print(f"No content found for session {session_id} - discarding")
                     recital_session.status = SessionStatus.DISCARDED
                     self.recitals_ra.upsert(recital_session)
-                    return
+                    continue
 
                 # Aggregate audio segments into a single file iif not done yet
                 if not recital_session.source_audio_filename:
@@ -52,7 +82,7 @@ class RecitalManager:
                         print(f"No audio found for session {session_id} - discarding")
                         recital_session.status = SessionStatus.DISCARDED
                         self.recitals_ra.upsert(recital_session)
-                        return
+                        continue
 
                     recital_session.source_audio_filename = source_audio_filename
                     self.recitals_ra.upsert(recital_session)

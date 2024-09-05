@@ -30,6 +30,10 @@ def configure(container: "Container"):
     container.config.data.root_folder.from_value(env("ROOT_DATA_FOLDER", default="data"))
     container.config.data.content_s3_bucket.from_value(env("CONTENT_STORAGE_S3_BUCKET"))
 
+    container.config.jobs.session_finalization.interval_sec.from_value(
+        env.int("JOB_SESSION_FINALIZATION_INTERVAL_SEC", default=120)
+    )
+
     container.config.analytics.posthog.api_key.from_value(env("PUBLIC_POSTHOG_KEY"))
     container.config.analytics.posthog.host.from_value(env("PUBLIC_POSTHOG_HOST"))
 

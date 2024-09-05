@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from containers import Container
 from managers.document_manager import DocumentManager
+from managers.recital_manager import RecitalManager
 from models.recital_audio_segment import RecitalAudioSegment
 from models.recital_session import RecitalSession, SessionStatus
 from models.recital_text_segment import RecitalTextSegment
@@ -61,6 +62,7 @@ async def end_recital_session(
     track_event: Tracker,
     session_id: Annotated[str, Path(title="Session id of the transcript")],
     speaker_user: Annotated[User, Depends(get_speaker_user)],
+    recital_manager: RecitalManager = Depends(Provide[Container.recital_manager]),
     recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
 ):
     recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
@@ -70,6 +72,7 @@ async def end_recital_session(
     if recital_session.status == SessionStatus.ACTIVE:
         recital_session.status = SessionStatus.ENDED
         recitals_ra.upsert(recital_session)
+        recital_manager.schedule_session_finalization_job()
 
         track_event(
             "Recital Session Ended",
