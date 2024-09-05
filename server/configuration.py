@@ -1,3 +1,4 @@
+from email.policy import default
 import logging
 
 from environs import Env
@@ -29,7 +30,11 @@ def configure(container: "Container"):
 
     container.config.data.root_folder.from_value(env("ROOT_DATA_FOLDER", default="data"))
     container.config.data.content_s3_bucket.from_value(env("CONTENT_STORAGE_S3_BUCKET"))
+    container.config.data.content_s3_disabled.from_value(env.bool("CONTENT_DISABLE_S3_UPLOAD", default=False))
 
+    container.config.jobs.session_finalization.disabled.from_value(
+        env.bool("JOB_SESSION_FINALIZATION_DISABLED", default=False)
+    )
     container.config.jobs.session_finalization.interval_sec.from_value(
         env.int("JOB_SESSION_FINALIZATION_INTERVAL_SEC", default=120)
     )

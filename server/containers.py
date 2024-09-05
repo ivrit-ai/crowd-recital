@@ -61,7 +61,9 @@ class Container(containers.DeclarativeContainer):
 
     recital_manager = providers.Singleton(
         RecitalManager,
+        session_finalization_job_disabled=config.jobs.session_finalization.disabled,
         session_finalization_job_interval=config.jobs.session_finalization.interval_sec,
+        disable_s3_upload=config.data.content_s3_disabled,
         job_scheduler=job_scheduler,
         recitals_ra=recitals_ra,
         recitals_content_ra=recitals_content_ra,
