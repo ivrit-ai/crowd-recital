@@ -1,24 +1,26 @@
 import { useCallback, useState } from "react";
 
 import { reportResponseError } from "@/analytics";
-
-const textDataUploadUrl = "/api/sessions/upload-text-segment";
+import { alterSessionBaseUrl } from "@/client/sessions";
 
 const upload = async (
   sessionId: string,
   recordingTimestamp: number,
   text: string,
 ) => {
-  const response = await fetch(`${textDataUploadUrl}/${sessionId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${alterSessionBaseUrl}/${sessionId}/upload-text-segment`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        seek_end: recordingTimestamp,
+        text,
+      }),
     },
-    body: JSON.stringify({
-      seek_end: recordingTimestamp,
-      text,
-    }),
-  });
+  );
   if (!response.ok) {
     const errorMessage = await reportResponseError(
       response,

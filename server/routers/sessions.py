@@ -31,7 +31,7 @@ class NewRecitalSessionRequestBody(BaseModel):
 recital_ids_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
 
 
-@router.put("/new-recital-session")
+@router.put("/")
 @inject
 async def new_recital_session(
     track_event: Tracker,
@@ -53,7 +53,7 @@ async def new_recital_session(
     return {"session_id": recital_session.id}
 
 
-@router.post("/end-recital-session/{session_id}")
+@router.post("/{session_id}/end")
 @inject
 async def end_recital_session(
     track_event: Tracker,
@@ -85,7 +85,7 @@ class TextSegmentRequestBody(BaseModel):
     text: str
 
 
-@router.post("/upload-text-segment/{session_id}")
+@router.post("/{session_id}/upload-text-segment")
 @inject
 async def upload_text_segment(
     track_event: Tracker,
@@ -119,7 +119,7 @@ def parse_mime_type(mime_type: str):
     return params
 
 
-@router.post("/upload-audio-segment/{session_id}/{segment_id}")
+@router.post("/{session_id}/upload-audio-segment/{segment_id}")
 @inject
 async def upload_audio_segment(
     track_event: Tracker,

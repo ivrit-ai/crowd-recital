@@ -1,13 +1,11 @@
 import { useCallback } from "react";
 
 import { reportResponseError } from "@/analytics";
-
-const createNewSessionUrl = "/api/sessions/new-recital-session";
-const endSessionUrl = "/api/sessions/end-recital-session";
+import { alterSessionBaseUrl } from "@/client/sessions";
 
 export const useRecordingSession = (documentId?: string) => {
   const createNewSession = useCallback(async () => {
-    const response = await fetch(createNewSessionUrl, {
+    const response = await fetch(alterSessionBaseUrl, {
       method: "PUT",
       body: JSON.stringify({ document_id: documentId }),
       headers: {
@@ -30,7 +28,7 @@ export const useRecordingSession = (documentId?: string) => {
   }, [documentId]);
 
   const endSession = useCallback(async (sessionId: string) => {
-    const response = await fetch(`${endSessionUrl}/${sessionId}`, {
+    const response = await fetch(`${alterSessionBaseUrl}/${sessionId}/end`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

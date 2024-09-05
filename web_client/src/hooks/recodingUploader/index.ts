@@ -7,8 +7,6 @@ import {
   useSyncExternalStore,
 } from "react";
 
-const audioDataUploadUrl = "/api/sessions/upload-audio-segment";
-
 import { SegmentedAudioDataUploader } from "./uploader";
 import { Microphone } from "./capture";
 
@@ -47,7 +45,7 @@ export function useRecordingUploader(uploadSegmentSizeSeconds: number = 5) {
     const init = async () => {
       const mic = new Microphone(uploadSegmentSizeSeconds);
       microphoneRef.current = mic;
-      const uploader = new SegmentedAudioDataUploader(audioDataUploadUrl);
+      const uploader = new SegmentedAudioDataUploader();
       segmentedAudioDataUploaderRef.current = uploader;
       segmentedAudioDataUploaderRef.current.addEventListener(
         "error",
