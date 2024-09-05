@@ -2,11 +2,13 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { InfoIcon, MicIcon } from "lucide-react";
+import { useVisibilityChange } from "@uidotdev/usehooks";
 import { twJoin } from "tailwind-merge";
 
 import { EnvConfig } from "@/config";
@@ -219,12 +221,10 @@ type NavigationArgs = {
 const useControlCallback = (
   move: NavigationMoves,
   recording: boolean,
-  sessionId: string,
   createNewSession: () => Promise<string>,
-  endSession: (sessionId: string) => Promise<void>,
+  finalizeSession: () => Promise<void>,
   setSessionId: (sessionId: string) => void,
   startRecording: (sessionId: string) => void,
-  stopRecording: () => void,
   uploadActiveSentence: () => void,
   setSessionStartError: (error: Error | null) => void,
   clearTextUploaderError: () => void,
@@ -284,24 +284,69 @@ const useControlCallback = (
       }
 
       if (shouldStopRecording) {
-        uploadActiveSentence();
-        stopRecording();
-        endSession(sessionId);
+        finalizeSession();
       }
     },
     [
       move,
       recording,
       createNewSession,
+      finalizeSession,
       setSessionId,
       startRecording,
-      stopRecording,
       uploadActiveSentence,
     ],
   );
 
   return onControl;
 };
+
+const useAutoSessionStop = (
+  finalizeSession: () => Promise<void>,
+  audioUploaderError: Error | null,
+  textUploaderError: Error | null,
+) => {
+  const finalizeSessionCbRef = useRef(finalizeSession); // Latest ref trick
+  useLayoutEffect(() => {
+    finalizeSessionCbRef.current = finalizeSession;
+  });
+  const [autoStopReason, setAutoStopReason] =
+    useState<React.ReactElement | null>(null);
+  const documentVisible = useVisibilityChange();
+  useEffect(() => {
+    let autoStoppedForReason = null;
+    if (audioUploaderError || textUploaderError) {
+      autoStoppedForReason = AutoStopReasons.uploadErrorReason;
+    } else if (!documentVisible) {
+      autoStoppedForReason = AutoStopReasons.documentInvisible;
+    }
+
+    if (autoStoppedForReason) {
+      finalizeSessionCbRef.current();
+      setAutoStopReason(autoStoppedForReason);
+    }
+  }, [audioUploaderError, textUploaderError, documentVisible]);
+
+  return { autoStopReason };
+};
+
+const AutoStopReasons = {
+  uploadErrorReason: (
+    <div>
+      <div>ארעה שגיאה בזמן ההקלטה - עצרנו את ההקלטה ליתר ביטחון.</div>
+      <div>
+        מה שהוקלט עד כה, ככל הנראה נשמר - על כל פנים, אנא יידע אותנו בבעיה.
+      </div>
+      <div>נודה לך אם תתחיל הקלטה מהמקום בו זו נעצרה, משפט אחד אחורה.</div>
+    </div>
+  ),
+  documentInvisible: (
+    <div>
+      <div>נראה שעברת לעבוד על משהו אחר - עצרנו את ההקלטה בינתיים.</div>
+      <div>מה שהוקלט עד כה נשמר.</div>
+    </div>
+  ),
+} as const;
 
 type RecitalBoxProps = {
   document: Document;
@@ -346,15 +391,19 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     });
   }, [activeSentence, uploadTextSegment]);
 
+  const finalizeSession = useCallback(async () => {
+    await stopRecording();
+    await uploadActiveSentence();
+    await endSession(sessionId);
+  }, [stopRecording, uploadActiveSentence, endSession, sessionId]);
+
   const onControl = useControlCallback(
     move,
     recording,
-    sessionId,
     createNewSession,
-    endSession,
+    finalizeSession,
     setSessionId,
     startRecording,
-    stopRecording,
     uploadActiveSentence,
     setSessionStartError,
     clearTextUploaderError,
@@ -369,12 +418,13 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     });
   }, [activeParagraphIndex, activeSentenceIndex]);
 
-  useEffect(() => {
-    if (audioUploaderError || textUploaderError) {
-      stopRecording();
-    }
-  }, [stopRecording, audioUploaderError, textUploaderError]);
-  const uploaderError = audioUploaderError || textUploaderError;
+  const { autoStopReason } = useAutoSessionStop(
+    finalizeSession,
+    audioUploaderError,
+    textUploaderError,
+    // TODO: Add signal "speech input present"
+    // TODO: Add signal "last sentence sent at"
+  );
 
   return (
     <div className="flex h-screen-minus-topbar w-full flex-col content-between">
@@ -411,19 +461,10 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
         </div>
       </header>
 
-      {uploaderError ? (
+      {autoStopReason ? (
         <div className="alert alert-error mx-auto max-w-2xl">
           <InfoIcon className="h-8 w-8 flex-shrink-0" />
-          <div>
-            <div>ארעה שגיאה בזמן ההקלטה - עצרנו את ההקלטה ליתר ביטחון.</div>
-            <div>
-              מה שהוקלט עד כה, ככל הנראה נשמר - על כל פנים, אנא יידע אותנו
-              בבעיה.
-            </div>
-            <div>
-              נודה לך אם תתחיל הקלטה מהמקום בו זו נעצרה, משפט אחד אחורה.
-            </div>
-          </div>
+          {autoStopReason}
         </div>
       ) : (
         <div className="flex items-center justify-center gap-4 pt-4 nokbd:hidden">

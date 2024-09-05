@@ -38,6 +38,8 @@ export function useTextSegmentUploader(
   const clearUploaderError = useCallback(() => setUploaderError(null), []);
   const uploadTextSegment = useCallback(
     async (text: string) => {
+      if (uploaderError) return; // Wait for a clear before trying again
+
       try {
         await upload(textDataUploadUrl, sessionId, recordingTimestamp, text);
       } catch (err) {
@@ -45,7 +47,7 @@ export function useTextSegmentUploader(
         setUploaderError(err as Error);
       }
     },
-    [sessionId, textDataUploadUrl, recordingTimestamp],
+    [sessionId, uploaderError, textDataUploadUrl, recordingTimestamp],
   );
 
   return { uploadTextSegment, uploaderError, clearUploaderError };
