@@ -2,8 +2,9 @@ import { useCallback, useState } from "react";
 
 import { reportResponseError } from "@/analytics";
 
+const textDataUploadUrl = "/api/sessions/upload-text-segment";
+
 const upload = async (
-  textDataUploadUrl: string,
   sessionId: string,
   recordingTimestamp: number,
   text: string,
@@ -32,7 +33,6 @@ const upload = async (
 export function useTextSegmentUploader(
   sessionId: string,
   recordingTimestamp: number,
-  textDataUploadUrl: string,
 ) {
   const [uploaderError, setUploaderError] = useState<Error | null>(null);
   const clearUploaderError = useCallback(() => setUploaderError(null), []);
@@ -41,13 +41,13 @@ export function useTextSegmentUploader(
       if (uploaderError) return; // Wait for a clear before trying again
 
       try {
-        await upload(textDataUploadUrl, sessionId, recordingTimestamp, text);
+        await upload(sessionId, recordingTimestamp, text);
       } catch (err) {
         console.error(err);
         setUploaderError(err as Error);
       }
     },
-    [sessionId, uploaderError, textDataUploadUrl, recordingTimestamp],
+    [sessionId, uploaderError, recordingTimestamp],
   );
 
   return { uploadTextSegment, uploaderError, clearUploaderError };

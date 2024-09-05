@@ -19,9 +19,6 @@ import { useRecordingUploader } from "../../hooks/recodingUploader";
 import { useTextSegmentUploader } from "../../hooks/textSegmentUploader";
 import { useRecordingSession } from "../../hooks/useRecordingSession";
 
-const textDataUploadUrl = "/api/upload-text-segment";
-const audioDataUploadUrl = "/api/upload-audio-segment";
-
 type NavigationMoves = {
   nextParagraph: () => void;
   prevParagraph: () => void;
@@ -371,13 +368,12 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
     stopRecording,
   } = useRecordingUploader(
     EnvConfig.getInteger("audio_segment_upload_length_seconds"),
-    audioDataUploadUrl,
   );
   const {
     uploadTextSegment,
     uploaderError: textUploaderError,
     clearUploaderError: clearTextUploaderError,
-  } = useTextSegmentUploader(sessionId, recordingTimestamp, textDataUploadUrl);
+  } = useTextSegmentUploader(sessionId, recordingTimestamp);
 
   const uploadActiveSentence = useCallback(() => {
     uploadTextSegment(activeSentence.text).then(() => {

@@ -2,8 +2,8 @@ import { useCallback } from "react";
 
 import { reportResponseError } from "@/analytics";
 
-const createNewSessionUrl = "/api/new-recital-session";
-const endSessionUrl = "/api/end-recital-session";
+const createNewSessionUrl = "/api/sessions/new-recital-session";
+const endSessionUrl = "/api/sessions/end-recital-session";
 
 export const useRecordingSession = (documentId?: string) => {
   const createNewSession = useCallback(async () => {

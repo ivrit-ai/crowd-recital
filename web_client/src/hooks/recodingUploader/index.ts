@@ -7,6 +7,8 @@ import {
   useSyncExternalStore,
 } from "react";
 
+const audioDataUploadUrl = "/api/sessions/upload-audio-segment";
+
 import { SegmentedAudioDataUploader } from "./uploader";
 import { Microphone } from "./capture";
 
@@ -29,10 +31,7 @@ const useRecordingTimestamp = (
   );
 };
 
-export function useRecordingUploader(
-  uploadSegmentSizeSeconds: number = 5,
-  audioDataUploadUrl: string,
-) {
+export function useRecordingUploader(uploadSegmentSizeSeconds: number = 5) {
   const [ready, setReady] = useState(false);
   const [uploaderError, setUploaderError] = useState<Error | null>(null);
   const [recording, setRecording] = useState(false);
@@ -75,7 +74,7 @@ export function useRecordingUploader(
       microphoneRef.current = null;
       segmentedAudioDataUploaderRef.current = null;
     };
-  }, [uploadSegmentSizeSeconds, audioDataUploadUrl]);
+  }, [uploadSegmentSizeSeconds]);
 
   const recordingTimestamp = useRecordingTimestamp(microphoneRef);
 
