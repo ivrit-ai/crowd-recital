@@ -21,8 +21,6 @@ import { useRecordingSession } from "../../hooks/useRecordingSession";
 
 const textDataUploadUrl = "/api/upload-text-segment";
 const audioDataUploadUrl = "/api/upload-audio-segment";
-const createNewSessionUrl = "/api/new-recital-session";
-const endSessionUrl = "/api/end-recital-session";
 
 type NavigationMoves = {
   nextParagraph: () => void;
@@ -363,11 +361,7 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   const activeSentenceElementRef = useRef<HTMLSpanElement>(null);
   const { setMicCheckActive } = useContext(MicCheckContext);
 
-  const [createNewSession, endSession] = useRecordingSession(
-    createNewSessionUrl,
-    endSessionUrl,
-    document?.id,
-  );
+  const [createNewSession, endSession] = useRecordingSession(document?.id);
   const {
     ready,
     uploaderError: audioUploaderError,

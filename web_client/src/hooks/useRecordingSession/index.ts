@@ -2,11 +2,10 @@ import { useCallback } from "react";
 
 import { reportResponseError } from "@/analytics";
 
-export const useRecordingSession = (
-  createNewSessionUrl: string,
-  endSessionUrl: string,
-  documentId?: string,
-) => {
+const createNewSessionUrl = "/api/new-recital-session";
+const endSessionUrl = "/api/end-recital-session";
+
+export const useRecordingSession = (documentId?: string) => {
   const createNewSession = useCallback(async () => {
     const response = await fetch(createNewSessionUrl, {
       method: "PUT",
@@ -28,29 +27,26 @@ export const useRecordingSession = (
 
     const { session_id } = await response.json();
     return session_id as string;
-  }, [documentId, createNewSessionUrl]);
+  }, [documentId]);
 
-  const endSession = useCallback(
-    async (sessionId: string) => {
-      const response = await fetch(`${endSessionUrl}/${sessionId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+  const endSession = useCallback(async (sessionId: string) => {
+    const response = await fetch(`${endSessionUrl}/${sessionId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        const errorMessage = await reportResponseError(
-          response,
-          "session",
-          "endSession",
-          "Failed to end session",
-        );
-        throw new Error(errorMessage);
-      }
-    },
-    [endSessionUrl],
-  );
+    if (!response.ok) {
+      const errorMessage = await reportResponseError(
+        response,
+        "session",
+        "endSession",
+        "Failed to end session",
+      );
+      throw new Error(errorMessage);
+    }
+  }, []);
 
   return [createNewSession, endSession] as const;
 };
