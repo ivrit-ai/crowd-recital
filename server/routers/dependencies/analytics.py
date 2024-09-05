@@ -50,6 +50,9 @@ def get_anon_tracker(posthog: Posthog = Depends(Provide[Container.posthog])):
 
     def track_event(event, *args, **kwargs):
         capture_args = capture_sig.bind("anon_user_id", event, *args, **kwargs)
+        if not capture_args.arguments.get("properties"):
+            capture_args.arguments["properties"] = {}
+
         capture_args.arguments["properties"]["$process_person_profile"] = False
         _invoke_capture(posthog, capture_args)
 
