@@ -12,12 +12,13 @@ from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 from resource_access.users_ra import UsersRA
 from utility.analytics.posthog import ConfiguredPosthog
+from utility.scheduler import JobScheduler
 
 
 class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(
-        packages=["routers", "routers.dependencies", "utility", "utility.authentication"]
+        packages=["routers", "routers.dependencies", "utility", "utility.authentication"], modules=["application"]
     )
 
     config = providers.Configuration()
@@ -27,6 +28,7 @@ class Container(containers.DeclarativeContainer):
     )
 
     db = providers.Singleton(Database, connection_str=config.db.connection_str)
+    job_scheduler = providers.Singleton(JobScheduler)
 
     documents_ra = providers.Factory(
         DocumentsRA,
@@ -51,14 +53,18 @@ class Container(containers.DeclarativeContainer):
         AggregationEngine, recitals_ra=recitals_ra, data_folder=config.data.root_folder
     )
 
-    document_manager = providers.Factory(
+    document_manager = providers.Singleton(
         DocumentManager,
         extraction_engine=extraction_engine,
         documents_ra=documents_ra,
     )
 
-    recital_manager = providers.Factory(
+    recital_manager = providers.Singleton(
         RecitalManager,
+        session_finalization_job_disabled=config.jobs.session_finalization.disabled,
+        session_finalization_job_interval=config.jobs.session_finalization.interval_sec,
+        disable_s3_upload=config.data.content_s3_disabled,
+        job_scheduler=job_scheduler,
         recitals_ra=recitals_ra,
         recitals_content_ra=recitals_content_ra,
         aggregation_engine=aggregation_engine,

@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.55.0",
+    "@tanstack/react-query-devtools": "^5.55.0",
     "@types/node": "^22.1.0",
     "@uidotdev/usehooks": "^2.4.1",
     "jwt-decode": "^4.0.0",
@@ -22,6 +24,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.14",
+    "@tanstack/eslint-plugin-query": "^5.53.0",
     "@types/audioworklet": "^0.0.58",
     "@types/google.accounts": "^0.0.14",
     "@types/react": "^18.3.3",

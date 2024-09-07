@@ -8,3 +8,14 @@
   text-orientation: inherit;
   --topbar-height: 4rem;
 }
+
+.medium-captions::cue {
+  font-size: 1.25rem;
+  @apply bg-neutral text-neutral-content;
+}
+
+@media (min-width: 640px) {
+  .medium-captions::cue {
+    font-size: 1.5rem;
+  }
+}

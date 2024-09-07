@@ -1,19 +1,21 @@
 from typing import Container
+
 from anyio import Path
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, Path
 from fastcrud import FilterConfig, crud_router
-from dependency_injector.wiring import inject, Provide
 from pydantic import BaseModel
 
 from containers import Container
+from managers.recital_manager import RecitalManager
 from models.database import get_async_session
 from models.user import User, UserCreate, UserUpdate
-from resource_access.recitals_ra import RecitalsRA
 from resource_access.recitals_content_ra import RecitalsContentRA
-from managers.recital_manager import RecitalManager
+from resource_access.recitals_ra import RecitalsRA
 
-from .dependencies.users import get_admin_user
 from .dependencies.analytics import Tracker
+from .dependencies.users import get_admin_user
+from .types import SessionPreview
 
 router = APIRouter(dependencies=[Depends(get_admin_user)], tags=["admin"])
 
@@ -45,12 +47,6 @@ user_router = crud_router(
 ## Sessions
 
 sessions_router = APIRouter(prefix="/sessions")
-
-
-class SessionPreview(BaseModel):
-    id: str
-    audio_url: str
-    transcript_url: str
 
 
 @sessions_router.get("/{session_id}/preview", response_model=SessionPreview)

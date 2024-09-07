@@ -35,7 +35,7 @@ const SelectExistingDocument = ({
           className="cursor-pointer hover:bg-base-200"
         >
           <td className="text-xs md:text-sm">{doc.title}</td>
-          <td className="text-xs md:text-sm">{doc.id}</td>
+          <td className="hidden text-xs sm:table-cell md:text-sm">{doc.id}</td>
           <td className="text-xs md:text-sm">
             {new Date(doc.created_at).toLocaleString()}
           </td>
@@ -48,7 +48,7 @@ const SelectExistingDocument = ({
         <td>
           <div className="skeleton w-52 py-3"></div>
         </td>
-        <td>
+        <td className="hidden sm:table-cell">
           <div className="skeleton w-40 py-3"></div>
         </td>
         <td>
@@ -66,7 +66,7 @@ const SelectExistingDocument = ({
           <thead>
             <tr>
               <th>כותרת</th>
-              <th>מזהה</th>
+              <th className="hidden sm:table-cell">מזהה</th>
               <th>נוצר</th>
             </tr>
           </thead>
@@ -103,7 +103,7 @@ const SelectExistingDocument = ({
             onChange={(e) => setExistingId(e.target.value)}
           />
           <button className="btn btn-primary btn-sm" onClick={() => select()}>
-            טען טקסט
+            המשך להקלטה
           </button>
         </div>
         {!!error && (

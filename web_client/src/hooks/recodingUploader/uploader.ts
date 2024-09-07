@@ -1,4 +1,5 @@
 import { reportResponseError } from "@/analytics";
+import { alterSessionBaseUrl } from "@/client/sessions";
 
 type UploadQueueItem = {
   segmentId: number;
@@ -11,7 +12,6 @@ class SegmentedAudioDataUploader extends EventTarget {
   private stopped: boolean = true;
   private nextSegmentId = 0;
   private uploadQueue: UploadQueueItem[] = [];
-  private uploadEndpointUrl: string;
   private sessionId: string = "";
   private waitForUploadQueueToExit!: Promise<void>;
   private notifyUploadQueueHasExited!: (
@@ -19,11 +19,6 @@ class SegmentedAudioDataUploader extends EventTarget {
   ) => void;
   private waitForPendingUploadTask!: Promise<void>;
   private notifyPendingUploaTask!: (value: void | PromiseLike<void>) => void;
-
-  constructor(uploadEndpointUrl: string) {
-    super();
-    this.uploadEndpointUrl = uploadEndpointUrl;
-  }
 
   public async start(sessionId: string) {
     if (this.stopped) {
@@ -124,7 +119,7 @@ class SegmentedAudioDataUploader extends EventTarget {
 
     try {
       const response = await fetch(
-        `${this.uploadEndpointUrl}/${this.sessionId}/${segmentId}`,
+        `${alterSessionBaseUrl}/${this.sessionId}/upload-audio-segment/${segmentId}`,
         {
           method: "POST",
           body: formData,

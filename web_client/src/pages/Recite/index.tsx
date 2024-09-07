@@ -20,13 +20,17 @@ const Recite = () => {
     return <NotASpeaker userEmail={activeUser.email} />;
   }
 
-  return activeDocument ? (
-    <RecitalBox
-      document={activeDocument}
-      clearActiveDocument={clearActiveDocument}
-    />
-  ) : (
-    <DocumentInput setActiveDocument={setActiveDocument} />
+  return (
+    <div className="container mx-auto max-w-6xl">
+      {activeDocument ? (
+        <RecitalBox
+          document={activeDocument}
+          clearActiveDocument={clearActiveDocument}
+        />
+      ) : (
+        <DocumentInput setActiveDocument={setActiveDocument} />
+      )}
+    </div>
   );
 };
 

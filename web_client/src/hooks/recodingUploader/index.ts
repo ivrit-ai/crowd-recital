@@ -29,10 +29,7 @@ const useRecordingTimestamp = (
   );
 };
 
-export function useRecordingUploader(
-  uploadSegmentSizeSeconds: number = 5,
-  audioDataUploadUrl: string,
-) {
+export function useRecordingUploader(uploadSegmentSizeSeconds: number = 5) {
   const [ready, setReady] = useState(false);
   const [uploaderError, setUploaderError] = useState<Error | null>(null);
   const [recording, setRecording] = useState(false);
@@ -48,7 +45,7 @@ export function useRecordingUploader(
     const init = async () => {
       const mic = new Microphone(uploadSegmentSizeSeconds);
       microphoneRef.current = mic;
-      const uploader = new SegmentedAudioDataUploader(audioDataUploadUrl);
+      const uploader = new SegmentedAudioDataUploader();
       segmentedAudioDataUploaderRef.current = uploader;
       segmentedAudioDataUploaderRef.current.addEventListener(
         "error",
@@ -75,7 +72,7 @@ export function useRecordingUploader(
       microphoneRef.current = null;
       segmentedAudioDataUploaderRef.current = null;
     };
-  }, [uploadSegmentSizeSeconds, audioDataUploadUrl]);
+  }, [uploadSegmentSizeSeconds]);
 
   const recordingTimestamp = useRecordingTimestamp(microphoneRef);
 

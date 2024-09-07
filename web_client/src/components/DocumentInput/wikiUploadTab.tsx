@@ -3,7 +3,6 @@ import { usePostHog } from "posthog-js/react";
 import { Link2Off } from "lucide-react";
 import { twJoin } from "tailwind-merge";
 
-import { captureError } from "@/analytics";
 import type { TabContentProps } from "./types";
 
 interface Props extends TabContentProps {
@@ -22,6 +21,7 @@ const WikiArticleUpload = ({
   const posthog = usePostHog();
   const [wikiArticleUrl, setWikiArticleUrl] = useState("");
   const [validUrl, setValidUrl] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setValidUrl(
@@ -33,9 +33,14 @@ const WikiArticleUpload = ({
 
   const upload = useCallback(() => {
     if (validUrl) {
-      loadNewDocumentFromWikiArticle(wikiArticleUrl).then(() => {
-        setWikiArticleUrl("");
-      });
+      setUploading(true);
+      loadNewDocumentFromWikiArticle(wikiArticleUrl)
+        .then(() => {
+          setWikiArticleUrl("");
+        })
+        .finally(() => {
+          setUploading(false);
+        });
       posthog?.capture("Upload Wiki URL", { wiki_url: wikiArticleUrl });
     } else {
       setError("זהו אינו קישור חוקי");
@@ -58,8 +63,19 @@ const WikiArticleUpload = ({
           value={wikiArticleUrl}
           onChange={(e) => setWikiArticleUrl(e.target.value)}
         />
-        <button className="btn btn-primary btn-sm" onClick={upload}>
-          טען טקסט
+        <button
+          disabled={uploading}
+          className={twJoin("btn btn-primary btn-sm")}
+          onClick={upload}
+        >
+          {uploading ? (
+            <span className="flex items-center">
+              זה ייקח רגע
+              <span className="loading loading-infinity loading-xs px-4" />
+            </span>
+          ) : (
+            <span>המשך להקלטה</span>
+          )}
         </button>
       </div>
       <div className="divider"></div>

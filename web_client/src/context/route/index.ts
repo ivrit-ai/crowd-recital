@@ -2,6 +2,7 @@ import { createContext } from "react";
 
 export enum Routes {
   Recital = "recital",
+  Sessions = "sessions",
   Admin = "admin",
 }
 
