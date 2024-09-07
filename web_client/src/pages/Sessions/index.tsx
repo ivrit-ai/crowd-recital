@@ -65,6 +65,7 @@ const Sessions = () => {
         sortOrders: [sortState.sortOrder],
       }),
       refetchInterval: 15000,
+      refetchOnMount: "always",
     });
 
   const totalItems = data?.total_count || 0;
