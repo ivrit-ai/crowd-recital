@@ -59,7 +59,7 @@ const WikiArticleUpload = ({
           onChange={(e) => setWikiArticleUrl(e.target.value)}
         />
         <button className="btn btn-primary btn-sm" onClick={upload}>
-          טען טקסט
+          המשך להקלטה
         </button>
       </div>
       <div className="divider"></div>

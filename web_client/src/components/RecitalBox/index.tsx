@@ -14,10 +14,12 @@ import { twJoin } from "tailwind-merge";
 import { EnvConfig } from "@/config";
 import { Document } from "@/models";
 import { useKeyPress, secondsToMinuteSecondMillisecondString } from "@/utils";
+import { RouteContext, Routes } from "@/context/route";
 import { MicCheckContext } from "@/context/micCheck";
-import { useRecordingUploader } from "../../hooks/recodingUploader";
-import { useTextSegmentUploader } from "../../hooks/textSegmentUploader";
-import { useRecordingSession } from "../../hooks/useRecordingSession";
+import { useRecordingUploader } from "@/hooks/recodingUploader";
+import { useTextSegmentUploader } from "@/hooks/textSegmentUploader";
+import { useRecordingSession } from "@/hooks/useRecordingSession";
+import SessionInfoBox from "./SessionInfoBox";
 
 type NavigationMoves = {
   nextParagraph: () => void;
@@ -349,6 +351,7 @@ type RecitalBoxProps = {
 };
 
 const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
+  const { setActiveRoute } = useContext(RouteContext);
   const [sessionStartError, setSessionStartError] = useState<Error | null>(
     null,
   );
@@ -424,19 +427,35 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
             <div className="min-w-0">
               <div className="text-sm font-bold md:text-lg">
                 מסמך טקסט{" "}
-                <a
-                  className="btn btn-link btn-sm text-primary"
-                  onClick={clearActiveDocument}
-                >
-                  החלף
-                </a>
+                {!recording && (
+                  <a
+                    className="btn btn-link btn-sm text-primary"
+                    onClick={clearActiveDocument}
+                  >
+                    החלף
+                  </a>
+                )}
               </div>
               <div className="truncate text-sm">{document.title}</div>
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-bold md:text-lg">סשן הקלטה</div>
+              <div className="text-sm font-bold md:text-lg">
+                סשן הקלטה{" "}
+                {!recording && (
+                  <a
+                    className="btn btn-link btn-sm text-primary"
+                    onClick={() => setActiveRoute(Routes.Sessions)}
+                  >
+                    הקלטות
+                  </a>
+                )}
+              </div>
               <div className="truncate text-sm">
-                {sessionId || "לא נוצר עדיין"}
+                {recording ? (
+                  <span className="text-error">מקליט</span>
+                ) : (
+                  <SessionInfoBox id={sessionId} />
+                )}
               </div>
             </div>
           </div>

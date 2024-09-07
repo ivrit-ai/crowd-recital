@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
 import { PostHogProvider } from "posthog-js/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { getPosthogClient } from "@/analytics";
 import { withTrackedErrorBoundary } from "@/analytics/TrackedErrorBoundary";
@@ -12,7 +14,10 @@ import WholePageLoading from "@/components/WholePageLoading";
 import Login from "@/pages/Login";
 import Recite from "@/pages/Recite";
 import Admin from "@/pages/Admin";
+import Sessions from "@/pages/Sessions";
 import { MicCheckModal } from "@/components/MicCheck";
+
+const queryClient = new QueryClient();
 
 function renderRoute(route: Routes) {
   switch (route) {
@@ -20,6 +25,8 @@ function renderRoute(route: Routes) {
       return <Recite />;
     case Routes.Admin:
       return <Admin />;
+    case Routes.Sessions:
+      return <Sessions />;
     default:
       return <Recite />;
   }
@@ -40,22 +47,27 @@ function App() {
     <UserContext.Provider
       value={{ user: activeUser, accessToken, logout: onLogout }}
     >
-      <RouteContext.Provider
-        value={{ activeRoute: route, setActiveRoute: setRoute }}
-      >
-        <MicCheckContext.Provider value={{ micCheckActive, setMicCheckActive }}>
-          <Layout header={!loginRequired} footer={loginRequired}>
-            {loggingIn ? (
-              <WholePageLoading />
-            ) : loginRequired ? (
-              <Login googleLoginProps={googleLoginProps} />
-            ) : (
-              renderRoute(route)
-            )}
-          </Layout>
-        </MicCheckContext.Provider>
-        <MicCheckModal open={micCheckActive} onClose={onCloseMicCheck} />
-      </RouteContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <RouteContext.Provider
+          value={{ activeRoute: route, setActiveRoute: setRoute }}
+        >
+          <MicCheckContext.Provider
+            value={{ micCheckActive, setMicCheckActive }}
+          >
+            <Layout header={!loginRequired} footer={loginRequired}>
+              {loggingIn ? (
+                <WholePageLoading />
+              ) : loginRequired ? (
+                <Login googleLoginProps={googleLoginProps} />
+              ) : (
+                renderRoute(route)
+              )}
+            </Layout>
+          </MicCheckContext.Provider>
+          <MicCheckModal open={micCheckActive} onClose={onCloseMicCheck} />
+        </RouteContext.Provider>
+        <ReactQueryDevtools />
+      </QueryClientProvider>
     </UserContext.Provider>
   );
 }
