@@ -3,7 +3,6 @@ import { usePostHog } from "posthog-js/react";
 import { Link2Off } from "lucide-react";
 import { twJoin } from "tailwind-merge";
 
-import { captureError } from "@/analytics";
 import type { TabContentProps } from "./types";
 
 interface Props extends TabContentProps {

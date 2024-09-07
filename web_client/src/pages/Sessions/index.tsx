@@ -32,7 +32,7 @@ const RecordNowCta = ({ ctaText }: RecordNowCtaProps) => {
 
 const NoRecordingsHero = () => {
   return (
-    <div className="container hero min-h-screen-minus-topbar">
+    <div className="container hero mx-auto min-h-screen-minus-topbar">
       <div className="hero-content text-center">
         <div className="max-w-md">
           <h1 className="text-4xl font-bold">בינתיים, אין שום הקלטות 🤦🏾‍♂️</h1>
@@ -96,7 +96,7 @@ const Sessions = () => {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-6xl">
       <div className="mx-4 mb-4 flex items-center justify-between">
         <h1 className="text-2xl">הקלטות</h1>
         <button className="btn btn-xs m-2 sm:btn-sm" onClick={() => refetch()}>

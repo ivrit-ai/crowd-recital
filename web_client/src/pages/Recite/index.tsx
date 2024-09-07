@@ -21,7 +21,7 @@ const Recite = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-6xl">
       {activeDocument ? (
         <RecitalBox
           document={activeDocument}
