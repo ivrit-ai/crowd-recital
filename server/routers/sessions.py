@@ -7,19 +7,23 @@ from uuid import UUID
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, File, Path, UploadFile
 from fastapi.exceptions import HTTPException
+from fastcrud import FastCRUD, FilterConfig
 from nanoid import generate
 from pydantic import BaseModel
 
 from containers import Container
 from managers.recital_manager import RecitalManager
+from models.database import get_async_session
 from models.recital_audio_segment import RecitalAudioSegment
-from models.recital_session import RecitalSession, SessionStatus
+from models.recital_session import RecitalSession, RecitalSessionRead, SessionStatus
 from models.recital_text_segment import RecitalTextSegment
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 
+from .crud.utils import create_dynamic_filters_dep, gen_get_multi, gen_get_single
 from .dependencies.analytics import Tracker
 from .dependencies.users import User, get_speaker_user
+from .types import SessionPreview
 
 router = APIRouter()
 
@@ -31,7 +35,7 @@ class NewRecitalSessionRequestBody(BaseModel):
 recital_ids_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
 
 
-@router.put("/")
+@router.put("")
 @inject
 async def new_recital_session(
     track_event: Tracker,
@@ -165,3 +169,57 @@ async def upload_audio_segment(
         },
     )
     return {"message": "Audio uploaded successfully"}
+
+
+@router.get("/{session_id}/preview", response_model=SessionPreview)
+@inject
+async def get_session_preview(
+    track_event: Tracker,
+    session_id: Annotated[str, Path(title="Session id of the audio segment")],
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
+    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
+    recitals_content_ra: RecitalsContentRA = Depends(Provide[Container.recitals_content_ra]),
+) -> SessionPreview:
+    recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
+    if not recital_session:
+        raise HTTPException(status_code=404, detail="Recital session not found")
+
+    if recital_session.status in [SessionStatus.ACTIVE, SessionStatus.ENDED, SessionStatus.AGGREGATED]:
+        track_event("Session Preview Attempt Before Ready", {"session_id": session_id})
+        return SessionPreview(id=recital_session.id, audio_url=None, transcript_url=None)
+    elif recital_session.status != SessionStatus.UPLOADED:
+        track_event("Session Preview For Invalid Session", {"session_id": session_id})
+        raise HTTPException(status_code=404, detail="No preview for this recital session")
+
+    track_event("Session Preview Generated", {"session_id": session_id})
+    return SessionPreview(
+        id=recital_session.id,
+        audio_url=recitals_content_ra.get_url_to_light_audio(recital_session.id),
+        transcript_url=recitals_content_ra.get_url_to_transcript(recital_session.id),
+    )
+
+
+# Crud Generated API
+
+session_crud = FastCRUD(RecitalSession)
+session_filer_config = FilterConfig(status=None)
+
+router.add_api_route(
+    "/{id}",
+    gen_get_single(
+        session_crud,
+        get_async_session,
+        schema_to_select=RecitalSessionRead,
+    ),
+    methods=["GET"],
+)
+router.add_api_route(
+    "",
+    gen_get_multi(
+        session_crud,
+        get_async_session,
+        create_dynamic_filters_dep(session_filer_config),
+        schema_to_select=RecitalSessionRead,
+    ),
+    methods=["GET"],
+)
