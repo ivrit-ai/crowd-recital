@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Link2Off } from "lucide-react";
 
 import { TextDocumentResponse } from "@/models";
-import { EntryMethods } from "./types";
+
 import type { TabContentProps } from "./types";
 
 interface Props extends TabContentProps {
@@ -13,7 +13,6 @@ interface Props extends TabContentProps {
 const SelectExistingDocument = ({
   error,
   processing,
-  setEntryMode,
   existingDocuments,
   loadExistingDocumentById,
 }: Props) => {
@@ -79,12 +78,7 @@ const SelectExistingDocument = ({
   const noDocsPlaceholder = (
     <div className="text-center">
       <h2 className="my-10 text-center text-lg">אין מסמכים קיימים עדיין</h2>
-      <button
-        className="btn btn-primary btn-sm"
-        onClick={() => setEntryMode(EntryMethods.WIKI)}
-      >
-        טען מאמר ויקיפדיה
-      </button>
+      <p>נסה לטעון מאמר ויקיפדיה</p>
     </div>
   );
 

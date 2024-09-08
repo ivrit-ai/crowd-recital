@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
-import { usePostHog } from "posthog-js/react";
-import { twJoin } from "tailwind-merge";
 
 import type { TextDocumentResponse } from "@/models";
-import { getErrorMessage, tw } from "@/utils";
+import { getErrorMessage } from "@/utils";
 import { Document } from "@/models";
 import { useDocuments } from "@/hooks/documents";
+import Collapse from "@/components/Collapse";
 import WikiArticleUpload from "./wikiUploadTab";
 import SelectExistingDocument from "./existingDocTab";
-import { EntryMethods } from "./types";
 import type { TabContentProps } from "./types";
 
 const createDocumentUrl = "/api/create_document_from_source";
@@ -23,13 +21,9 @@ type uploaderThunk<T extends unknown[] = unknown[]> = (
 ) => Promise<string>;
 
 const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
-  const posthog = usePostHog();
   const [existingDocuments, setExistingDocuments] = useState<
-    TextDocumentResponse[]
-  >([]);
-  const [entryMode, setEntryMode] = useState<EntryMethods>(
-    EntryMethods.EXISTING,
-  );
+    TextDocumentResponse[] | null
+  >(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
@@ -40,15 +34,9 @@ const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
     setProcessing(true);
     loadUserDocuments().then((documents) => {
       setExistingDocuments(documents);
-      if (documents.length === 0) setEntryMode(EntryMethods.WIKI);
       setProcessing(false);
     });
-  }, [setProcessing, setEntryMode, loadUserDocuments, setExistingDocuments]);
-
-  useEffect(() => {
-    setError("");
-    posthog?.capture("Set Document Upload Method", { method: entryMode });
-  }, [entryMode]);
+  }, [setProcessing, loadUserDocuments, setExistingDocuments]);
 
   const uploadWrapper = <T extends unknown[]>(uploader: uploaderThunk<T>) => {
     return async (...args: T) => {
@@ -86,83 +74,36 @@ const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
     setError,
     processing,
     setProcessing,
-    setEntryMode,
   };
-
-  const baseTabStyles = tw("tab hidden md:flex");
 
   return (
     <div className="container mx-auto max-w-4xl self-stretch px-4 py-12">
       <h1 className="pb-6 text-2xl">בחירת טקסט להקראה</h1>
 
-      {/* Tab title in smaller screens uses an horizontal menu */}
-      <ul className="menu menu-horizontal menu-xs md:hidden [&>li]:mb-1 [&>li]:ms-1 [&>li]:rounded [&>li]:bg-slate-100">
-        <li onClick={() => setEntryMode(EntryMethods.EXISTING)}>
-          <a
-            className={twJoin(entryMode === EntryMethods.EXISTING && "active")}
-          >
-            מסמך קיים
-          </a>
-        </li>
-        <li onClick={() => setEntryMode(EntryMethods.WIKI)}>
-          <a className={twJoin(entryMode === EntryMethods.WIKI && "active")}>
-            טען מאמר ויקיפדיה
-          </a>
-        </li>
-        <li className="disabled">
-          <a>
-            העלה מסמך <span className="badge badge-info badge-sm">בקרוב</span>
-          </a>
-        </li>
-        <li className="disabled">
-          <a>
-            הדבק טקסט חופשי{" "}
-            <span className="badge badge-info badge-sm">בקרוב</span>
-          </a>
-        </li>
-      </ul>
-
-      <div role="tablist" className="tabs tabs-xs md:tabs-lifted md:tabs-md">
-        <div
-          role="tab"
-          className={twJoin(
-            baseTabStyles,
-            entryMode === EntryMethods.EXISTING && "tab-active",
-          )}
-          onClick={() => setEntryMode(EntryMethods.EXISTING)}
-        >
-          מסמך קיים
-        </div>
-        <div role="tabpanel" className="tab-content">
+      {existingDocuments && (
+        <Collapse title="מסמך קיים" defaultOpen={existingDocuments.length > 0}>
           <SelectExistingDocument
             {...tabContentProps}
             existingDocuments={existingDocuments}
             loadExistingDocumentById={loadExistingDocumentById}
           />
-        </div>
-        <div
-          role="tab"
-          className={twJoin(
-            baseTabStyles,
-            entryMode === EntryMethods.WIKI && "tab-active",
-          )}
-          onClick={() => setEntryMode(EntryMethods.WIKI)}
+        </Collapse>
+      )}
+
+      {existingDocuments && (
+        <Collapse
+          title="טען מאמר ויקיפדיה"
+          defaultOpen={existingDocuments.length == 0}
         >
-          טען מאמר ויקיפדיה
-        </div>
-        <div role="tabpanel" className="tab-content">
           <WikiArticleUpload
             {...tabContentProps}
             loadNewDocumentFromWikiArticle={loadNewDocumentFromWikiArticle}
           />
-        </div>
-        <div role="tab" className={twJoin(baseTabStyles, "tab-disabled")}>
-          העלה מסמך (בקרוב)
-        </div>
-        <div role="tab" className={twJoin(baseTabStyles, "tab-disabled")}>
-          הדבק טקסט חופשי (בקרוב)
-        </div>
-      </div>
+        </Collapse>
+      )}
+
+      <Collapse title="העלה מסמך (בקרוב)" disabled></Collapse>
+      <Collapse title="הדבק טקסט חופשי (בקרוב)" disabled></Collapse>
     </div>
   );
 };

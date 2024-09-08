@@ -97,7 +97,7 @@ const Sessions = () => {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto w-full max-w-6xl">
       <div className="mx-4 mb-4 flex items-center justify-between">
         <h1 className="text-2xl">הקלטות</h1>
         <button className="btn btn-xs m-2 sm:btn-sm" onClick={() => refetch()}>
@@ -108,11 +108,13 @@ const Sessions = () => {
           )}
         </button>
       </div>
-      <div dir="rtl" className="overflow-x-auto">
+      <div dir="rtl" className="overflow-x-scroll">
         <table className="table table-auto">
           <thead>
             <tr>
               <th>סשן</th>
+              <th>סטטוס</th>
+              <th></th>
               <SortCol
                 label="נוצר"
                 colName={SortColumnsEnum.CREATED_AT}
@@ -124,8 +126,6 @@ const Sessions = () => {
                 {...sortState}
               />
               <th>מסמך טקסט</th>
-              <th>סטטוס</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -137,10 +137,7 @@ const Sessions = () => {
                 )}
                 key={rs.id}
               >
-                <td>{rs.id}</td>
-                <td>{new Date(rs.created_at).toLocaleString()}</td>
-                <td>{new Date(rs.updated_at).toLocaleString()}</td>
-                <td>{rs.document_id}</td>
+                <td className="text-xs sm:text-sm">{rs.id}</td>
                 <td>
                   <StatusDisplay status={rs.status} />
                 </td>
@@ -148,14 +145,18 @@ const Sessions = () => {
                   {rs.status == RecitalSessionStatus.Uploaded ? (
                     <button
                       onClick={() => setPreviewedSessionId(rs.id)}
-                      className="btn btn-outline btn-xs"
+                      className="btn btn-outline btn-sm sm:btn-xs sm:gap-2"
                     >
-                      השמע <HeadphonesIcon className="h-4 w-4" />
+                      <div className="hidden sm:block">השמע</div>
+                      <HeadphonesIcon className="h-4 w-4 sm:h-4 sm:w-4" />
                     </button>
                   ) : (
                     <div className="min-w-24" />
                   )}
                 </td>
+                <td>{new Date(rs.created_at).toLocaleString()}</td>
+                <td>{new Date(rs.updated_at).toLocaleString()}</td>
+                <td>{rs.document_id}</td>
               </tr>
             ))}
           </tbody>
