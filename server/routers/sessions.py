@@ -7,7 +7,7 @@ from uuid import UUID
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, File, Path, UploadFile
 from fastapi.exceptions import HTTPException
-from fastcrud import FastCRUD, FilterConfig
+from fastcrud import FastCRUD, FilterConfig, JoinConfig
 from nanoid import generate
 from pydantic import BaseModel
 
@@ -15,8 +15,14 @@ from containers import Container
 from managers.recital_manager import RecitalManager
 from models.database import get_async_session
 from models.recital_audio_segment import RecitalAudioSegment
-from models.recital_session import RecitalSession, RecitalSessionRead, SessionStatus
+from models.recital_session import (
+    RecitalSession,
+    RecitalSessionRead,
+    SessionStatus,
+    SessionTextDocument,
+)
 from models.recital_text_segment import RecitalTextSegment
+from models.text_document import TextDocument
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 
@@ -219,6 +225,16 @@ router.add_api_route(
         session_crud,
         get_async_session,
         create_dynamic_filters_dep(session_filer_config),
+        join_configs=[
+            JoinConfig(
+                model=TextDocument,
+                join_on=TextDocument.id == RecitalSession.document_id,
+                join_prefix="document_",
+                # schema_to_select=TitleOnlyTextDocument,
+                schema_to_select=SessionTextDocument,
+                join_type="left",
+            )
+        ],
         schema_to_select=RecitalSessionRead,
     ),
     methods=["GET"],

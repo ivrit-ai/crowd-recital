@@ -1,3 +1,5 @@
+import type { DocumentType } from "./document";
+
 enum RecitalSessionStatus {
   Active = "active",
   Ended = "ended",
@@ -10,8 +12,7 @@ type RecitalSessionType = {
   id: string;
   created_at: string;
   updated_at: string;
-  document_id: string;
-  document_title: string | undefined;
+  document: DocumentType;
   status: RecitalSessionStatus;
 };
 
@@ -19,16 +20,14 @@ class RecitalSession implements RecitalSessionType {
   id: string;
   created_at: string;
   updated_at: string;
-  document_id: string;
-  document_title: string | undefined;
+  document: DocumentType;
   status: RecitalSessionStatus;
-  constructor(sesssion: RecitalSessionType) {
-    this.id = sesssion.id;
-    this.created_at = sesssion.created_at;
-    this.updated_at = sesssion.updated_at;
-    this.document_id = sesssion.document_id;
-    this.document_title = sesssion.document_title;
-    this.status = sesssion.status;
+  constructor(session: RecitalSessionType) {
+    this.id = session.id;
+    this.created_at = session.created_at;
+    this.updated_at = session.updated_at;
+    this.document = session.document;
+    this.status = session.status;
   }
 }
 
