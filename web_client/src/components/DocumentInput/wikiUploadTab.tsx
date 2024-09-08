@@ -78,11 +78,13 @@ const WikiArticleUpload = ({
           )}
         </button>
       </div>
-      <div className="divider"></div>
 
       {!!error && (
         <div role="alert" className="alert alert-error text-sm">
-          <Link2Off /> {error}
+          <span>
+            <Link2Off />
+          </span>{" "}
+          <span>{error}</span>
         </div>
       )}
     </div>
