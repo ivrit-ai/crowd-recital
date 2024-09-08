@@ -156,7 +156,7 @@ const Sessions = () => {
                 </td>
                 <td>{new Date(rs.created_at).toLocaleString()}</td>
                 <td>{new Date(rs.updated_at).toLocaleString()}</td>
-                <td>{rs.document_id}</td>
+                <td>{rs.document?.title}</td>
               </tr>
             ))}
           </tbody>

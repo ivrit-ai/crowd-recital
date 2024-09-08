@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID
 
+from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin
@@ -19,7 +20,6 @@ class SessionStatus(str, Enum):
 
 class RecitalSessionBase(SQLModel, DateFieldsMixin):
     id: str = Field(default=None, primary_key=True)
-    document_id: Optional[UUID] = Field(index=True, nullable=True, foreign_key="text_documents.id")
     status: str = Field(index=True, default=SessionStatus.ACTIVE)
 
 
@@ -27,6 +27,7 @@ class RecitalSession(RecitalSessionBase, SQLModel, table=True):
     __tablename__ = "recital_sessions"
 
     user_id: UUID = Field(index=True, foreign_key="users.id")
+    document_id: Optional[UUID] = Field(index=True, nullable=True, foreign_key="text_documents.id")
 
     source_audio_filename: str = Field(nullable=True)
     main_audio_filename: str = Field(nullable=True)
@@ -39,5 +40,10 @@ class RecitalSession(RecitalSessionBase, SQLModel, table=True):
     document: Optional["TextDocument"] = Relationship(back_populates="recital_sessions")
 
 
+class SessionTextDocument(BaseModel):
+    id: str
+    title: str
+
+
 class RecitalSessionRead(RecitalSessionBase):
-    pass
+    document: Optional[SessionTextDocument] = None

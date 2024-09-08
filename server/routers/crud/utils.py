@@ -1,8 +1,8 @@
 import inspect
 from typing import Annotated, Any, Callable, Optional
 
-from fastapi import Depends, Path, Query
-from fastcrud import FastCRUD, FilterConfig, crud_router
+from fastapi import Depends, Query
+from fastcrud import FastCRUD, FilterConfig
 
 from models.user import User
 from routers.dependencies.analytics import Tracker
@@ -131,7 +131,12 @@ def gen_get_single(
 
 
 def gen_get_multi(
-    crud: FastCRUD, get_async_session, dynamic_filters, schema_to_select=None, user_id_field_name: str = "user_id"
+    crud: FastCRUD,
+    get_async_session,
+    dynamic_filters,
+    schema_to_select=None,
+    join_configs=[],
+    user_id_field_name: str = "user_id",
 ):
     async def endpoint(
         track_event: Tracker,
@@ -156,13 +161,23 @@ def gen_get_multi(
 
         track_event(f"Get {crud.model.__name__} Items")
 
+        getter = crud.get_multi
+        if join_configs:
+            getter = crud.get_multi_joined
+            common_read_params["joins_config"] = join_configs
+            common_read_params["nest_joins"] = True
+
         if not (page and items_per_page):
-            return await crud.get_multi(**common_read_params, offset=0, limit=100, **filters, **user_filter)
+            return await getter(
+                **common_read_params,
+                offset=0,
+                limit=100,
+                **filters,
+                **user_filter,
+            )
 
         offset = compute_offset(page=page, items_per_page=items_per_page)
-        crud_data = await crud.get_multi(
-            **common_read_params, offset=offset, limit=items_per_page, **filters, **user_filter
-        )
+        crud_data = await getter(**common_read_params, offset=offset, limit=items_per_page, **filters, **user_filter)
 
         return paginated_response(crud_data=crud_data, page=page, items_per_page=items_per_page)  # pragma: no cover
 
