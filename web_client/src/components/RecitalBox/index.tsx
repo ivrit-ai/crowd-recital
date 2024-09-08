@@ -13,290 +13,18 @@ import { twJoin } from "tailwind-merge";
 
 import { EnvConfig } from "@/config";
 import { Document } from "@/models";
-import { useKeyPress, secondsToMinuteSecondMillisecondString } from "@/utils";
+import { secondsToMinuteSecondMillisecondString } from "@/utils";
 import { RouteContext, Routes } from "@/context/route";
 import { MicCheckContext } from "@/context/micCheck";
+import useDocumentNavigation, {
+  NavigationControls,
+} from "./useDocumentNavigation";
+import useKeyboardControl from "./useKeyboardControl";
+import useControlCallback from "./useControleCallback";
 import { useRecordingUploader } from "@/hooks/recodingUploader";
 import { useTextSegmentUploader } from "@/hooks/textSegmentUploader";
 import { useRecordingSession } from "@/hooks/useRecordingSession";
 import SessionInfoBox from "./SessionInfoBox";
-
-type NavigationMoves = {
-  nextParagraph: () => void;
-  prevParagraph: () => void;
-  nextSentence: () => boolean;
-  prevSentence: () => void;
-  toParagraphSentence: (paragraphIndex: number, sentenceIndex: number) => void;
-};
-
-const useDocumentNavigation = (document: Document) => {
-  const [activeParagraphIndex, setActiveParagraphIndex] = useState<number>(0);
-  const [activeSentenceIndex, setActiveSentenceIndex] = useState<number>(0);
-
-  const goToParagraphSentence = useCallback(
-    (paragraphIndex: number, sentenceIndex: number) => {
-      const paragraphIndexToGoTo = Math.max(
-        0,
-        Math.min(paragraphIndex, document.paragraphs.length - 1),
-      );
-      const sentenceIndexToGoTo = Math.max(
-        0,
-        Math.min(
-          sentenceIndex,
-          document.paragraphs[paragraphIndexToGoTo].sentences.length - 1,
-        ),
-      );
-      setActiveParagraphIndex(paragraphIndexToGoTo);
-      setActiveSentenceIndex(sentenceIndexToGoTo);
-    },
-    [setActiveParagraphIndex, setActiveSentenceIndex, document],
-  );
-
-  const moveToNextSentence = useCallback(() => {
-    const activeParagraph = document.paragraphs[activeParagraphIndex];
-    const isLastParagraph =
-      activeParagraphIndex === document.paragraphs.length - 1;
-    const isLastSentence =
-      activeSentenceIndex === activeParagraph.sentences.length - 1;
-    if (isLastSentence) {
-      if (isLastParagraph) {
-        return false; // No where to go further
-      }
-      setActiveParagraphIndex((prev) => prev + 1);
-      setActiveSentenceIndex(0);
-    } else {
-      setActiveSentenceIndex((prev) => prev + 1);
-    }
-
-    return true;
-  }, [
-    setActiveParagraphIndex,
-    setActiveSentenceIndex,
-    activeParagraphIndex,
-    activeSentenceIndex,
-    document,
-  ]);
-
-  const moveToPrevSentence = useCallback(() => {
-    const isFirstParagraph = activeParagraphIndex === 0;
-    const isFirstSentence = activeSentenceIndex === 0;
-    if (isFirstSentence) {
-      if (isFirstParagraph) {
-        return; // No where to go further
-      }
-      setActiveParagraphIndex((prev) => prev - 1);
-      setActiveSentenceIndex(
-        document.paragraphs[activeParagraphIndex - 1].sentences.length - 1,
-      );
-    } else {
-      setActiveSentenceIndex((prev) => prev - 1);
-    }
-  }, [
-    setActiveParagraphIndex,
-    setActiveSentenceIndex,
-    activeParagraphIndex,
-    activeSentenceIndex,
-    document,
-  ]);
-
-  const moveToNextParagraph = useCallback(() => {
-    const isLastParagraph =
-      activeParagraphIndex === document.paragraphs.length - 1;
-    if (isLastParagraph) {
-      setActiveSentenceIndex(
-        document.paragraphs[activeParagraphIndex].sentences.length - 1,
-      );
-      return; // No where to go further
-    }
-    setActiveParagraphIndex((prev) => prev + 1);
-    setActiveSentenceIndex(0);
-  }, [
-    setActiveParagraphIndex,
-    setActiveSentenceIndex,
-    activeParagraphIndex,
-    document,
-  ]);
-
-  const moveToPrevParagraph = useCallback(() => {
-    const isFirstParagraph = activeParagraphIndex === 0;
-    setActiveSentenceIndex(0);
-    if (isFirstParagraph) {
-      return; // No where to go further
-    }
-    setActiveParagraphIndex((prev) => prev - 1);
-  }, [
-    setActiveParagraphIndex,
-    setActiveSentenceIndex,
-    activeParagraphIndex,
-    document,
-  ]);
-
-  const activeParagraph = document.paragraphs[activeParagraphIndex];
-  const activeSentence = activeParagraph.sentences[activeSentenceIndex];
-  const move = useMemo<NavigationMoves>(
-    () => ({
-      nextParagraph: moveToNextParagraph,
-      prevParagraph: moveToPrevParagraph,
-      nextSentence: moveToNextSentence,
-      prevSentence: moveToPrevSentence,
-      toParagraphSentence: goToParagraphSentence,
-    }),
-    [
-      moveToNextParagraph,
-      moveToPrevParagraph,
-      moveToNextSentence,
-      moveToPrevSentence,
-      goToParagraphSentence,
-    ],
-  );
-
-  return {
-    activeParagraphIndex,
-    activeSentenceIndex,
-    activeParagraph,
-    activeSentence,
-    move,
-  } as const;
-};
-
-enum NavigationControls {
-  NextSentence = 1,
-  PrevSentence,
-  NextParagraph,
-  PrevParagraph,
-  GoToParagraph,
-  Record,
-}
-
-const useKeyboardControl = (
-  onControl: (
-    control: NavigationControls,
-    navigationArgs?: NavigationArgs,
-  ) => Promise<void>,
-) => {
-  const handleKeyDown = useCallback(
-    async (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "ArrowRight":
-          await onControl(NavigationControls.PrevSentence);
-          e.preventDefault();
-          break;
-        case "ArrowLeft":
-          await onControl(NavigationControls.NextSentence);
-          e.preventDefault();
-          break;
-        case "ArrowUp":
-          await onControl(NavigationControls.PrevParagraph);
-          e.preventDefault();
-          break;
-        case "ArrowDown":
-          await onControl(NavigationControls.NextParagraph);
-          e.preventDefault();
-          break;
-        case "Enter":
-          await onControl(NavigationControls.Record);
-          e.preventDefault();
-          break;
-        default:
-          break;
-      }
-    },
-    [onControl],
-  );
-
-  useKeyPress(
-    ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Enter"],
-    handleKeyDown,
-  );
-};
-
-type NavigationArgs = {
-  paragraph: number;
-  sentence: number;
-};
-
-const useControlCallback = (
-  move: NavigationMoves,
-  recording: boolean,
-  createNewSession: () => Promise<string>,
-  finalizeSession: () => Promise<void>,
-  setSessionId: (sessionId: string) => void,
-  startRecording: (sessionId: string) => void,
-  uploadActiveSentence: () => void,
-  setSessionStartError: (error: Error | null) => void,
-  clearTextUploaderError: () => void,
-) => {
-  const onControl = useCallback(
-    async (control: NavigationControls, navigationArgs?: NavigationArgs) => {
-      let shouldStopRecording = false;
-      switch (control) {
-        case NavigationControls.NextSentence:
-          if (recording) {
-            uploadActiveSentence();
-          }
-          if (!move.nextSentence()) {
-            shouldStopRecording = true;
-          }
-          break;
-        case NavigationControls.PrevSentence:
-          if (!recording) {
-            move.prevSentence();
-          }
-          break;
-        case NavigationControls.NextParagraph:
-          if (!recording) {
-            move.nextParagraph();
-          }
-          break;
-        case NavigationControls.PrevParagraph:
-          if (!recording) {
-            move.prevParagraph();
-          }
-          break;
-        case NavigationControls.GoToParagraph:
-          if (!recording && navigationArgs) {
-            move.toParagraphSentence(
-              navigationArgs.paragraph,
-              navigationArgs.sentence,
-            );
-          }
-          break;
-        case NavigationControls.Record:
-          if (recording) {
-            shouldStopRecording = true;
-          } else {
-            clearTextUploaderError();
-            setSessionStartError(null);
-            createNewSession()
-              .then((sessionId) => {
-                setSessionId(sessionId);
-                startRecording(sessionId);
-              })
-              .catch((err) => setSessionStartError(err));
-          }
-          break;
-
-        default:
-          break;
-      }
-
-      if (shouldStopRecording) {
-        finalizeSession();
-      }
-    },
-    [
-      move,
-      recording,
-      createNewSession,
-      finalizeSession,
-      setSessionId,
-      startRecording,
-      uploadActiveSentence,
-    ],
-  );
-
-  return onControl;
-};
 
 const useAutoSessionStop = (
   finalizeSession: () => Promise<void>,
@@ -380,7 +108,9 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
 
   const uploadActiveSentence = useCallback(() => {
     uploadTextSegment(activeSentence.text).then(() => {
-      console.log("Uploaded Text Segment!");
+      if (import.meta.env.DEV) {
+        console.log("Uploaded Text Segment!");
+      }
     });
   }, [activeSentence, uploadTextSegment]);
 
@@ -504,6 +234,13 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
         <div
           tabIndex={0}
           className="mx-auto h-full max-w-prose overflow-auto py-5 text-justify text-lg focus-visible:outline-none md:text-xl"
+          onClick={(e) => {
+            if (recording) {
+              e.preventDefault();
+              e.stopPropagation();
+              onControl(NavigationControls.NextSentence);
+            }
+          }}
         >
           {document.paragraphs.map((p, pidx) => (
             <p
@@ -514,7 +251,7 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
                 <span
                   key={`${pidx}-${sidx}`}
                   className={twJoin(
-                    "me-2 border-b-2 border-s-8 border-neutral-content",
+                    "me-2 cursor-pointer border-b-2 border-s-8 border-neutral-content",
                     activeParagraphIndex == pidx &&
                       activeSentenceIndex == sidx &&
                       "bg-primary text-primary-content",
@@ -524,12 +261,16 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
                       ? activeSentenceElementRef
                       : null
                   }
-                  onClick={() =>
-                    onControl(NavigationControls.GoToParagraph, {
-                      paragraph: pidx,
-                      sentence: sidx,
-                    })
-                  }
+                  onClick={(e) => {
+                    if (!recording) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onControl(NavigationControls.GoToParagraph, {
+                        paragraph: pidx,
+                        sentence: sidx,
+                      });
+                    }
+                  }}
                 >
                   {s.text}
                 </span>
