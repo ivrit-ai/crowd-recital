@@ -28,22 +28,42 @@ DELEGATED_IDENTITY_SECRET_KEY=<Secret key to for id delegation authentication (S
 AWS_ACCESS_KEY_ID=<AWS access key>
 AWS_SECRET_ACCESS_KEY=<AWS secret access key>
 CONTENT_STORAGE_S3_BUCKET=<AWS S3 bucket name for the uploaded content>
+CONTENT_DISABLE_S3_UPLOAD=<True/False - Disable content uploading - for development purposes (False)>
+JOB_SESSION_FINALIZATION_DISABLED=<True/False - enable or disable aggregations+upload jobs (True)>
+JOB_SESSION_FINALIZATION_INTERVAL_SEC=<Seconds between runs of aggregation+upload jobs, read more below. (120)>
 PUBLIC_POSTHOG_KEY=<optional - tracking to posthog>
 PUBLIC_POSTHOG_HOST=<optional - tracking to posthog>
+DEBUG=<True/False - prints db and other detailed logs (False)>
 ```
+
+*JOB_SESSION_FINALIZATION_INTERVAL_SEC*: Note, the server will also immediately trigger finalization when a recording session ends when this flag is turned on to minimize latency of getting an available session preview.
 
 - Back on the root folder
-- Build the Docker image that handles the web site static assets building
+- If going with the "No Docker" deployment option - Build & run the Docker image that handles the web site static assets building.
+
+First create a folder to contain the built web client output
+
+`mkdir web_client_dist`
+
+Then build & run the builder image
 
 ```
-docker build -t recital-web-app-builder . -f web.Dockerfile && \
-docker run --rm -v $(PWD)/web_client_dist:/app/dist recital-web-app-builder && \
-docker image rm recital-web-app-builder
+sudo docker build -t recital-web-app-builder . -f web.Dockerfile && \
+sudo docker run --rm -v $(pwd)/web_client_dist:/app/dist recital-web-app-builder && \
+sudo docker image rm recital-web-app-builder
 ```
 
 - This will create the `web_client_dist` folder with the static assets inside
 
-### About ID Delegation Authentication
+- If you run the web server with a non root user (good idea) make sure the created dist folder is owned by that user.
+
+`sudo chown -R <user>:<group> web_client_dist`
+
+- If you further intend on serving static files from the proxy - make sure the proxy has read/list access to that folder
+
+- If going with the Docker deployment option - see below.
+
+### ID Delegation Authentication
 
 Trusted system who needs to access the API on behalf of another user will use a method which is not a normal OAuth flow for simplicity.
 
@@ -57,12 +77,12 @@ The two are sent with each API call on the following two headers respectively:
 Retool (for example) supports OAuth 2.0 authentication, it's just the implementation of the IDp on the Python server that is currently missing.
 Btw, An external service provider (Like Auth0 could be used, but might cost something)
 
-### About Analytics
+### Analytics
 
 This project can integrate with a [PostHog](https://posthog.com/) project got analytics.
 Set the proper env vars to enable this integration.
 
-## DB Migration
+### DB Migration
 
 If this is not the first deployment - migrate the DB in case schema changes were made.
 
@@ -73,16 +93,26 @@ cd server
 alembic upgrade head
 ```
 
-### Running the server
+### Running the server - No Docker option
 - Starting the server using uvicorn (Default port is 8000) (Make sure the virtual environment is activated)
 
 `uvicorn --app-dir=server application:app`
 
+Assuming you have a reverse proxy in from of the server for HTTPS/caching/static file serving - also add the following to the uvicorn command:
+
+`--forwarded-allow-ips='*' --proxy-headers`
+
+If you have your reverse proxy forward to a Unix Domain socket you will also add something like this:
+
+`--uds /tmp/uvicorn.recital.sock`
+
 **Note:** The uvicorn command runs from the root folder NOT the `server` folder.
 
-### Running the background jobs
+### Running the background jobs (Optional)
 
 *note:* Ensure the python venv is active before running the following.
+
+The server will automatically execute those jobs for you unless disabled using the proper ENV var. If disabled you can externally schedule those jobs as described below.
 
 - Schedule a job to execute the following admin scripts:
 
@@ -102,6 +132,29 @@ This script uploads text and audio artifacts into the S3 bucket under a "folder"
 
 Each such folder will contain a vtt file and 3 audio files (source, main and light).
 
+### Running the server - Docker option
+
+- Build the Docker image `Dockerfile` (The default)
+- Ensure you are on the root folder
+
+`docker build -t crowd-recital .`
+
+- Command to run the server docker image
+
+`docker run -p 8000:80 --env-file server/.env`
+
+This binds the web server on the host port 8000.
+
+- You would probably want this container to auto start when stopped so add `--restart unless-stopped` to the above command.
+
+- Note that this server does not handle HTTPS - so a proxy (like nginx) is expected in front of it. In that case you will add to the docker run command also the following:
+
+`--forwarded-allow-ips='*' --proxy-headers`
+
+So that the internal container run uvicorn will be able to see the access request headers.
+
+- Don't forget to make sure your proxy also auto starts if it's installed on the host.
+
 ## Operations
 
 ### Speaker Users
@@ -116,11 +169,13 @@ To approve (or pre approve if the user did not sign up yet) a speaker user - obt
 
 from the root folder.
 
+*note*: A simple Retool app to manage users and sessions was created to simplify the above. We look into how this can be properly shared or replace it with a built-in admin abilities.
+
 ## Development
 
 ### Prerequisites
 
-- Python >= 3.10 and < 3.12 Installed
+- Python >= 3.11 and < 3.12 Installed
 - Node 20 available on PATH
 
 You need to start two web servers from two shells.
