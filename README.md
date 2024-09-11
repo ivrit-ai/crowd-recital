@@ -27,6 +27,7 @@ ACCESS_TOKEN_SECRET_KEY=<Generated secret to sign the JWT session tokens>
 DELEGATED_IDENTITY_SECRET_KEY=<Secret key to for id delegation authentication (See Below)>
 AWS_ACCESS_KEY_ID=<AWS access key>
 AWS_SECRET_ACCESS_KEY=<AWS secret access key>
+AWS_DEFAULT_REGION=<The region for the S3 bucket access>
 CONTENT_STORAGE_S3_BUCKET=<AWS S3 bucket name for the uploaded content>
 CONTENT_DISABLE_S3_UPLOAD=<True/False - Disable content uploading - for development purposes (False)>
 JOB_SESSION_FINALIZATION_DISABLED=<True/False - enable or disable aggregations+upload jobs (True)>
