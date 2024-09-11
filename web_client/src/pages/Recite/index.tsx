@@ -1,3 +1,4 @@
+import useTrackPageView from "@/analytics/useTrackPageView";
 import { Document } from "@/models";
 import RecitalBox from "@/components/RecitalBox";
 
@@ -6,6 +7,7 @@ type Props = {
 };
 
 const Recite = ({ activeDocument }: Props) => {
+  useTrackPageView("recite");
   return <RecitalBox document={activeDocument} />;
 };
 

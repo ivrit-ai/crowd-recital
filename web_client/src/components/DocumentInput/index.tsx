@@ -14,7 +14,7 @@ type uploaderThunk<T extends unknown[] = unknown[]> = (
 ) => Promise<string>;
 
 const DocumentInput = () => {
-  const navigate = useNavigate({ from: "/docs" });
+  const navigate = useNavigate({ from: "/documents" });
   const [existingDocuments, setExistingDocuments] = useState<
     TextDocumentResponse[] | null
   >(null);

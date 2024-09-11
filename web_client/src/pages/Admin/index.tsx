@@ -1,7 +1,9 @@
+import useTrackPageView from "@/analytics/useTrackPageView";
 import useAdminClient from "@/hooks/useAdminClient";
 import UsersAdmin from "./users";
 
 const Admin = () => {
+  useTrackPageView("admin");
   const client = useAdminClient();
 
   if (!client) {

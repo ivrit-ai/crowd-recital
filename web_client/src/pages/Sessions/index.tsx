@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { twJoin } from "tailwind-merge";
 import { Link } from "@tanstack/react-router";
 
+import useTrackPageView from "@/analytics/useTrackPageView";
 import SortCol from "@/components/DataTable/SortCol";
 import { SortOrder } from "@/client/types/common";
 import { useSortState } from "@/components/DataTable/useSortState";
@@ -20,7 +21,7 @@ type RecordNowCtaProps = {
 
 const RecordNowCta = ({ ctaText }: RecordNowCtaProps) => {
   return (
-    <Link to="/docs" className="btn btn-primary">
+    <Link to="/documents" className="btn btn-primary">
       {ctaText}
     </Link>
   );
@@ -48,6 +49,8 @@ enum SortColumnsEnum {
 }
 
 const Sessions = () => {
+  useTrackPageView("sessions");
+
   // Sessions Table Data
   const [page, setPage] = useState(1);
   const sortState = useSortState<SortColumnsEnum>(

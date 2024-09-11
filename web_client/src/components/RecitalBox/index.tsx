@@ -155,7 +155,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
               <div className="text-sm font-bold md:text-lg">
                 מסמך טקסט{" "}
                 {!recording && (
-                  <Link to="/docs" className="btn btn-link btn-sm text-primary">
+                  <Link to="/documents" className="btn btn-link btn-sm text-primary">
                     החלף
                   </Link>
                 )}

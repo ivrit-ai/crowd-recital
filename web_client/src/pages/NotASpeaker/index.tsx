@@ -1,3 +1,4 @@
+import useTrackPageView from "@/analytics/useTrackPageView";
 import CentredPage from "@/components/CenteredPage";
 
 interface Props {
@@ -5,6 +6,7 @@ interface Props {
 }
 
 const NotASpeaker = ({ userEmail }: Props) => {
+  useTrackPageView("notASpeaker");
   return (
     <CentredPage>
       <div className="hero">

@@ -93,7 +93,7 @@ const Header = () => {
               </a>
             </HeaderMenuItem>
             <HeaderMenuItem closeMenu={closeMenu}>
-              <HeaderMenuLink to="/docs">ממשק הקלטה</HeaderMenuLink>
+              <HeaderMenuLink to="/documents">ממשק הקלטה</HeaderMenuLink>
             </HeaderMenuItem>
             <HeaderMenuItem closeMenu={closeMenu}>
               <HeaderMenuLink to="/sessions">רשימת הקלטות</HeaderMenuLink>

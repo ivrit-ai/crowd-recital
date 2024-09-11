@@ -15,7 +15,7 @@ import { Route as LoginImport } from './routes/login'
 import { Route as MainImport } from './routes/_main'
 import { Route as IndexImport } from './routes/index'
 import { Route as MainSessionsImport } from './routes/_main/sessions'
-import { Route as MainDocsImport } from './routes/_main/docs'
+import { Route as MainDocumentsImport } from './routes/_main/documents'
 import { Route as MainReciteDocIdImport } from './routes/_main/recite.$docId'
 
 // Create/Update Routes
@@ -40,8 +40,8 @@ const MainSessionsRoute = MainSessionsImport.update({
   getParentRoute: () => MainRoute,
 } as any)
 
-const MainDocsRoute = MainDocsImport.update({
-  path: '/docs',
+const MainDocumentsRoute = MainDocumentsImport.update({
+  path: '/documents',
   getParentRoute: () => MainRoute,
 } as any)
 
@@ -75,11 +75,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/_main/docs': {
-      id: '/_main/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof MainDocsImport
+    '/_main/documents': {
+      id: '/_main/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof MainDocumentsImport
       parentRoute: typeof MainImport
     }
     '/_main/sessions': {
@@ -102,13 +102,13 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface MainRouteChildren {
-  MainDocsRoute: typeof MainDocsRoute
+  MainDocumentsRoute: typeof MainDocumentsRoute
   MainSessionsRoute: typeof MainSessionsRoute
   MainReciteDocIdRoute: typeof MainReciteDocIdRoute
 }
 
 const MainRouteChildren: MainRouteChildren = {
-  MainDocsRoute: MainDocsRoute,
+  MainDocumentsRoute: MainDocumentsRoute,
   MainSessionsRoute: MainSessionsRoute,
   MainReciteDocIdRoute: MainReciteDocIdRoute,
 }
@@ -119,7 +119,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof MainRouteWithChildren
   '/login': typeof LoginRoute
-  '/docs': typeof MainDocsRoute
+  '/documents': typeof MainDocumentsRoute
   '/sessions': typeof MainSessionsRoute
   '/recite/$docId': typeof MainReciteDocIdRoute
 }
@@ -128,7 +128,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof MainRouteWithChildren
   '/login': typeof LoginRoute
-  '/docs': typeof MainDocsRoute
+  '/documents': typeof MainDocumentsRoute
   '/sessions': typeof MainSessionsRoute
   '/recite/$docId': typeof MainReciteDocIdRoute
 }
@@ -138,22 +138,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_main': typeof MainRouteWithChildren
   '/login': typeof LoginRoute
-  '/_main/docs': typeof MainDocsRoute
+  '/_main/documents': typeof MainDocumentsRoute
   '/_main/sessions': typeof MainSessionsRoute
   '/_main/recite/$docId': typeof MainReciteDocIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/login' | '/docs' | '/sessions' | '/recite/$docId'
+  fullPaths: '/' | '' | '/login' | '/documents' | '/sessions' | '/recite/$docId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/login' | '/docs' | '/sessions' | '/recite/$docId'
+  to: '/' | '' | '/login' | '/documents' | '/sessions' | '/recite/$docId'
   id:
     | '__root__'
     | '/'
     | '/_main'
     | '/login'
-    | '/_main/docs'
+    | '/_main/documents'
     | '/_main/sessions'
     | '/_main/recite/$docId'
   fileRoutesById: FileRoutesById
@@ -194,7 +194,7 @@ export const routeTree = rootRoute
     "/_main": {
       "filePath": "_main.tsx",
       "children": [
-        "/_main/docs",
+        "/_main/documents",
         "/_main/sessions",
         "/_main/recite/$docId"
       ]
@@ -202,8 +202,8 @@ export const routeTree = rootRoute
     "/login": {
       "filePath": "login.tsx"
     },
-    "/_main/docs": {
-      "filePath": "_main/docs.tsx",
+    "/_main/documents": {
+      "filePath": "_main/documents.tsx",
       "parent": "/_main"
     },
     "/_main/sessions": {
