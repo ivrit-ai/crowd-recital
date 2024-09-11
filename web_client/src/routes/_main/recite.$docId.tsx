@@ -1,37 +1,30 @@
-import { useEffect, useState } from "react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
-import { Document } from "@/models";
-import { useDocuments } from "@/hooks/documents";
+import { APINotFoundError } from "@/client/types/common";
+import { getDocumentOptions } from "@/client/queries/documents";
 import RecitePage from "@/pages/Recite";
+import { useQuery } from "@tanstack/react-query";
 
 function Recite() {
-  const [activeDocument, setActiveDocument] = useState<Document | null>(null);
-  const { docId } = Route.useParams();
-  // const docId2 = Route.useLoaderData();
+  const docId = Route.useParams().docId;
+  const { data: document } = useQuery(getDocumentOptions(docId));
 
-  const { loadDocumentById } = useDocuments();
+  if (!document) return null;
 
-  useEffect(() => {
-    loadDocumentById(docId)
-      .then((doc) => {
-        setActiveDocument(Document.fromTextDocument(doc));
-      })
-      .catch((error) => {
-        // if (error.name === "NotFoundError") {
-        //   setIsNotFound(true);
-        // }
-      });
-  }, [docId]);
-
-  if (!activeDocument) return null;
-
-  return <RecitePage activeDocument={activeDocument} />;
+  return <RecitePage document={document} />;
 }
 
 export const Route = createFileRoute("/_main/recite/$docId")({
-  loader: async ({ params }) => {
-    return params.docId;
+  loader: async ({ context: { queryClient }, params }) => {
+    try {
+      return await queryClient.ensureQueryData(
+        getDocumentOptions(params.docId),
+      );
+    } catch (error) {
+      if (error instanceof APINotFoundError) {
+        throw notFound();
+      }
+    }
   },
   component: Recite,
 });

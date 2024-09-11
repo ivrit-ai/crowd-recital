@@ -3,12 +3,12 @@ import { Document } from "@/models";
 import RecitalBox from "@/components/RecitalBox";
 
 type Props = {
-  activeDocument: Document;
+  document: Document;
 };
 
-const Recite = ({ activeDocument }: Props) => {
+const Recite = ({ document }: Props) => {
   useTrackPageView("recite");
-  return <RecitalBox document={activeDocument} />;
+  return <RecitalBox document={document} />;
 };
 
 export default Recite;

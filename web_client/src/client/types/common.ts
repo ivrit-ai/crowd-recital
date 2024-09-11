@@ -1,3 +1,21 @@
+export class APIError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+
+    Object.setPrototypeOf(this, APIError.prototype);
+  }
+}
+
+export class APINotFoundError extends APIError {
+  constructor(message: string) {
+    super(message, 404);
+    Object.setPrototypeOf(this, APINotFoundError.prototype);
+  }
+}
+
 export type PagingParams = {
   page: number;
   itemsPerPage: number;
