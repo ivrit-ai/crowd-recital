@@ -1,5 +1,4 @@
 import { useContext, useState } from "react";
-import { usePostHog } from "posthog-js/react";
 import { LucideMenu, MicIcon } from "lucide-react";
 import { Link, ToOptions } from "@tanstack/react-router";
 
@@ -31,7 +30,6 @@ const HeaderMenuLink = ({ children, ...linkProps }: HeaderMenuLinkProps) => {
 };
 
 const Header = () => {
-  const posthog = usePostHog();
   const { auth, logout } = useContext(UserContext);
   const { setMicCheckActive } = useContext(MicCheckContext);
   const [imgError, setImgError] = useState(false);
