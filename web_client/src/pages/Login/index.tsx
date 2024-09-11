@@ -1,13 +1,12 @@
+import { useContext } from "react";
 import GoogleLogin from "@/components/GoogleLogin";
-import type { GoogleLoginProps } from "@/hooks/useLogin";
 
 import ivritAiLogo from "../../assets/ivrit_ai_logo.webp";
+import { UserContext } from "@/context/user";
 
-interface Props {
-  googleLoginProps: GoogleLoginProps;
-}
+const Login = () => {
+  const { googleLoginProps } = useContext(UserContext);
 
-const Login = ({ googleLoginProps }: Props) => {
   return (
     <div
       className="hero min-h-screen"

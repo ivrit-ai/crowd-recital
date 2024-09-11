@@ -1,11 +1,11 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { HeadphonesIcon, RefreshCwIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { twJoin } from "tailwind-merge";
+import { Link } from "@tanstack/react-router";
 
 import SortCol from "@/components/DataTable/SortCol";
 import { SortOrder } from "@/client/types/common";
-import { RouteContext, Routes } from "@/context/route";
 import { useSortState } from "@/components/DataTable/useSortState";
 import { getSessionsOptions } from "@/client/queries/sessions";
 import { RecitalSessionStatus } from "@/types/session";
@@ -19,14 +19,10 @@ type RecordNowCtaProps = {
 };
 
 const RecordNowCta = ({ ctaText }: RecordNowCtaProps) => {
-  const { setActiveRoute } = useContext(RouteContext);
   return (
-    <button
-      className="btn btn-primary"
-      onClick={() => setActiveRoute(Routes.Recital)}
-    >
+    <Link to="/docs" className="btn btn-primary">
       {ctaText}
-    </button>
+    </Link>
   );
 };
 

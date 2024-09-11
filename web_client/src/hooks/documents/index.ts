@@ -3,15 +3,14 @@ import { useCallback } from "react";
 import { reportResponseError } from "@/analytics";
 import type { TextDocumentResponse } from "@/models";
 
+const createDocumentUrl = "/api/create_document_from_source";
+const loadDocumentsUrl = "/api/documents";
+
 export enum SourceType {
   WikiArticle = "wiki-article",
 }
 
-const createDocument = async (
-  createDocumentUrl: string,
-  source: string,
-  sourceType: SourceType,
-) => {
+const createDocument = async (source: string, sourceType: SourceType) => {
   const response = await fetch(`${createDocumentUrl}`, {
     method: "POST",
     headers: {
@@ -41,7 +40,7 @@ const createDocument = async (
   };
 };
 
-const loadDocument = async (loadDocumentsUrl: string, documentId: string) => {
+const loadDocument = async (documentId: string) => {
   const response = await fetch(`${loadDocumentsUrl}/${documentId}`, {
     method: "GET",
     headers: {
@@ -64,7 +63,7 @@ const loadDocument = async (loadDocumentsUrl: string, documentId: string) => {
   }
 };
 
-const loadDocuments = async (loadDocumentsUrl: string) => {
+const loadDocuments = async () => {
   const response = await fetch(`${loadDocumentsUrl}`, {
     method: "GET",
     headers: {
@@ -87,31 +86,18 @@ const loadDocuments = async (loadDocumentsUrl: string) => {
   }
 };
 
-export function useDocuments(
-  createDocumentUrl: string,
-  loadDocumentsUrl: string,
-) {
-  const createWikiArticleDocument = useCallback(
-    (articleUrl: string) => {
-      return createDocument(
-        createDocumentUrl,
-        articleUrl,
-        SourceType.WikiArticle,
-      );
-    },
-    [createDocumentUrl],
-  );
+export function useDocuments() {
+  const createWikiArticleDocument = useCallback((articleUrl: string) => {
+    return createDocument(articleUrl, SourceType.WikiArticle);
+  }, []);
 
-  const loadDocumentById = useCallback(
-    (documentId: string) => {
-      return loadDocument(loadDocumentsUrl, documentId);
-    },
-    [loadDocumentsUrl],
-  );
+  const loadDocumentById = useCallback((documentId: string) => {
+    return loadDocument(documentId);
+  }, []);
 
   const loadUserDocuments = useCallback(() => {
-    return loadDocuments(loadDocumentsUrl);
-  }, [loadDocumentsUrl]);
+    return loadDocuments();
+  }, []);
 
   return { createWikiArticleDocument, loadDocumentById, loadUserDocuments };
 }

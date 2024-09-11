@@ -9,11 +9,11 @@ import {
 import { InfoIcon, MicIcon } from "lucide-react";
 import { useVisibilityChange } from "@uidotdev/usehooks";
 import { twJoin } from "tailwind-merge";
+import { Link } from "@tanstack/react-router";
 
 import { EnvConfig } from "@/config";
 import { Document } from "@/models";
 import { secondsToMinuteSecondMillisecondString } from "@/utils";
-import { RouteContext, Routes } from "@/context/route";
 import { MicCheckContext } from "@/context/micCheck";
 import useDocumentNavigation, {
   NavigationControls,
@@ -74,11 +74,9 @@ const AutoStopReasons = {
 
 type RecitalBoxProps = {
   document: Document;
-  clearActiveDocument: () => void;
 };
 
-const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
-  const { setActiveRoute } = useContext(RouteContext);
+const RecitalBox = ({ document }: RecitalBoxProps) => {
   const [sessionStartError, setSessionStartError] = useState<Error | null>(
     null,
   );
@@ -157,12 +155,9 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
               <div className="text-sm font-bold md:text-lg">
                 מסמך טקסט{" "}
                 {!recording && (
-                  <a
-                    className="btn btn-link btn-sm text-primary"
-                    onClick={clearActiveDocument}
-                  >
+                  <Link to="/docs" className="btn btn-link btn-sm text-primary">
                     החלף
-                  </a>
+                  </Link>
                 )}
               </div>
               <div className="truncate text-sm">{document.title}</div>
@@ -171,12 +166,12 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
               <div className="text-sm font-bold md:text-lg">
                 סשן הקלטה{" "}
                 {!recording && (
-                  <a
+                  <Link
                     className="btn btn-link btn-sm text-primary"
-                    onClick={() => setActiveRoute(Routes.Sessions)}
+                    to="/sessions"
                   >
                     הקלטות
-                  </a>
+                  </Link>
                 )}
               </div>
               <div className="truncate text-sm">

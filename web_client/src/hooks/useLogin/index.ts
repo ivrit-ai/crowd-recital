@@ -26,7 +26,7 @@ type LoginResponse = {
 
 const fetchMe = async () => {
   let fetchMeResponse: FetchMeResponse;
-  const response = await fetch(`api/me`, {
+  const response = await fetch(`/api/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -89,7 +89,7 @@ const loginUsingGoogleCredential = async (
 };
 
 const logout = async () => {
-  const response = await fetch("api/logout", {
+  const response = await fetch("/api/logout", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -129,24 +129,29 @@ export default function useLogin() {
 
   useEffect(() => {
     const init = async () => {
-      const fetchMeResponse = await fetchMe();
-      // If login is required
-      if (!fetchMeResponse.success) {
-        const { g_csrf_token } = fetchMeResponse as FailedFetchMeResponse;
-        setCsrfToken(g_csrf_token);
-      } else {
-        // If user is already logged in
-        const { user } = fetchMeResponse as SuccessFetchMeResponse;
-        setActiveUser(new User(user));
-        posthog?.identify(user.id, {
-          email: user.email,
-          name: user.name,
-          group: user.group,
-        });
+      try {
+        const fetchMeResponse = await fetchMe();
+        // If login is required
+        if (!fetchMeResponse.success) {
+          const { g_csrf_token } = fetchMeResponse as FailedFetchMeResponse;
+          setCsrfToken(g_csrf_token);
+          setAccessToken("");
+        } else {
+          // If user is already logged in
+          const { user } = fetchMeResponse as SuccessFetchMeResponse;
+          setActiveUser(new User(user));
+          posthog?.identify(user.id, {
+            email: user.email,
+            name: user.name,
+            group: user.group,
+          });
+        }
+      } finally {
+        setLoggingIn(false);
       }
     };
     setLoggingIn(true);
-    init().finally(() => setLoggingIn(false));
+    init();
   }, [accessToken]);
 
   const onLogout = useCallback(
