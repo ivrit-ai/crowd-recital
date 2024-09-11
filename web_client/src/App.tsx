@@ -8,7 +8,6 @@ import { routeTree } from "./routeTree.gen";
 import { getPosthogClient } from "@/analytics";
 import { withTrackedErrorBoundary } from "@/analytics/TrackedErrorBoundary";
 import { UserContext } from "@/context/user";
-import { MicCheckContext } from "./context/micCheck";
 import useLogin from "@/hooks/useLogin";
 import WholePageLoading from "@/components/WholePageLoading";
 import { MicCheckModal } from "@/components/MicCheck";
@@ -24,6 +23,7 @@ const router = createRouter({
     // auth will initially be undefined
     // We'll be passing down the auth state from within a React component
     auth: undefined!,
+    mic: undefined!,
   },
   defaultNotFoundComponent: NotFound,
 });
@@ -44,9 +44,10 @@ function AppWithProviders() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MicCheckContext.Provider value={{ micCheckActive, setMicCheckActive }}>
-        <RouterProvider router={router} context={{ auth }} />
-      </MicCheckContext.Provider>
+      <RouterProvider
+        router={router}
+        context={{ auth, mic: { micCheckActive, setMicCheckActive } }}
+      />
       <MicCheckModal open={micCheckActive} onClose={onCloseMicCheck} />
       <ReactQueryDevtools />
     </QueryClientProvider>

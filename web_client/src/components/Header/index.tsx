@@ -1,9 +1,8 @@
 import { useContext, useState } from "react";
 import { LucideMenu, MicIcon } from "lucide-react";
-import { Link, ToOptions } from "@tanstack/react-router";
+import { Link, ToOptions, useRouteContext } from "@tanstack/react-router";
 
 import { UserContext } from "@/context/user";
-import { MicCheckContext } from "@/context/micCheck";
 import ThemeModeSelector from "./ThemeModeSelector";
 
 type HeaderMenuItemProps = {
@@ -30,8 +29,8 @@ const HeaderMenuLink = ({ children, ...linkProps }: HeaderMenuLinkProps) => {
 };
 
 const Header = () => {
+  const { mic } = useRouteContext({ from: "__root__" });
   const { auth, logout } = useContext(UserContext);
-  const { setMicCheckActive } = useContext(MicCheckContext);
   const [imgError, setImgError] = useState(false);
 
   const closeMenu = () => {
@@ -86,7 +85,7 @@ const Header = () => {
               </HeaderMenuItem>
             )} */}
             <HeaderMenuItem closeMenu={closeMenu}>
-              <a onClick={() => setMicCheckActive(true)}>
+              <a onClick={() => mic.setMicCheckActive(true)}>
                 בדיקת מיקרופון <MicIcon className="h-4 w-4" />
               </a>
             </HeaderMenuItem>

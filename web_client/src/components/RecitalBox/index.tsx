@@ -9,7 +9,7 @@ import {
 import { InfoIcon, MicIcon } from "lucide-react";
 import { useVisibilityChange } from "@uidotdev/usehooks";
 import { twJoin } from "tailwind-merge";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 
 import { EnvConfig } from "@/config";
 import { Document } from "@/models";
@@ -77,6 +77,7 @@ type RecitalBoxProps = {
 };
 
 const RecitalBox = ({ document }: RecitalBoxProps) => {
+  const { mic } = useRouteContext({ from: "__root__" });
   const [sessionStartError, setSessionStartError] = useState<Error | null>(
     null,
   );
@@ -84,7 +85,6 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   const { activeParagraphIndex, activeSentenceIndex, activeSentence, move } =
     useDocumentNavigation(document);
   const activeSentenceElementRef = useRef<HTMLSpanElement>(null);
-  const { setMicCheckActive } = useContext(MicCheckContext);
 
   const [createNewSession, endSession] = useRecordingSession(document?.id);
   const {
@@ -155,7 +155,10 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
               <div className="text-sm font-bold md:text-lg">
                 מסמך טקסט{" "}
                 {!recording && (
-                  <Link to="/documents" className="btn btn-link btn-sm text-primary">
+                  <Link
+                    to="/documents"
+                    className="btn btn-link btn-sm text-primary"
+                  >
                     החלף
                   </Link>
                 )}
@@ -186,7 +189,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
           <div className="flex-shrink-0">
             <span
               className="btn btn-outline btn-sm sm:btn-xs"
-              onClick={() => setMicCheckActive(true)}
+              onClick={() => mic.setMicCheckActive(true)}
             >
               בדיקה <MicIcon className="inline-block h-4 w-4" />
             </span>
