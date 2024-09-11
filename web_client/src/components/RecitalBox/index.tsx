@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -14,7 +13,6 @@ import { Link, useRouteContext } from "@tanstack/react-router";
 import { EnvConfig } from "@/config";
 import { Document } from "@/models";
 import { secondsToMinuteSecondMillisecondString } from "@/utils";
-import { MicCheckContext } from "@/context/micCheck";
 import useDocumentNavigation, {
   NavigationControls,
 } from "./useDocumentNavigation";
@@ -189,7 +187,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
           <div className="flex-shrink-0">
             <span
               className="btn btn-outline btn-sm sm:btn-xs"
-              onClick={() => mic.setMicCheckActive(true)}
+              onClick={() => mic?.setMicCheckActive(true)}
             >
               בדיקה <MicIcon className="inline-block h-4 w-4" />
             </span>

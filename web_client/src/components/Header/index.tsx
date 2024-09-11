@@ -85,7 +85,7 @@ const Header = () => {
               </HeaderMenuItem>
             )} */}
             <HeaderMenuItem closeMenu={closeMenu}>
-              <a onClick={() => mic.setMicCheckActive(true)}>
+              <a onClick={() => mic?.setMicCheckActive(true)}>
                 בדיקת מיקרופון <MicIcon className="h-4 w-4" />
               </a>
             </HeaderMenuItem>
