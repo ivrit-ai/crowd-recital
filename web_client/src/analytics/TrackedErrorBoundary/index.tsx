@@ -1,11 +1,9 @@
-import { ComponentType, ErrorInfo } from "react";
-import { withErrorBoundary, FallbackProps } from "react-error-boundary";
 import { useCopyToClipboard } from "@uidotdev/usehooks";
 
-import { getPosthogClient } from "@/analytics";
 import Footer from "@/components/Footer";
+import { ErrorComponentProps } from "@tanstack/react-router";
 
-const FallbackErrorPage = ({ error, resetErrorBoundary }: FallbackProps) => {
+export const FallbackErrorPage = ({ error, reset }: ErrorComponentProps) => {
   const [copiedText, copyToClipboard] = useCopyToClipboard();
 
   const errorText = `${error?.message || "unknown error"}\n${error?.stack || "no stack"}`;
@@ -29,10 +27,7 @@ const FallbackErrorPage = ({ error, resetErrorBoundary }: FallbackProps) => {
                 אם תחליט לצרף גם את הטקסט הקריפטי שמופיע למטה - זה יעזור
               </p>
             </div>
-            <button
-              className="btn btn-primary"
-              onClick={() => resetErrorBoundary()}
-            >
+            <button className="btn btn-primary" onClick={() => reset()}>
               רענן
             </button>
           </div>
@@ -54,23 +49,4 @@ const FallbackErrorPage = ({ error, resetErrorBoundary }: FallbackProps) => {
       <Footer />
     </>
   );
-};
-
-export const withTrackedErrorBoundary = (app: ComponentType) => {
-  const posthog = getPosthogClient();
-  return withErrorBoundary(app, {
-    fallbackRender: ({ error, resetErrorBoundary }) => (
-      <FallbackErrorPage
-        error={error}
-        resetErrorBoundary={resetErrorBoundary}
-      />
-    ),
-    onError(error: Error | null, info: ErrorInfo) {
-      posthog?.capture("web_client_react_error", {
-        $exception_message: error?.message,
-        $exception_stack_trace_raw: error?.stack,
-        error_component_stack: info.componentStack,
-      });
-    },
-  });
 };

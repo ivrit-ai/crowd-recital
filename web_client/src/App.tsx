@@ -6,7 +6,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { routeTree } from "./routeTree.gen";
 import { getPosthogClient } from "@/analytics";
-import { withTrackedErrorBoundary } from "@/analytics/TrackedErrorBoundary";
+import {
+  withTrackedErrorBoundary,
+  reportCaughtError,
+} from "@/analytics/TrackedErrorBoundary/withTrackedErrorBoundary";
+import { FallbackErrorPage } from "@/analytics/TrackedErrorBoundary";
 import { UserContext } from "@/context/user";
 import useLogin from "@/hooks/useLogin";
 import WholePageLoading from "@/components/WholePageLoading";
@@ -26,6 +30,8 @@ const router = createRouter({
     mic: undefined!,
   },
   defaultNotFoundComponent: NotFound,
+  defaultErrorComponent: FallbackErrorPage,
+  defaultOnCatch: reportCaughtError,
 });
 
 declare module "@tanstack/react-router" {
