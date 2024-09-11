@@ -1,34 +1,27 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 import type { TextDocumentResponse } from "@/models";
 import { getErrorMessage } from "@/utils";
-import { Document } from "@/models";
 import { useDocuments } from "@/hooks/documents";
 import Collapse from "@/components/Collapse";
 import WikiArticleUpload from "./wikiUploadTab";
 import SelectExistingDocument from "./existingDocTab";
 import type { TabContentProps } from "./types";
 
-const createDocumentUrl = "/api/create_document_from_source";
-const loadDocumentsUrl = "/api/documents";
-
-type DocumentManagerProps = {
-  setActiveDocument: (document: Document | null) => void;
-};
-
 type uploaderThunk<T extends unknown[] = unknown[]> = (
   ...args: T
 ) => Promise<string>;
 
-const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
+const DocumentInput = () => {
+  const navigate = useNavigate({ from: "/documents" });
   const [existingDocuments, setExistingDocuments] = useState<
     TextDocumentResponse[] | null
   >(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
-  const { createWikiArticleDocument, loadDocumentById, loadUserDocuments } =
-    useDocuments(createDocumentUrl, loadDocumentsUrl);
+  const { createWikiArticleDocument, loadUserDocuments } = useDocuments();
 
   useEffect(() => {
     setProcessing(true);
@@ -43,8 +36,7 @@ const DocumentInput = ({ setActiveDocument }: DocumentManagerProps) => {
       setProcessing(true);
       try {
         const docId = await uploader(...args);
-        const doc = await loadDocumentById(docId);
-        setActiveDocument(Document.fromTextDocument(doc));
+        navigate({ to: "/recite/$docId", params: { docId } });
         setError("");
       } catch (error) {
         setError(`ארעה שגיאה - ${getErrorMessage(error)}`);

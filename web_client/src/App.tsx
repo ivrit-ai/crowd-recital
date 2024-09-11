@@ -1,87 +1,100 @@
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { PostHogProvider } from "posthog-js/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+import { routeTree } from "./routeTree.gen";
 import { getPosthogClient } from "@/analytics";
-import { withTrackedErrorBoundary } from "@/analytics/TrackedErrorBoundary";
+import {
+  withTrackedErrorBoundary,
+  reportCaughtError,
+} from "@/analytics/TrackedErrorBoundary/withTrackedErrorBoundary";
+import { FallbackErrorPage } from "@/analytics/TrackedErrorBoundary";
 import { UserContext } from "@/context/user";
-import { RouteContext, Routes } from "./context/route";
-import { MicCheckContext } from "./context/micCheck";
 import useLogin from "@/hooks/useLogin";
-import Layout from "@/components/Layout";
 import WholePageLoading from "@/components/WholePageLoading";
-import Login from "@/pages/Login";
-import Recite from "@/pages/Recite";
-import Admin from "@/pages/Admin";
-import Sessions from "@/pages/Sessions";
 import { MicCheckModal } from "@/components/MicCheck";
+import CentredPage from "@/components/CenteredPage";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function renderRoute(route: Routes) {
-  switch (route) {
-    case Routes.Recital:
-      return <Recite />;
-    case Routes.Admin:
-      return <Admin />;
-    case Routes.Sessions:
-      return <Sessions />;
-    default:
-      return <Recite />;
+const router = createRouter({
+  routeTree,
+  context: {
+    queryClient,
+    // auth will initially be undefined
+    // We'll be passing down the auth state from within a React component
+    auth: undefined!,
+    mic: undefined!,
+  },
+  defaultNotFoundComponent: NotFound,
+  defaultErrorComponent: FallbackErrorPage,
+  defaultOnCatch: reportCaughtError,
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
   }
 }
 
-function App() {
+function AppWithProviders() {
   const [micCheckActive, setMicCheckActive] = useState(false);
   const onCloseMicCheck = useCallback(() => {
     setMicCheckActive(false);
   }, []);
-  const [route, setRoute] = useState<Routes>(Routes.Recital);
+
+  const { auth } = useContext(UserContext);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider
+        router={router}
+        context={{ auth, mic: { micCheckActive, setMicCheckActive } }}
+      />
+      <MicCheckModal open={micCheckActive} onClose={onCloseMicCheck} />
+      <ReactQueryDevtools />
+    </QueryClientProvider>
+  );
+}
+
+function AppWithAuthContext() {
   const { activeUser, googleLoginProps, accessToken, onLogout, loggingIn } =
     useLogin();
 
-  const loginRequired = !activeUser || !accessToken;
+  if (loggingIn) {
+    return (
+      <CentredPage>
+        <WholePageLoading />;
+      </CentredPage>
+    );
+  }
 
   return (
     <UserContext.Provider
-      value={{ user: activeUser, accessToken, logout: onLogout }}
+      value={{
+        auth: { user: activeUser, accessToken },
+        logout: onLogout,
+        googleLoginProps: googleLoginProps,
+      }}
     >
-      <QueryClientProvider client={queryClient}>
-        <RouteContext.Provider
-          value={{ activeRoute: route, setActiveRoute: setRoute }}
-        >
-          <MicCheckContext.Provider
-            value={{ micCheckActive, setMicCheckActive }}
-          >
-            <Layout header={!loginRequired} footer={loginRequired}>
-              {loggingIn ? (
-                <WholePageLoading />
-              ) : loginRequired ? (
-                <Login googleLoginProps={googleLoginProps} />
-              ) : (
-                renderRoute(route)
-              )}
-            </Layout>
-          </MicCheckContext.Provider>
-          <MicCheckModal open={micCheckActive} onClose={onCloseMicCheck} />
-        </RouteContext.Provider>
-        <ReactQueryDevtools />
-      </QueryClientProvider>
+      <AppWithProviders />
     </UserContext.Provider>
   );
 }
 
-let ExportedApp = App;
+let TrackedApp = AppWithProviders;
 const posthog = getPosthogClient();
 if (posthog) {
-  ExportedApp = () => (
+  TrackedApp = () => (
     <PostHogProvider client={posthog}>
-      <App />
+      <AppWithAuthContext />
     </PostHogProvider>
   );
 }
 
-const WrappedErrorBoundedApp = withTrackedErrorBoundary(ExportedApp);
+const WrappedErrorBoundedApp = withTrackedErrorBoundary(TrackedApp);
 
 export default WrappedErrorBoundedApp;

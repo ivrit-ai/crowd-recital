@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -9,12 +8,11 @@ import {
 import { InfoIcon, MicIcon } from "lucide-react";
 import { useVisibilityChange } from "@uidotdev/usehooks";
 import { twJoin } from "tailwind-merge";
+import { Link, useRouteContext } from "@tanstack/react-router";
 
 import { EnvConfig } from "@/config";
 import { Document } from "@/models";
 import { secondsToMinuteSecondMillisecondString } from "@/utils";
-import { RouteContext, Routes } from "@/context/route";
-import { MicCheckContext } from "@/context/micCheck";
 import useDocumentNavigation, {
   NavigationControls,
 } from "./useDocumentNavigation";
@@ -74,11 +72,10 @@ const AutoStopReasons = {
 
 type RecitalBoxProps = {
   document: Document;
-  clearActiveDocument: () => void;
 };
 
-const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
-  const { setActiveRoute } = useContext(RouteContext);
+const RecitalBox = ({ document }: RecitalBoxProps) => {
+  const { mic } = useRouteContext({ strict: false });
   const [sessionStartError, setSessionStartError] = useState<Error | null>(
     null,
   );
@@ -86,7 +83,6 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
   const { activeParagraphIndex, activeSentenceIndex, activeSentence, move } =
     useDocumentNavigation(document);
   const activeSentenceElementRef = useRef<HTMLSpanElement>(null);
-  const { setMicCheckActive } = useContext(MicCheckContext);
 
   const [createNewSession, endSession] = useRecordingSession(document?.id);
   const {
@@ -157,12 +153,12 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
               <div className="text-sm font-bold md:text-lg">
                 מסמך טקסט{" "}
                 {!recording && (
-                  <a
+                  <Link
+                    to="/documents"
                     className="btn btn-link btn-sm text-primary"
-                    onClick={clearActiveDocument}
                   >
                     החלף
-                  </a>
+                  </Link>
                 )}
               </div>
               <div className="truncate text-sm">{document.title}</div>
@@ -171,12 +167,12 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
               <div className="text-sm font-bold md:text-lg">
                 סשן הקלטה{" "}
                 {!recording && (
-                  <a
+                  <Link
                     className="btn btn-link btn-sm text-primary"
-                    onClick={() => setActiveRoute(Routes.Sessions)}
+                    to="/sessions"
                   >
                     הקלטות
-                  </a>
+                  </Link>
                 )}
               </div>
               <div className="truncate text-sm">
@@ -191,7 +187,7 @@ const RecitalBox = ({ document, clearActiveDocument }: RecitalBoxProps) => {
           <div className="flex-shrink-0">
             <span
               className="btn btn-outline btn-sm sm:btn-xs"
-              onClick={() => setMicCheckActive(true)}
+              onClick={() => mic?.setMicCheckActive(true)}
             >
               בדיקה <MicIcon className="inline-block h-4 w-4" />
             </span>

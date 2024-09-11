@@ -1,13 +1,14 @@
+import { useContext } from "react";
 import GoogleLogin from "@/components/GoogleLogin";
-import type { GoogleLoginProps } from "@/hooks/useLogin";
 
+import useTrackPageView from "@/analytics/useTrackPageView";
 import ivritAiLogo from "../../assets/ivrit_ai_logo.webp";
+import { UserContext } from "@/context/user";
 
-interface Props {
-  googleLoginProps: GoogleLoginProps;
-}
+const Login = () => {
+  useTrackPageView("login");
+  const { googleLoginProps } = useContext(UserContext);
 
-const Login = ({ googleLoginProps }: Props) => {
   return (
     <div
       className="hero min-h-screen"
