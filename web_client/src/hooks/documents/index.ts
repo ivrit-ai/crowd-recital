@@ -56,7 +56,11 @@ const loadDocument = async (documentId: string) => {
       `Load Document ${documentId} Failed.`,
     );
 
-    throw new Error(errorMessage);
+    const error = new Error(errorMessage);
+    if (response.status === 404) {
+      error.name = "NotFoundError";
+    }
+    throw error;
   } else {
     const documentInfo: TextDocumentResponse = await response.json();
     return documentInfo;

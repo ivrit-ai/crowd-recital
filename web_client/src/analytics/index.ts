@@ -24,6 +24,11 @@ export async function reportResponseError(
   try {
     const errorDetails = await response.json();
     errorMessage = errorDetails.detail;
+    // If the details are an array - take from the first entry
+    if (Array.isArray(errorMessage)) {
+      // This is assumed to be part of the API validation - use msg field
+      errorMessage = errorMessage[0]?.msg;
+    }
   } catch (error) {
     console.error("Failed to parse error details:", error);
   }
