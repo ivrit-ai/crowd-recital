@@ -77,7 +77,7 @@ type RecitalBoxProps = {
 };
 
 const RecitalBox = ({ document }: RecitalBoxProps) => {
-  const { mic } = useRouteContext({ from: "__root__" });
+  const { mic } = useRouteContext({ strict: false });
   const [sessionStartError, setSessionStartError] = useState<Error | null>(
     null,
   );

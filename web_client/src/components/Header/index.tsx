@@ -29,7 +29,7 @@ const HeaderMenuLink = ({ children, ...linkProps }: HeaderMenuLinkProps) => {
 };
 
 const Header = () => {
-  const { mic } = useRouteContext({ from: "__root__" });
+  const { mic } = useRouteContext({ strict: false });
   const { auth, logout } = useContext(UserContext);
   const [imgError, setImgError] = useState(false);
 
