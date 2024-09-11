@@ -156,6 +156,49 @@ So that the internal container run uvicorn will be able to see the access reques
 
 - Don't forget to make sure your proxy also auto starts if it's installed on the host.
 
+### Using a reverse proxy (like nginx)
+
+The web app uses local client routing.
+
+The server should respond to any path which does NOT start with `/api` or `/env` with the `index.html` file at the `web_client_dist/assets` folder.
+
+The assets folder is served from the python web server root in case you do not want to serve the static files directly from the reverse proxy server.
+
+Regardless - consider a setup something like this (nginx in this case) to respect the client side routing:
+
+```
+  location ~ ^/(api|env) {
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_redirect off;
+    proxy_buffering off;
+    proxy_pass http://uvicorn;
+  }
+
+  location /assets {
+    # path for static files
+    root /path/to/app/web_client_dist;
+  }
+
+  location / {
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_redirect off;
+    proxy_buffering off;
+    proxy_pass http://uvicorn/;
+    rewrite ^.*$ / break;
+  }
+```
+(This goes under the "server" block in the nginx site config)
+
+This configuration will ensure the app is always served on those paths, and the client JS will take over and render the routes as expected.
+
 ## Operations
 
 ### Speaker Users
