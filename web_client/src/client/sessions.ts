@@ -1,7 +1,6 @@
 import type {
   PagedResponse,
   PagingParams,
-  SortConfiguration,
   SortConfigurationParams,
 } from "./types/common";
 import type {
@@ -10,6 +9,7 @@ import type {
   RecitalPreviewType,
 } from "@/types/session";
 import { reportResponseError } from "@/analytics";
+import { setSortAndPagingQueryParams } from "@/client/common";
 
 export const alterSessionBaseUrl = "/api/sessions";
 
@@ -23,24 +23,10 @@ export async function getSessions(
   queryParams: PagingParams & SessionFilters & SortConfigurationParams,
 ): Promise<RecitalSessionsResponse> {
   const requestQueryParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(queryParams)) {
-    if (value !== undefined) {
-      if (key === "sort") {
-        const sortValue = value as SortConfiguration;
-        if (
-          !!sortValue.sortColumns?.length &&
-          sortValue.sortOrders?.length == sortValue.sortColumns?.length
-        ) {
-          for (let i = 0; i < sortValue.sortColumns.length; i++) {
-            requestQueryParams.append(`sortColumns`, sortValue.sortColumns[i]);
-            requestQueryParams.append(`sortOrders`, sortValue.sortOrders[i]);
-          }
-        }
-      } else {
-        requestQueryParams.append(key, value.toString());
-      }
-    }
+  if (queryParams.status) {
+    requestQueryParams.append("status", queryParams.status);
   }
+  setSortAndPagingQueryParams(queryParams, requestQueryParams);
 
   const searchQuery = requestQueryParams
     ? `?${requestQueryParams.toString()}`

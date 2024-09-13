@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouteContext } from "@tanstack/react-router";
 
 import type { TextDocumentResponse } from "@/models";
 import { getErrorMessage } from "@/utils";
@@ -20,13 +20,22 @@ const DocumentInput = () => {
   >(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  const { auth } = useRouteContext({ strict: false });
 
   const { createWikiArticleDocument, loadUserDocuments } = useDocuments();
 
   useEffect(() => {
     setProcessing(true);
-    loadUserDocuments().then((documents) => {
-      setExistingDocuments(documents);
+    loadUserDocuments({
+      page: 1,
+      itemsPerPage: 100,
+      sort: {
+        sortColumns: ["created_at"],
+        sortOrders: ["desc"],
+      },
+      owner: auth?.user?.id,
+    }).then((docsPagedResponse) => {
+      setExistingDocuments(docsPagedResponse.data);
       setProcessing(false);
     });
   }, [setProcessing, loadUserDocuments, setExistingDocuments]);
@@ -71,6 +80,12 @@ const DocumentInput = () => {
   return (
     <div className="container mx-auto max-w-4xl self-stretch px-4 py-12">
       <h1 className="pb-6 text-2xl">בחירת טקסט להקראה</h1>
+
+      {!existingDocuments && processing && (
+        <div className="my-11 text-center">
+          <span className="loading loading-infinity w-24"></span>
+        </div>
+      )}
 
       {existingDocuments && (
         <Collapse title="מסמך קיים" defaultOpen={existingDocuments.length > 0}>
