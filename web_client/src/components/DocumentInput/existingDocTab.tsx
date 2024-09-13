@@ -61,6 +61,16 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
     }
   }, [setNoDocsFound, isPending, totalItems]);
 
+  const refreshButton = (
+    <button className="btn btn-xs m-2 sm:btn-sm" onClick={() => refetch()}>
+      {isFetching ? (
+        <span className="loading loading-infinity loading-sm" />
+      ) : (
+        <RefreshCwIcon className="h-4 w-4" />
+      )}
+    </button>
+  );
+
   let tableBody;
   if (!isPending) {
     if (!docsOnPage?.length) {
@@ -89,13 +99,13 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
     tableBody = [1, 2, 3, 4].map((v) => (
       <tr key={v}>
         <td>
-          <div className="skeleton w-52 py-3"></div>
+          <div className="skeleton w-24 py-3 sm:w-52"></div>
         </td>
         <td className="hidden sm:table-cell">
           <div className="skeleton w-40 py-3"></div>
         </td>
         <td>
-          <div className="skeleton w-40 py-3"></div>
+          <div className="skeleton w-32 py-3 sm:w-40"></div>
         </td>
       </tr>
     ));
@@ -105,13 +115,7 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
     <>
       <div className="mx-4 flex flex-row items-center justify-between">
         <label className="label">בחר מסמך קיים</label>
-        <button className="btn btn-xs m-2 sm:btn-sm" onClick={() => refetch()}>
-          {isFetching ? (
-            <span className="loading loading-infinity loading-sm" />
-          ) : (
-            <RefreshCwIcon className="h-4 w-4" />
-          )}
-        </button>
+        {refreshButton}
       </div>
       <div className="mx-4 mb-4 flex flex-row items-center justify-between">
         <label className="label cursor-pointer">
@@ -148,6 +152,13 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
         totalPages={totalPages}
         setPage={setPage}
       />
+      {isError && (
+        <div>
+          <div className="alert alert-error text-sm">
+            ארעה שגיאה בעת טעינת הטקסטים
+          </div>
+        </div>
+      )}
     </>
   );
 
@@ -159,9 +170,10 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
   );
 
   const errorPlaceholder = (
-    <div className="text-center">
+    <div className="text-center text-error">
       <h2 className="my-10 text-center text-lg">ארעה שגיאה</h2>
       <p>נסה מחדש - לא הצלחנו לטעון טקסטים</p>
+      {refreshButton}
     </div>
   );
 
