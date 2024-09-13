@@ -1,6 +1,21 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
-import { getDocument } from "../documents";
+import { SortConfiguration } from "../types/common";
+import { getDocument, loadDocuments } from "../documents";
+
+export function getDocumentsOptions(
+  page: number,
+  itemsPerPage: number,
+  sort?: SortConfiguration,
+  owner?: string,
+) {
+  return queryOptions({
+    queryKey: ["documents", page, itemsPerPage, owner, sort],
+    queryFn: () => loadDocuments({ page, itemsPerPage, owner, sort }),
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    placeholderData: keepPreviousData,
+  });
+}
 
 export function getDocumentOptions(id: string) {
   return queryOptions({

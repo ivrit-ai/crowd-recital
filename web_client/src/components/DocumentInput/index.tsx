@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useRouteContext } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 
-import type { TextDocumentResponse } from "@/models";
 import { getErrorMessage } from "@/utils";
 import { useDocuments } from "@/hooks/documents";
 import Collapse from "@/components/Collapse";
@@ -9,66 +9,32 @@ import WikiArticleUpload from "./wikiUploadTab";
 import SelectExistingDocument from "./existingDocTab";
 import type { TabContentProps } from "./types";
 
-type uploaderThunk<T extends unknown[] = unknown[]> = (
-  ...args: T
-) => Promise<string>;
-
 const DocumentInput = () => {
   const navigate = useNavigate({ from: "/documents" });
-  const [existingDocuments, setExistingDocuments] = useState<
-    TextDocumentResponse[] | null
-  >(null);
+  const [noDocsFound, setNoDocsFound] = useState<boolean | null>(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
-  const { auth } = useRouteContext({ strict: false });
+  const queryClient = useQueryClient();
 
-  const { createWikiArticleDocument, loadUserDocuments } = useDocuments();
+  const { createWikiArticleDocument } = useDocuments();
 
-  useEffect(() => {
+  const uploadWikiDocument = useCallback(async (wikiArticleUrl: string) => {
     setProcessing(true);
-    loadUserDocuments({
-      page: 1,
-      itemsPerPage: 100,
-      sort: {
-        sortColumns: ["created_at"],
-        sortOrders: ["desc"],
-      },
-      owner: auth?.user?.id,
-    }).then((docsPagedResponse) => {
-      setExistingDocuments(docsPagedResponse.data);
-      setProcessing(false);
-    });
-  }, [setProcessing, loadUserDocuments, setExistingDocuments]);
-
-  const uploadWrapper = <T extends unknown[]>(uploader: uploaderThunk<T>) => {
-    return async (...args: T) => {
-      setProcessing(true);
-      try {
-        const docId = await uploader(...args);
-        navigate({ to: "/recite/$docId", params: { docId } });
-        setError("");
-      } catch (error) {
-        setError(`ארעה שגיאה - ${getErrorMessage(error)}`);
-        console.error(error);
-      } finally {
-        setProcessing(false);
-      }
-    };
-  };
-
-  const loadNewDocumentFromWikiArticle = uploadWrapper(
-    async (wikiArticleUrl: string) => {
+    try {
       const decodedUrl = decodeURIComponent(wikiArticleUrl);
       const { id } = await createWikiArticleDocument(decodedUrl);
-      return id;
-    },
-  );
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      navigate({ to: "/recite/$docId", params: { docId: id } });
+      setError("");
 
-  const loadExistingDocumentById = uploadWrapper(
-    async (selectedDocumentId: string) => {
-      return selectedDocumentId;
-    },
-  );
+      return id;
+    } catch (error) {
+      setError(`ארעה שגיאה - ${getErrorMessage(error)}`);
+      console.error(error);
+    } finally {
+      setProcessing(false);
+    }
+  }, []);
 
   const tabContentProps: TabContentProps = {
     error,
@@ -81,30 +47,24 @@ const DocumentInput = () => {
     <div className="container mx-auto max-w-4xl self-stretch px-4 py-12">
       <h1 className="pb-6 text-2xl">בחירת טקסט להקראה</h1>
 
-      {!existingDocuments && processing && (
+      {noDocsFound === null && (
         <div className="my-11 text-center">
           <span className="loading loading-infinity w-24"></span>
         </div>
       )}
 
-      {existingDocuments && (
-        <Collapse title="מסמך קיים" defaultOpen={existingDocuments.length > 0}>
-          <SelectExistingDocument
-            {...tabContentProps}
-            existingDocuments={existingDocuments}
-            loadExistingDocumentById={loadExistingDocumentById}
-          />
-        </Collapse>
-      )}
+      <Collapse title="מסמך קיים" defaultOpen={true}>
+        <SelectExistingDocument
+          {...tabContentProps}
+          setNoDocsFound={setNoDocsFound}
+        />
+      </Collapse>
 
-      {existingDocuments && (
-        <Collapse
-          title="טען מאמר ויקיפדיה"
-          defaultOpen={existingDocuments.length == 0}
-        >
+      {noDocsFound !== null && (
+        <Collapse title="טען מאמר ויקיפדיה" defaultOpen={noDocsFound}>
           <WikiArticleUpload
             {...tabContentProps}
-            loadNewDocumentFromWikiArticle={loadNewDocumentFromWikiArticle}
+            loadNewDocumentFromWikiArticle={uploadWikiDocument}
           />
         </Collapse>
       )}
