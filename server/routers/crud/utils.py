@@ -3,6 +3,7 @@ from typing import Annotated, Any, Callable, Optional
 
 from fastapi import Depends, Query
 from fastcrud import FastCRUD, FilterConfig
+from pydantic import create_model
 
 from models.user import User
 from routers.dependencies.analytics import Tracker
@@ -104,6 +105,18 @@ def _apply_model_pk(**pkeys: dict[str, type]):
     return wrapper
 
 
+def _extend_schema_to_select(model, schema_to_select, extra_columns):
+    if extra_columns and schema_to_select:
+        columns_to_select = {}
+        for field in model.model_fields.keys():
+            if field in extra_columns:
+                columns_to_select[field] = (model.model_fields[field].annotation, ...)
+
+        return create_model("ActualSelect", __base__=schema_to_select, **columns_to_select)
+
+    return schema_to_select
+
+
 def gen_get_single(
     crud: FastCRUD,
     get_async_session,
@@ -115,10 +128,15 @@ def gen_get_single(
     async def endpoint(
         track_event: Tracker,
         speaker_user: Annotated[User, Depends(get_speaker_user)],
+        extra_columns: Annotated[list[str] | None, Query(alias="extraColumns")] = None,
         db: any = Depends(get_async_session),
         **pkeys,
     ):
-        common_read_params = dict(db=db, schema_to_select=schema_to_select, one_or_none=True)
+        common_read_params = dict(
+            db=db,
+            schema_to_select=_extend_schema_to_select(crud.model, schema_to_select, extra_columns),
+            one_or_none=True,
+        )
 
         user_filter = dict()
         if user_id_field_name:
@@ -146,11 +164,12 @@ def gen_get_multi(
         items_per_page: Optional[int] = Query(None, alias="itemsPerPage", description="Number of items per page"),
         sort_columns: Annotated[list[str] | None, Query(alias="sortColumns")] = None,
         sort_orders: Annotated[list[str] | None, Query(alias="sortOrders")] = None,
+        extra_columns: Annotated[list[str] | None, Query(alias="extraColumns")] = None,
         filters: dict = Depends(dynamic_filters),
     ):
         common_read_params = dict(
             db=db,
-            schema_to_select=schema_to_select,
+            schema_to_select=_extend_schema_to_select(crud.model, schema_to_select, extra_columns),
             sort_columns=sort_columns,
             sort_orders=sort_orders,
         )

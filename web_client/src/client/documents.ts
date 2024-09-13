@@ -1,9 +1,14 @@
+import type {
+  PagedResponse,
+  PagingParams,
+  SortConfigurationParams,
+} from "./types/common";
 import { APIError, APINotFoundError } from "./types/common";
 import { reportResponseError } from "@/analytics";
 import { TextDocumentResponse, Document } from "@/models";
+import { setSortAndPagingQueryParams } from "@/client/common";
 
-const createDocumentUrl = "/api/create_document_from_source";
-const loadDocumentsUrl = "/api/documents";
+const documentsApiBase = "/api/documents";
 
 export enum SourceType {
   WikiArticle = "wiki-article",
@@ -13,7 +18,7 @@ export const createDocument = async (
   source: string,
   sourceType: SourceType,
 ) => {
-  const response = await fetch(`${createDocumentUrl}`, {
+  const response = await fetch(`${documentsApiBase}/from_source`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,7 +48,7 @@ export const createDocument = async (
 };
 
 export const loadTextDocument = async (documentId: string) => {
-  const response = await fetch(`${loadDocumentsUrl}/${documentId}`, {
+  const response = await fetch(`${documentsApiBase}/${documentId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -74,8 +79,30 @@ export const getDocument = async (documentId: string) => {
   return Document.fromTextDocument(textDoc);
 };
 
-export const loadDocuments = async () => {
-  const response = await fetch(`${loadDocumentsUrl}`, {
+export type DocumentFilters = {
+  owner?: string;
+};
+
+export type LoadDocumentsQueryParams = PagingParams &
+  DocumentFilters &
+  SortConfigurationParams;
+
+type TextDocumentsResponse = PagedResponse<TextDocumentResponse>;
+
+export async function loadDocuments(
+  queryParams: LoadDocumentsQueryParams,
+): Promise<TextDocumentsResponse> {
+  const requestQueryParams = new URLSearchParams();
+  if (queryParams.owner) {
+    requestQueryParams.append("owner_id", queryParams.owner);
+  }
+  setSortAndPagingQueryParams(queryParams, requestQueryParams);
+
+  const searchQuery = requestQueryParams
+    ? `?${requestQueryParams.toString()}`
+    : "";
+
+  const response = await fetch(`${documentsApiBase}${searchQuery}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -92,7 +119,6 @@ export const loadDocuments = async () => {
 
     throw new Error(errorMessage);
   } else {
-    const documentsInfo: TextDocumentResponse[] = await response.json();
-    return documentsInfo;
+    return response.json();
   }
-};
+}

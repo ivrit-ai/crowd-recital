@@ -208,7 +208,7 @@ async def get_session_preview(
 # Crud Generated API
 
 session_crud = FastCRUD(RecitalSession)
-session_filer_config = FilterConfig(status=None)
+session_filter_config = FilterConfig(status=None)
 
 router.add_api_route(
     "/{id}",
@@ -224,13 +224,12 @@ router.add_api_route(
     gen_get_multi(
         session_crud,
         get_async_session,
-        create_dynamic_filters_dep(session_filer_config),
+        create_dynamic_filters_dep(session_filter_config),
         join_configs=[
             JoinConfig(
                 model=TextDocument,
                 join_on=TextDocument.id == RecitalSession.document_id,
                 join_prefix="document_",
-                # schema_to_select=TitleOnlyTextDocument,
                 schema_to_select=SessionTextDocument,
                 join_type="left",
             )

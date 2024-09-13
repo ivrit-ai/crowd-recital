@@ -1,6 +1,8 @@
 import uuid
-from typing import Optional
+from typing import ClassVar, Optional
 
+from pydantic import BaseModel
+from pydantic.json_schema import SkipJsonSchema
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin
@@ -26,5 +28,16 @@ class TextDocument(TextDocumentBase, table=True):
     recital_sessions: list["RecitalSession"] = Relationship(back_populates="document")
 
 
-class TextDocumentResponse(TextDocumentBase):
+class TextDocumentRead(TextDocumentBase):
     pass
+
+
+class TextDocumentListRead(DateFieldsMixin, BaseModel):
+    id: uuid.UUID
+    source: ClassVar[str]
+    source_type: str
+    title: Optional[str]
+
+
+class TextDocumentOwner(BaseModel):
+    name: str
