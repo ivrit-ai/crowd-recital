@@ -24,6 +24,7 @@ import { useRecordingSession } from "@/hooks/useRecordingSession";
 import SessionInfoBox from "./SessionInfoBox";
 
 const useAutoSessionStop = (
+  recording: boolean,
   finalizeSession: () => Promise<void>,
   audioUploaderError: Error | null,
   textUploaderError: Error | null,
@@ -36,18 +37,20 @@ const useAutoSessionStop = (
     useState<React.ReactElement | null>(null);
   const documentVisible = useVisibilityChange();
   useEffect(() => {
-    let autoStoppedForReason = null;
-    if (audioUploaderError || textUploaderError) {
-      autoStoppedForReason = AutoStopReasons.uploadErrorReason;
-    } else if (!documentVisible) {
-      autoStoppedForReason = AutoStopReasons.documentInvisible;
-    }
+    if (recording) {
+      let autoStoppedForReason = null;
+      if (audioUploaderError || textUploaderError) {
+        autoStoppedForReason = AutoStopReasons.uploadErrorReason;
+      } else if (!documentVisible) {
+        autoStoppedForReason = AutoStopReasons.documentInvisible;
+      }
 
-    if (autoStoppedForReason) {
-      finalizeSessionCbRef.current();
-      setAutoStopReason(autoStoppedForReason);
+      if (autoStoppedForReason) {
+        finalizeSessionCbRef.current();
+        setAutoStopReason(autoStoppedForReason);
+      }
     }
-  }, [audioUploaderError, textUploaderError, documentVisible]);
+  }, [recording, audioUploaderError, textUploaderError, documentVisible]);
 
   return { autoStopReason };
 };
@@ -137,6 +140,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   }, [activeParagraphIndex, activeSentenceIndex]);
 
   const { autoStopReason } = useAutoSessionStop(
+    recording,
     finalizeSession,
     audioUploaderError,
     textUploaderError,
