@@ -114,8 +114,7 @@ class AggregationEngine:
         first_audio_segment_filename = audio_segments_filenames[0]
 
         # Get the base file name that will represent concatenated segments data
-        concatenated_filename = re.sub(r"\.seg\.*", "", first_audio_segment_filename)
-        # concatenated_filename = str(first_audio_segment_filename).replace(".seg.0", "")
+        concatenated_filename = re.sub(r"\.seg\..*", "", first_audio_segment_filename)
 
         # Concat all segments into a single file
         with open(Path(self.data_folder, concatenated_filename), "wb") as concat_file:
