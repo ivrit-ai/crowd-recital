@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HeadphonesIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { twJoin } from "tailwind-merge";
 import { Link } from "@tanstack/react-router";
 
@@ -9,13 +9,13 @@ import SortCol from "@/components/DataTable/SortCol";
 import { SortOrder } from "@/client/types/common";
 import { useSortState } from "@/components/DataTable/useSortState";
 import { getSessionsOptions } from "@/client/queries/sessions";
-import { markSessionForDeletion } from "@/client/sessions";
 import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import WholePageLoading from "@/components/WholePageLoading";
 import StatusDisplay from "@/components/SessionStatusDisplay";
 import TablePager from "@/components/TablePager";
 import SessionPreview from "@/components/SessionPreview";
-import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import SessionDelete from "@/components/SessionDelete";
+import useSessionDelete from "@/components/SessionDelete/useSessionDelete";
 
 type RecordNowCtaProps = {
   ctaText: string;
@@ -49,39 +49,6 @@ enum SortColumnsEnum {
   CREATED_AT = "created_at",
   UPDATED_AT = "updated_at",
 }
-
-const useDeleteConfirmationState = () => {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: markSessionForDeletion,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["sessions"] }),
-  });
-  const [toDeleteSessionId, setToDeleteSessionId] = useState<string>("");
-  const deleteConfirmRef = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    if (toDeleteSessionId) {
-      deleteConfirmRef.current?.showModal();
-    }
-    return () => {
-      deleteConfirmRef.current?.close();
-    };
-  }, [toDeleteSessionId]);
-  const onDeleteConfirm = useCallback(async () => {
-    if (toDeleteSessionId) {
-      await mutation.mutateAsync(toDeleteSessionId);
-      setToDeleteSessionId("");
-    }
-  }, [toDeleteSessionId]);
-  const onDeleteCancel = useCallback(() => setToDeleteSessionId(""), []);
-
-  return [
-    deleteConfirmRef,
-    setToDeleteSessionId,
-    onDeleteConfirm,
-    onDeleteCancel,
-    mutation.isPending,
-  ] as const;
-};
 
 const isSessionExpectedToBeUpdated = (session: RecitalSessionType) =>
   // Non - final statuses will update soon
@@ -137,10 +104,10 @@ const Sessions = () => {
   const [
     deleteConfirmRef,
     setToDeleteSessionId,
-    onDeleteConfirm,
-    onDeleteCancel,
+    onDelete,
+    onCancel,
     deletionPending,
-  ] = useDeleteConfirmationState();
+  ] = useSessionDelete();
 
   if (isPending) {
     return <WholePageLoading />;
@@ -242,11 +209,11 @@ const Sessions = () => {
         ref={sessionPreviewRef}
         onClose={onClose}
       />
-      <ConfirmDeleteModal
+      <SessionDelete
         ref={deleteConfirmRef}
         progress={deletionPending}
-        onConfirm={onDeleteConfirm}
-        onClose={onDeleteCancel}
+        onDelete={onDelete}
+        onCancel={onCancel}
       />
     </div>
   );
