@@ -197,7 +197,7 @@ class RecitalManager:
             # This will try to ensure no new content is added for this session moving forward
             self.recitals_ra.upsert(recital_session)
 
-            if original_status in [SessionStatus.ACTIVE]:
+            if original_status in [SessionStatus.ACTIVE, SessionStatus.ENDED]:
                 # delete audio segment files which may have been uploaded (but not yet aggregated)
                 self.aggregation_engine.delete_session_audio(session_id)
 

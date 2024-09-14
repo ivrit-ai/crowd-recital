@@ -99,15 +99,16 @@ def discard_sessions(
     recital_manager.discard_disavowed_sessions()
 
 
-@sessions_router.post("/aggregate_and_upload")
+@sessions_router.post("/finalize")
 @inject
 def aggregate_and_upload_sessions(
     track_event: Tracker,
     recital_manager: RecitalManager = Depends(Provide[Container.recital_manager]),
 ) -> None:
-    track_event("Session Aggregation & Upload Invoked")
+    track_event("Session Finalization Triggered Invoked")
     recital_manager.aggregate_ended_sessions()
     recital_manager.upload_aggregated_sessions()
+    recital_manager.discard_disavowed_sessions()
 
 
 router.include_router(user_router)
