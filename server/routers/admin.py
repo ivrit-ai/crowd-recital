@@ -89,6 +89,16 @@ def upload_sessions(
     recital_manager.upload_aggregated_sessions()
 
 
+@sessions_router.post("/discard")
+@inject
+def discard_sessions(
+    track_event: Tracker,
+    recital_manager: RecitalManager = Depends(Provide[Container.recital_manager]),
+) -> None:
+    track_event("Session Discard Invoked")
+    recital_manager.discard_disavowed_sessions()
+
+
 @sessions_router.post("/aggregate_and_upload")
 @inject
 def aggregate_and_upload_sessions(

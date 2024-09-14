@@ -21,6 +21,7 @@ class SessionStatus(str, Enum):
 class RecitalSessionBase(SQLModel, DateFieldsMixin):
     id: str = Field(default=None, primary_key=True)
     status: str = Field(index=True, default=SessionStatus.ACTIVE)
+    disavowed: Optional[bool] = Field(default=False, index=True, nullable=False)
 
 
 class RecitalSession(RecitalSessionBase, SQLModel, table=True):

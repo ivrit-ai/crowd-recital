@@ -40,14 +40,17 @@ class RecitalsRA:
             results = session.exec(
                 select(RecitalSession)
                 .filter(
-                    or_(
-                        # Either it was marked as ended
-                        RecitalSession.status == SessionStatus.ENDED,
-                        # Or seemingly abandoned - but may have some content to use
-                        and_(
-                            RecitalSession.status == SessionStatus.ACTIVE,
-                            RecitalSession.created_at < cutoff_consider_active_as_ended,
+                    and_(
+                        or_(
+                            # Either it was marked as ended
+                            RecitalSession.status == SessionStatus.ENDED,
+                            # Or seemingly abandoned - but may have some content to use
+                            and_(
+                                RecitalSession.status == SessionStatus.ACTIVE,
+                                RecitalSession.created_at < cutoff_consider_active_as_ended,
+                            ),
                         ),
+                        RecitalSession.disavowed != True,
                     )
                 )
                 .limit(limit)
@@ -59,7 +62,24 @@ class RecitalsRA:
             results = session.exec(
                 select(RecitalSession)
                 .filter(
-                    RecitalSession.status == SessionStatus.AGGREGATED,
+                    and_(
+                        RecitalSession.status == SessionStatus.AGGREGATED,
+                        RecitalSession.disavowed != True,
+                    )
+                )
+                .limit(limit)
+            )
+            return results.all()
+
+    def get_disavowed_pending_sessions(self, limit: int = 100) -> Iterator[RecitalSession]:
+        with self.session_factory() as session:
+            results = session.exec(
+                select(RecitalSession)
+                .filter(
+                    and_(
+                        RecitalSession.status != SessionStatus.DISCARDED,
+                        RecitalSession.disavowed == True,
+                    )
                 )
                 .limit(limit)
             )
