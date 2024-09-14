@@ -14,6 +14,7 @@ type RecitalSessionType = {
   updated_at: string;
   document: DocumentType;
   status: RecitalSessionStatus;
+  disavowed: boolean;
 };
 
 class RecitalSession implements RecitalSessionType {
@@ -22,12 +23,14 @@ class RecitalSession implements RecitalSessionType {
   updated_at: string;
   document: DocumentType;
   status: RecitalSessionStatus;
+  disavowed: boolean;
   constructor(session: RecitalSessionType) {
     this.id = session.id;
     this.created_at = session.created_at;
     this.updated_at = session.updated_at;
     this.document = session.document;
     this.status = session.status;
+    this.disavowed = session.disavowed;
   }
 }
 
