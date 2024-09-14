@@ -22,6 +22,7 @@ import { useRecordingUploader } from "@/hooks/recodingUploader";
 import { useTextSegmentUploader } from "@/hooks/textSegmentUploader";
 import { useRecordingSession } from "@/hooks/useRecordingSession";
 import SessionInfoBox from "./SessionInfoBox";
+import SessionFinalizeModal from "./SessionFinalizeModal";
 
 const useAutoSessionStop = (
   recording: boolean,
@@ -112,10 +113,12 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
     });
   }, [activeSentence, uploadTextSegment]);
 
+  const [awaitingSessionFinalization, setAwaitingSessionFinalization] =
+    useState(false);
   const finalizeSession = useCallback(async () => {
     await stopRecording();
     await uploadActiveSentence();
-    await endSession(sessionId);
+    setAwaitingSessionFinalization(true);
   }, [stopRecording, uploadActiveSentence, endSession, sessionId]);
 
   const onControl = useControlCallback(
@@ -310,6 +313,12 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
           </div>
         )}
       </div>
+      <SessionFinalizeModal
+        sessionId={sessionId}
+        endSession={endSession}
+        awaitingFinalization={awaitingSessionFinalization}
+        setAwaitingFinalization={setAwaitingSessionFinalization}
+      />
     </div>
   );
 };

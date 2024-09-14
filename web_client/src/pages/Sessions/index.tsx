@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { HeadphonesIcon, RefreshCwIcon } from "lucide-react";
+import { HeadphonesIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { twJoin } from "tailwind-merge";
 import { Link } from "@tanstack/react-router";
@@ -9,11 +9,13 @@ import SortCol from "@/components/DataTable/SortCol";
 import { SortOrder } from "@/client/types/common";
 import { useSortState } from "@/components/DataTable/useSortState";
 import { getSessionsOptions } from "@/client/queries/sessions";
-import { RecitalSessionStatus } from "@/types/session";
+import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import WholePageLoading from "@/components/WholePageLoading";
 import StatusDisplay from "@/components/SessionStatusDisplay";
 import TablePager from "@/components/TablePager";
 import SessionPreview from "@/components/SessionPreview";
+import SessionDelete from "@/components/SessionDelete";
+import useSessionDelete from "@/components/SessionDelete/useSessionDelete";
 
 type RecordNowCtaProps = {
   ctaText: string;
@@ -48,6 +50,14 @@ enum SortColumnsEnum {
   UPDATED_AT = "updated_at",
 }
 
+const isSessionExpectedToBeUpdated = (session: RecitalSessionType) =>
+  // Non - final statuses will update soon
+  ![RecitalSessionStatus.Uploaded, RecitalSessionStatus.Discarded].includes(
+    session.status,
+  ) ||
+  // Sessions to delete which are not yet deleted would udpate soon
+  (session.disavowed && session.status !== RecitalSessionStatus.Discarded);
+
 const Sessions = () => {
   useTrackPageView("sessions");
 
@@ -63,7 +73,14 @@ const Sessions = () => {
         sortColumns: [sortState.sortCol],
         sortOrders: [sortState.sortOrder],
       }),
-      refetchInterval: 15000,
+      refetchInterval: (query) => {
+        const data = query.state.data;
+        const intervalPeriod = data?.data.some(isSessionExpectedToBeUpdated)
+          ? 15000
+          : 60000;
+
+        return intervalPeriod;
+      },
       refetchOnMount: "always",
     });
 
@@ -82,6 +99,15 @@ const Sessions = () => {
     };
   }, [previewedSessionId]);
   const onClose = useCallback(() => setPreviewedSessionId(""), []);
+
+  // Sessions Delete Confirm State
+  const [
+    deleteConfirmRef,
+    setToDeleteSessionId,
+    onDelete,
+    onCancel,
+    deletionPending,
+  ] = useSessionDelete();
 
   if (isPending) {
     return <WholePageLoading />;
@@ -138,20 +164,28 @@ const Sessions = () => {
               >
                 <td className="text-xs sm:text-sm">{rs.id}</td>
                 <td>
-                  <StatusDisplay status={rs.status} />
+                  <StatusDisplay status={rs.status} disavowed={rs.disavowed} />
                 </td>
                 <td>
-                  {rs.status == RecitalSessionStatus.Uploaded ? (
-                    <button
-                      onClick={() => setPreviewedSessionId(rs.id)}
-                      className="btn btn-outline btn-sm sm:btn-xs sm:gap-2"
-                    >
-                      <div className="hidden sm:block">השמע</div>
-                      <HeadphonesIcon className="h-4 w-4 sm:h-4 sm:w-4" />
-                    </button>
-                  ) : (
-                    <div className="min-w-24" />
-                  )}
+                  <div className="flex min-w-24 items-center justify-center gap-2">
+                    {rs.status == RecitalSessionStatus.Uploaded && (
+                      <button
+                        onClick={() => setPreviewedSessionId(rs.id)}
+                        className="btn btn-outline btn-sm sm:btn-xs sm:gap-2"
+                      >
+                        <div className="hidden sm:block">השמע</div>
+                        <HeadphonesIcon className="h-4 w-4 sm:h-4 sm:w-4" />
+                      </button>
+                    )}
+                    {!rs.disavowed && (
+                      <button
+                        onClick={() => setToDeleteSessionId(rs.id)}
+                        className="btn btn-ghost btn-sm text-error sm:btn-xs sm:gap-2"
+                      >
+                        <TrashIcon className="h-4 w-4 sm:h-4 sm:w-4" />
+                      </button>
+                    )}
+                  </div>
                 </td>
                 <td>{new Date(rs.created_at).toLocaleString()}</td>
                 <td>{new Date(rs.updated_at).toLocaleString()}</td>
@@ -174,6 +208,12 @@ const Sessions = () => {
         id={previewedSessionId}
         ref={sessionPreviewRef}
         onClose={onClose}
+      />
+      <SessionDelete
+        ref={deleteConfirmRef}
+        progress={deletionPending}
+        onDelete={onDelete}
+        onCancel={onCancel}
       />
     </div>
   );

@@ -10,6 +10,7 @@ from errors import MissingSessionError
 from models.recital_session import SessionStatus
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
+from utility.analytics.posthog import ConfiguredPosthog
 from utility.scheduler import JobScheduler
 
 
@@ -19,6 +20,7 @@ class RecitalManager:
         session_finalization_job_disabled: bool,
         session_finalization_job_interval: int,
         disable_s3_upload: bool,
+        posthog: ConfiguredPosthog,
         job_scheduler: JobScheduler,
         recitals_ra: RecitalsRA,
         recitals_content_ra: RecitalsContentRA,
@@ -28,6 +30,7 @@ class RecitalManager:
         self.session_finalization_job_disabled = session_finalization_job_disabled
         self.session_finalization_job_interval = session_finalization_job_interval
         self.disable_s3_upload = disable_s3_upload
+        self.posthog = posthog
         self.job_scheduler = job_scheduler
         self.session_finalization_job_id = "session_finalization_job"
         self.recitals_ra = recitals_ra
@@ -56,12 +59,13 @@ class RecitalManager:
 
         self.aggregate_ended_sessions()
         self.upload_aggregated_sessions()
+        self.discard_disavowed_sessions()
 
     def aggregate_ended_sessions(self) -> None:
         ended_sessions = self.recitals_ra.get_ended_sessions()
 
         if len(ended_sessions) == 0:
-            print("No ended sessions found")
+            return
 
         for ended_session in ended_sessions:
             session_id = ended_session.id
@@ -78,8 +82,8 @@ class RecitalManager:
                     recital_session.text_filename = text_filename
                     self.recitals_ra.upsert(recital_session)
                 else:
-                    print(f"No content found for session {session_id} - discarding")
-                    recital_session.status = SessionStatus.DISCARDED
+                    print(f"No content found for session {session_id} - disavowing")
+                    recital_session.disavowed = True
                     self.recitals_ra.upsert(recital_session)
                     continue
 
@@ -87,8 +91,8 @@ class RecitalManager:
                 if not recital_session.source_audio_filename:
                     source_audio_filename = self.aggregation_engine.aggregate_session_audio(recital_session.id)
                     if not source_audio_filename:
-                        print(f"No audio found for session {session_id} - discarding")
-                        recital_session.status = SessionStatus.DISCARDED
+                        print(f"No audio found for session {session_id} - disavowing")
+                        recital_session.disavowed = True
                         self.recitals_ra.upsert(recital_session)
                         continue
 
@@ -106,8 +110,15 @@ class RecitalManager:
                         recital_session.main_audio_filename = main_audio_filename
                         recital_session.status = SessionStatus.AGGREGATED  # done aggregating
                     else:
-                        print(f"Could not transcode audio for session {session_id} - discarding")
-                        recital_session.status = SessionStatus.DISCARDED
+                        print(f"Could not transcode audio for session {session_id} - skipping")
+                        self.posthog.capture(
+                            "server",
+                            "Session Aggregation Transcode Failed",
+                            {
+                                "session_id": session_id,
+                            },
+                        )
+                        continue
 
                     self.recitals_ra.upsert(recital_session)
 
@@ -120,7 +131,7 @@ class RecitalManager:
         aggregated_sessions = self.recitals_ra.get_aggregated_sessions()
 
         if len(aggregated_sessions) == 0:
-            print("No aggregated sessions found")
+            return
 
         for aggregated_session in aggregated_sessions:
             session_id = aggregated_session.id
@@ -159,3 +170,72 @@ class RecitalManager:
                 print(f"Error uploading session {session_id} - skipping")
                 print(e)
                 continue
+
+    def discard_disavowed_sessions(self) -> None:
+        disavowed_sessions = self.recitals_ra.get_disavowed_pending_sessions()
+
+        if len(disavowed_sessions) == 0:
+            return
+
+        for disavowed_session in disavowed_sessions:
+            session_id = disavowed_session.id
+
+            self.discard_session(session_id)
+
+    def discard_session(self, session_id: str) -> None:
+        try:
+            recital_session = self.recitals_ra.get_by_id(session_id)
+            if not recital_session:
+                raise MissingSessionError()
+
+            # If already discarded - nothing to do
+            if recital_session.status == SessionStatus.DISCARDED:
+                return
+
+            original_status = recital_session.status
+            recital_session.status = SessionStatus.DISCARDED
+            # This will try to ensure no new content is added for this session moving forward
+            self.recitals_ra.upsert(recital_session)
+
+            if original_status in [SessionStatus.ACTIVE, SessionStatus.ENDED]:
+                # delete audio segment files which may have been uploaded (but not yet aggregated)
+                self.aggregation_engine.delete_session_audio(session_id)
+
+            if original_status in [SessionStatus.AGGREGATED, SessionStatus.UPLOADED]:
+                # Delete local files which may have already been deleted after upload
+                text_filename = recital_session.text_filename
+                source_audio_filename = recital_session.source_audio_filename
+                audio_filename = recital_session.main_audio_filename
+                light_audio_filename = recital_session.light_audio_filename
+
+                # Delete the local files
+                if text_filename:
+                    self.recitals_content_ra.remove_local_data_file(text_filename)
+                if source_audio_filename:
+                    self.recitals_content_ra.remove_local_data_file(source_audio_filename)
+                if light_audio_filename:
+                    self.recitals_content_ra.remove_local_data_file(light_audio_filename)
+                if audio_filename:
+                    self.recitals_content_ra.remove_local_data_file(audio_filename)
+
+            if original_status == SessionStatus.UPLOADED:
+                # Delete remote files which might have been created during upload
+                if not self.recitals_content_ra.delete_session_content_from_storage(session_id):
+                    print(f"Error deleting session {session_id} content from storage")
+                    self.posthog.capture(
+                        "server",
+                        "error deleting session content from storage",
+                        {
+                            "session_id": session_id,
+                        },
+                    )
+
+        except:
+            print(f"Error deleting session {session_id} content")
+            self.posthog.capture(
+                "server",
+                "error deleting session content",
+                {
+                    "session_id": session_id,
+                },
+            )

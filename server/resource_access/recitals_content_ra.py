@@ -18,12 +18,17 @@ class RecitalsContentRA:
         # Create the data folder if it does not exist
         Path(self.data_folder).mkdir(parents=True, exist_ok=True)
 
+    def _storage_s3_configured(self) -> bool:
+        if not self.content_s3_bucket:
+            print("Warning S3 target bucket is not configured. Aborting.")
+            return False
+        return True
+
     def get_data_folder(self) -> str:
         return self.data_folder
 
     def upload_to_storage(self, source: str, target: str, metadata: dict[str, str], content_type: str = None) -> bool:
-        if not self.content_s3_bucket:
-            print("Warning S3 target bucket is not configured. Aborting.")
+        if not self._storage_s3_configured():
             return False
 
         # Check if the file exists
@@ -42,6 +47,48 @@ class RecitalsContentRA:
 
             s3.upload_file(source, self.content_s3_bucket, target, ExtraArgs=extra_args)
         except ClientError as e:
+            print(e)
+            return False
+        return True
+
+    def delete_from_storage(self, targets: list[str]) -> bool:
+        if not self._storage_s3_configured():
+            return False
+
+        # remove from S3
+        s3 = boto3.client("s3")
+
+        try:
+            s3.delete_object(
+                Bucket=self.content_s3_bucket,
+                Delete={
+                    "Objects": [
+                        {"Key": target for target in targets},
+                    ],
+                    "Quiet": True,
+                },
+            )
+        except ClientError as e:
+            print(e)
+            return False
+        return True
+
+    def delete_from_storage_prefix(self, prefix: str) -> bool:
+        if not self._storage_s3_configured():
+            return False
+
+        if not prefix:
+            print("Warning prefix is not provided. Not deleting anything.")
+            return False
+
+        s3 = boto3.resource("s3")
+
+        try:
+            # remove from S3 by the object prefix
+            bucket = s3.Bucket(self.content_s3_bucket)
+            bucket.objects.filter(Prefix=prefix).delete()
+
+        except Exception as e:
             print(e)
             return False
         return True
@@ -75,8 +122,12 @@ class RecitalsContentRA:
         if filename_in_data_folder.exists():
             filename_in_data_folder.unlink()
 
+    def delete_session_content_from_storage(self, session_id: str) -> bool:
+        session_content_folder_name = session_id
+        return self.delete_from_storage_prefix(prefix=session_content_folder_name)
+
     def get_url_to_storage_object(self, target: str, expires_in: int = 1200) -> str:
-        if not self.content_s3_bucket:
+        if not self._storage_s3_configured():
             print("Warning S3 target bucket is not configured. Aborting.")
             return ""
 

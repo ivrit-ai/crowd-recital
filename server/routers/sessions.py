@@ -90,6 +90,32 @@ async def end_recital_session(
     return {"message": "Recital session ended successfully"}
 
 
+@router.delete("/{session_id}")
+@inject
+async def disavow_recital_session(
+    track_event: Tracker,
+    session_id: Annotated[str, Path(title="Session id of the transcript")],
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
+    recital_manager: RecitalManager = Depends(Provide[Container.recital_manager]),
+    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
+):
+    recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
+    if not recital_session:
+        raise HTTPException(status_code=404, detail="Recital session not found")
+
+    recital_session.disavowed = True
+    recitals_ra.upsert(recital_session)
+    recital_manager.schedule_session_finalization_job()
+
+    track_event(
+        "Recording Session Disavowed",
+        {
+            "session_id": session_id,
+        },
+    )
+    return {"message": "Recital session discarded successfully"}
+
+
 class TextSegmentRequestBody(BaseModel):
     seek_end: float
     text: str
@@ -105,7 +131,7 @@ async def upload_text_segment(
     recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
 ):
     recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
-    if not recital_session:
+    if not recital_session or recital_session.disavowed:
         raise HTTPException(status_code=404, detail="Recital session not found")
 
     text_segment = RecitalTextSegment(recital_session=recital_session, seek_end=segment.seek_end, text=segment.text)
@@ -141,7 +167,7 @@ async def upload_audio_segment(
     recitals_content_ra: RecitalsContentRA = Depends(Provide[Container.recitals_content_ra]),
 ):
     recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
-    if not recital_session:
+    if not recital_session or recital_session.disavowed:
         raise HTTPException(status_code=404, detail="Recital session not found")
 
     # Read the MIME type
@@ -210,12 +236,21 @@ async def get_session_preview(
 session_crud = FastCRUD(RecitalSession)
 session_filter_config = FilterConfig(status=None)
 
+join_with_text_doc_config = JoinConfig(
+    model=TextDocument,
+    join_on=TextDocument.id == RecitalSession.document_id,
+    join_prefix="document_",
+    schema_to_select=SessionTextDocument,
+    join_type="left",
+)
+
 router.add_api_route(
     "/{id}",
     gen_get_single(
         session_crud,
         get_async_session,
         schema_to_select=RecitalSessionRead,
+        join_configs=[join_with_text_doc_config],
     ),
     methods=["GET"],
 )
@@ -225,15 +260,7 @@ router.add_api_route(
         session_crud,
         get_async_session,
         create_dynamic_filters_dep(session_filter_config),
-        join_configs=[
-            JoinConfig(
-                model=TextDocument,
-                join_on=TextDocument.id == RecitalSession.document_id,
-                join_prefix="document_",
-                schema_to_select=SessionTextDocument,
-                join_type="left",
-            )
-        ],
+        join_configs=[join_with_text_doc_config],
         schema_to_select=RecitalSessionRead,
     ),
     methods=["GET"],

@@ -89,21 +89,32 @@ class AggregationEngine:
 
         return vtt.content
 
-    def aggregate_session_audio(self, session_id: str) -> str:
+    def _get_audio_segment_file_names(self, session_id: str) -> list[str]:
         audio_segments = self.recitals_ra.get_audio_segments(session_id)
         maybe_audio_segments_filenames = [segment.filename for segment in audio_segments]
 
         # Check the existence of the segment file names.
         # Keep the ones we can find
-        audio_segments_filenames = [f for f in maybe_audio_segments_filenames if Path(self.data_folder, f).exists()]
+        return [f for f in maybe_audio_segments_filenames if Path(self.data_folder, f).exists()]
+
+    def _delete_audio_segment_file_names(self, file_names: list[str]) -> None:
+        for seg_filename in file_names:
+            os.remove(Path(self.data_folder, seg_filename))
+
+    def delete_session_audio(self, session_id: str) -> None:
+        audio_segments_filenames = self._get_audio_segment_file_names(session_id)
+        self._delete_audio_segment_file_names(audio_segments_filenames)
+
+    def aggregate_session_audio(self, session_id: str) -> str:
+        audio_segments_filenames = self._get_audio_segment_file_names(session_id)
 
         if len(audio_segments_filenames) == 0:
             return None
 
-        first_audio_segment_filename = maybe_audio_segments_filenames[0]
+        first_audio_segment_filename = audio_segments_filenames[0]
 
         # Get the base file name that will represent concatenated segments data
-        concatenated_filename = str(first_audio_segment_filename).replace(".seg.0", "")
+        concatenated_filename = re.sub(r"\.seg\..*", "", first_audio_segment_filename)
 
         # Concat all segments into a single file
         with open(Path(self.data_folder, concatenated_filename), "wb") as concat_file:
@@ -111,8 +122,7 @@ class AggregationEngine:
                 with open(Path(self.data_folder, seg_filename), "rb") as seg_file:
                     shutil.copyfileobj(seg_file, concat_file)
 
-        # Delete all segments files - now they stored into a single file
-        for seg_filename in audio_segments_filenames:
-            os.remove(Path(self.data_folder, seg_filename))
+        # Delete all segments files - now they are stored into a single file
+        self._delete_audio_segment_file_names(audio_segments_filenames)
 
         return concatenated_filename

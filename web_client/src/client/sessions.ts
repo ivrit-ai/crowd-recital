@@ -104,3 +104,22 @@ export async function getSessionPreview(
 
   return response.json();
 }
+
+export async function markSessionForDeletion(sessionId: string): Promise<void> {
+  const response = await fetch(`${alterSessionBaseUrl}/${sessionId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorMessage = await reportResponseError(
+      response,
+      "session",
+      "markSessionForDeletion",
+      "Failed to mark a session for deletion",
+    );
+    throw new Error(errorMessage);
+  }
+}

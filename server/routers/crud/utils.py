@@ -121,6 +121,7 @@ def gen_get_single(
     crud: FastCRUD,
     get_async_session,
     schema_to_select=None,
+    join_configs=[],
     item_id_field_name: str = "id",
     user_id_field_name: str = "user_id",
 ):
@@ -135,15 +136,21 @@ def gen_get_single(
         common_read_params = dict(
             db=db,
             schema_to_select=_extend_schema_to_select(crud.model, schema_to_select, extra_columns),
-            one_or_none=True,
+            one_or_none=False,
         )
 
         user_filter = dict()
         if user_id_field_name:
             user_filter[user_id_field_name] = speaker_user.id
 
+        getter = crud.get
+        if join_configs:
+            getter = crud.get_joined
+            common_read_params["joins_config"] = join_configs
+            common_read_params["nest_joins"] = True
+
         track_event(f"Get {crud.model.__name__} Item")
-        return await crud.get(**common_read_params, **user_filter, **pkeys)
+        return await getter(**common_read_params, **user_filter, **pkeys)
 
     return endpoint
 
