@@ -45,8 +45,9 @@ const SessionFinalizeModal = ({
       <div className="modal-box">
         <h1 className="text-xl">איך הלך?</h1>
         <p>
-          במידה ומשהו בהקלטה לא הלך טוב, עדיף למחוק ולנסות שוב. אחרת - שמור!{" "}
+          במידה ומשהו בהקלטה לא הלך טוב, עדיף למחוק ולנסות שוב.
         </p>
+        <p>אחרת, אפשר לשמור.</p>
         <div className="modal-action justify-end gap-2">
           <button
             className="btn btn-ghost btn-sm text-error"
