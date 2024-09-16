@@ -253,7 +253,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
                 <span
                   key={`${pidx}-${sidx}`}
                   className={twJoin(
-                    "me-2 cursor-pointer border-b-2 border-s-8 border-neutral-content",
+                    "last:border-e-0 me-2 cursor-pointer border-b-2 border-e-8 border-neutral-content",
                     activeParagraphIndex == pidx &&
                       activeSentenceIndex == sidx &&
                       "bg-primary text-primary-content",

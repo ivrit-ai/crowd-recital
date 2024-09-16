@@ -1,10 +1,18 @@
-from typing import Optional
+from typing import BinaryIO, Optional
 from uuid import UUID
 
 from dependency_injector.wiring import inject
 
+# Must leak this type into the manager to keep async processing of the uploaded file
+from fastapi import UploadFile
+
 from engines.extraction_engine import ExtractionEngine
-from models.text_document import WIKI_ARTICLE_SOURCE_TYPE, TextDocument
+from models.text_document import (
+    PLAIN_TEXT_SOURCE_TYPE,
+    WIKI_ARTICLE_SOURCE_TYPE,
+    FILE_UPLOAD_SOURCE_TYPE,
+    TextDocument,
+)
 from models.user import User
 from resource_access.documents_ra import DocumentsRA
 
@@ -15,13 +23,40 @@ class DocumentManager:
         self.extraction_engine = extraction_engine
         self.documents_ra = documents_ra
 
-    def create_from_source(self, source: str, source_type: str, owner: Optional[User] = None) -> TextDocument:
+    async def create_from_source_file(
+        self,
+        source_file: BinaryIO,
+        source_content_type: str,
+        source_filename: Optional[str] = None,
+        title: Optional[str] = None,
+        owner: Optional[User] = None,
+    ) -> TextDocument:
+        extracted_text = self.extraction_engine.extract_text_document_from_file(source_file, source_content_type)
+
+        title = title or extracted_text.metadata.get("title") or source_filename or None
+
+        doc = self.documents_ra.upsert(
+            TextDocument(
+                source=source_filename,
+                source_type=FILE_UPLOAD_SOURCE_TYPE,
+                text=extracted_text.text,
+                title=title,
+                owner=owner,
+            )
+        )
+
+        # Return the document
+        return doc
+
+    def create_from_source(
+        self, source: str, source_type: str, title: Optional[str] = None, owner: Optional[User] = None
+    ) -> TextDocument:
         # Validate the source
-        if not source or source_type != WIKI_ARTICLE_SOURCE_TYPE:
+        if not source or source_type not in [WIKI_ARTICLE_SOURCE_TYPE, PLAIN_TEXT_SOURCE_TYPE]:
             raise ValueError("Invalid source or source type")
 
         # Extract text from the source
-        extracted_text = self.extraction_engine.extract_text_document(source, source_type)
+        extracted_text = self.extraction_engine.extract_text_document(source, source_type, title)
 
         # Add any provided metadata
         title = extracted_text.text[:60]
