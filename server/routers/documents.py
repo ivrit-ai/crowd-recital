@@ -1,7 +1,7 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.exceptions import HTTPException
 from fastcrud import FastCRUD, FilterConfig, JoinConfig
 from pydantic import BaseModel
@@ -9,7 +9,12 @@ from pydantic import BaseModel
 from containers import Container
 from managers.document_manager import DocumentManager
 from models.database import get_async_session
-from models.text_document import TextDocument, TextDocumentOwner, TextDocumentRead, TextDocumentListRead
+from models.text_document import (
+    TextDocument,
+    TextDocumentListRead,
+    TextDocumentOwner,
+    TextDocumentRead,
+)
 from models.user import User
 
 from .crud.utils import create_dynamic_filters_dep, gen_get_multi, gen_get_single
@@ -22,6 +27,48 @@ router = APIRouter()
 class CreateDocumentFromSourceBody(BaseModel):
     source: str
     source_type: str
+    title: Optional[str] = None
+
+
+max_source_file_size_mb = 10
+
+
+@router.post("/from_source_file")
+@inject
+async def create_document_from_source(
+    track_event: Tracker,
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
+    source_file: UploadFile = File(...),
+    title: Annotated[str, Form()] = None,
+    document_manager: DocumentManager = Depends(Provide[Container.document_manager]),
+):
+
+    # Make sure the content type is one of the supported types
+    if source_file.content_type not in [
+        "text/plain",
+        "text/html",
+        # "application/pdf"
+    ]:
+        raise HTTPException(status_code=422, detail="Unsupported file type")
+
+    # Be mindful of the size - we should not upload huge bodies of text.
+    # Stop at 10MB
+    if source_file.size > max_source_file_size_mb * 1024 * 1024:
+        raise HTTPException(status_code=422, detail=f"File too large - Limit is {max_source_file_size_mb} mb")
+
+    try:
+        document = await document_manager.create_from_source_file(
+            source_file=source_file.file,
+            source_content_type=source_file.content_type,
+            source_filename=source_file.filename,
+            title=title,
+            owner=speaker_user,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    track_event("Documents Created", {"source_type": document.source_type, "document_id": str(document.id)})
+    return {"document_id": document.id, "title": document.title}
 
 
 @router.post("/from_source")
@@ -34,7 +81,10 @@ async def create_document_from_source(
 ):
     try:
         document = document_manager.create_from_source(
-            create_from_source.source, create_from_source.source_type, owner=speaker_user
+            create_from_source.source,
+            create_from_source.source_type,
+            title=create_from_source.title,
+            owner=speaker_user,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

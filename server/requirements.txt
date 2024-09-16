@@ -1,11 +1,13 @@
 alembic
 apscheduler
+beautifulsoup4
 boto3
 dependency-injector
 environs
 fastapi
 fastcrud
 google-auth[requests]
+html5lib
 nanoid
 posthog
 python-multipart

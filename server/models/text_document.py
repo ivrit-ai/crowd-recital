@@ -9,6 +9,8 @@ from .mixins.date_fields import DateFieldsMixin
 from .user import User
 
 WIKI_ARTICLE_SOURCE_TYPE = "wiki-article"
+PLAIN_TEXT_SOURCE_TYPE = "plain-text"
+FILE_UPLOAD_SOURCE_TYPE = "file-upload"
 
 
 class TextDocumentBase(DateFieldsMixin, SQLModel):
