@@ -99,14 +99,14 @@ class ExtractionEngine:
             ]
 
             # Find all <p> tags within the body
-            paragraphs = soup.body.find_all("p")
-            for p in paragraphs:
+            paragraphs = soup.body.find_all(["p", "h2", "h3", "h4"])
+            for text_container_elem in paragraphs:
                 # Skip paragraphs that are nested within excluded tags
-                if p.find_parent(excluded_tags):
+                if text_container_elem.find_parent(excluded_tags):
                     continue
 
                 # Extract text including text from nested <p> tags
-                paragraph_text = self._clear_structure_from_text(p.get_text(strip=True))
+                paragraph_text = self._clear_structure_from_text(text_container_elem.get_text(strip=True))
                 if paragraph_text:
                     text.append(paragraph_text)
 
