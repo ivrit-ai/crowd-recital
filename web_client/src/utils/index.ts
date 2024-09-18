@@ -48,6 +48,7 @@ export const useKeyPress = (
 
 export function secondsToMinuteSecondMillisecondString(
   seconds: number,
+  showMilis: boolean = true,
 ): string {
   // Rounded seconds to ms
   const roundedSeconds = Math.round(seconds * 1000) / 1000;
@@ -63,7 +64,8 @@ export function secondsToMinuteSecondMillisecondString(
   const paddedMilliseconds = milliseconds.toString().padStart(3, "0");
 
   // Concatenate minutes, seconds, and milliseconds as a mm:ss.zzz format
-  return `${paddedMinutes}:${paddedSeconds}.${paddedMilliseconds}`;
+  const milisPart = showMilis ? `.${paddedMilliseconds}` : "";
+  return `${paddedMinutes}:${paddedSeconds}${milisPart}`;
 }
 
 export { getErrorMessage } from "./tsErrorMessage";

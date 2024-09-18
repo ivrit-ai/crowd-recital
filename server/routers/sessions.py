@@ -12,7 +12,7 @@ from nanoid import generate
 from pydantic import BaseModel
 
 from containers import Container
-from managers.recital_manager import RecitalManager
+from managers.recital_manager import RecitalManager, TextSegmentRequestBody
 from models.database import get_async_session
 from models.recital_audio_segment import RecitalAudioSegment
 from models.recital_session import (
@@ -25,6 +25,7 @@ from models.recital_text_segment import RecitalTextSegment
 from models.text_document import TextDocument
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
+from errors import MissingSessionError
 
 from .crud.utils import create_dynamic_filters_dep, gen_get_multi, gen_get_single
 from .dependencies.analytics import Tracker
@@ -116,11 +117,6 @@ async def disavow_recital_session(
     return {"message": "Recital session discarded successfully"}
 
 
-class TextSegmentRequestBody(BaseModel):
-    seek_end: float
-    text: str
-
-
 @router.post("/{session_id}/upload-text-segment")
 @inject
 async def upload_text_segment(
@@ -128,14 +124,12 @@ async def upload_text_segment(
     session_id: Annotated[str, Path(title="Session id of the transcript")],
     segment: TextSegmentRequestBody,
     speaker_user: Annotated[User, Depends(get_speaker_user)],
-    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
+    recital_manager: RecitalManager = Depends(Provide[Container.recital_manager]),
 ):
-    recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
-    if not recital_session or recital_session.disavowed:
+    try:
+        recital_manager.add_text_segment(session_id, speaker_user, segment)
+    except MissingSessionError:
         raise HTTPException(status_code=404, detail="Recital session not found")
-
-    text_segment = RecitalTextSegment(recital_session=recital_session, seek_end=segment.seek_end, text=segment.text)
-    recitals_ra.add_text_segment(text_segment)
 
     track_event(
         "Text Segment Uploaded",

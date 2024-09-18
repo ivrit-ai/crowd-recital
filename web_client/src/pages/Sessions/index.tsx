@@ -4,12 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { twJoin } from "tailwind-merge";
 import { Link } from "@tanstack/react-router";
 
-import useTrackPageView from "@/analytics/useTrackPageView";
-import SortCol from "@/components/DataTable/SortCol";
+import { secondsToMinuteSecondMillisecondString } from "@/utils";
 import { SortOrder } from "@/client/types/common";
-import { useSortState } from "@/components/DataTable/useSortState";
-import { getSessionsOptions } from "@/client/queries/sessions";
 import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
+import useTrackPageView from "@/analytics/useTrackPageView";
+import { getSessionsOptions } from "@/client/queries/sessions";
+import SortCol from "@/components/DataTable/SortCol";
+import { useSortState } from "@/components/DataTable/useSortState";
 import WholePageLoading from "@/components/WholePageLoading";
 import StatusDisplay from "@/components/SessionStatusDisplay";
 import TablePager from "@/components/TablePager";
@@ -137,14 +138,15 @@ const Sessions = () => {
         <table className="table table-auto">
           <thead>
             <tr>
-              <th>סשן</th>
-              <th>סטטוס</th>
-              <th></th>
               <SortCol
                 label="נוצר"
                 colName={SortColumnsEnum.CREATED_AT}
                 {...sortState}
               />
+              <th>סטטוס</th>
+              <th>משך</th>
+              <th></th>
+              <th>סשן</th>
               <SortCol
                 label="עודכן"
                 colName={SortColumnsEnum.UPDATED_AT}
@@ -162,9 +164,15 @@ const Sessions = () => {
                 )}
                 key={rs.id}
               >
-                <td className="text-xs sm:text-sm">{rs.id}</td>
+                <td>{new Date(rs.created_at).toLocaleString()}</td>
                 <td>
                   <StatusDisplay status={rs.status} disavowed={rs.disavowed} />
+                </td>
+                <td>
+                  {secondsToMinuteSecondMillisecondString(
+                    rs.duration || 0,
+                    false,
+                  )}
                 </td>
                 <td>
                   <div className="flex min-w-24 items-center justify-center gap-2">
@@ -187,7 +195,21 @@ const Sessions = () => {
                     )}
                   </div>
                 </td>
-                <td>{new Date(rs.created_at).toLocaleString()}</td>
+                <td className="max-w-20 bg-inherit text-sm">
+                  <span
+                    dir="ltr"
+                    className={twJoin(
+                      "block justify-start overflow-hidden overflow-ellipsis bg-inherit contain-paint",
+                      // Touch device expansion support
+                      "nomouse:focus-within:inline-flex nomouse:focus-within:min-w-full nomouse:focus-within:border nomouse:focus-within:p-2",
+                      // Mouse device expansion support
+                      "hover:inline-flex hover:min-w-full hover:border hover:px-2",
+                    )}
+                    tabIndex={0}
+                  >
+                    {rs.id}
+                  </span>
+                </td>
                 <td>{new Date(rs.updated_at).toLocaleString()}</td>
                 <td>{rs.document?.title}</td>
               </tr>

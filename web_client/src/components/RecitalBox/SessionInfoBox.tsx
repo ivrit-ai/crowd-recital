@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { HeadphonesIcon } from "lucide-react";
 
+import { secondsToMinuteSecondMillisecondString } from "@/utils";
 import { RecitalSessionStatus } from "@/types/session";
 import { getSessionOptions } from "@/client/queries/sessions";
 import SessionPreview from "@/components/SessionPreview";
@@ -47,7 +48,14 @@ const SessionInfoBox = ({ id }: Props) => {
         className="btn btn-accent btn-xs"
         onClick={() => setPreviewedSessionId(id)}
       >
-        <span>השמע</span> <HeadphonesIcon className="h-4 w-4" />
+        <span>השמע</span>{" "}
+        <span>
+          {secondsToMinuteSecondMillisecondString(
+            sessionData.duration || 0,
+            false,
+          )}
+        </span>
+        <HeadphonesIcon className="h-4 w-4" />
       </button>
     );
   } else if (sessionData) {

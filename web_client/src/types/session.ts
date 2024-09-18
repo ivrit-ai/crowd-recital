@@ -15,6 +15,7 @@ type RecitalSessionType = {
   document: DocumentType;
   status: RecitalSessionStatus;
   disavowed: boolean;
+  duration?: number;
 };
 
 class RecitalSession implements RecitalSessionType {
@@ -24,6 +25,7 @@ class RecitalSession implements RecitalSessionType {
   document: DocumentType;
   status: RecitalSessionStatus;
   disavowed: boolean;
+  duration?: number;
   constructor(session: RecitalSessionType) {
     this.id = session.id;
     this.created_at = session.created_at;
@@ -31,6 +33,7 @@ class RecitalSession implements RecitalSessionType {
     this.document = session.document;
     this.status = session.status;
     this.disavowed = session.disavowed;
+    this.duration = session.duration;
   }
 }
 

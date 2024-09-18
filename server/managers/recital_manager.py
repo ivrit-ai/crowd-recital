@@ -3,15 +3,23 @@ from datetime import datetime, timedelta
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from pydantic import BaseModel
 
 from engines.aggregation_engine import AggregationEngine
 from engines.transform_engine import TransformEngine
 from errors import MissingSessionError
 from models.recital_session import SessionStatus
+from models.recital_text_segment import RecitalTextSegment
+from models.user import User
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 from utility.analytics.posthog import ConfiguredPosthog
 from utility.scheduler import JobScheduler
+
+
+class TextSegmentRequestBody(BaseModel):
+    seek_end: float
+    text: str
 
 
 class RecitalManager:
@@ -55,11 +63,31 @@ class RecitalManager:
             trigger=trigger,
         )
 
+    def schedule_session_duration_update_job(self, session_id: str, duration: float) -> None:
+        self.job_scheduler.add_job(
+            self._session_duration_update_task,
+            trigger=None,
+            kwargs=dict(session_id=session_id, duration=duration),
+            id=f"session_duration_update_{session_id}",  # Runs serially per each session id,
+            replace_existing=False,
+            # Up to N seconds is ok to run this job as soon as the prev one is done
+            misfire_grace_time=15,
+        )
+
     def _session_finalization_task(self) -> None:
 
         self.aggregate_ended_sessions()
         self.upload_aggregated_sessions()
         self.discard_disavowed_sessions()
+
+    def _session_duration_update_task(self, session_id: str, duration: float) -> None:
+        recital_session = self.recitals_ra.get_by_id(session_id)
+        if not recital_session:
+            return
+
+        # Update duration
+        recital_session.duration = max(recital_session.duration or 0, duration)
+        self.recitals_ra.upsert(recital_session)
 
     def aggregate_ended_sessions(self) -> None:
         ended_sessions = self.recitals_ra.get_ended_sessions()
@@ -87,7 +115,7 @@ class RecitalManager:
                     self.recitals_ra.upsert(recital_session)
                     continue
 
-                # Aggregate audio segments into a single file iif not done yet
+                # Aggregate audio segments into a single file if not done yet
                 if not recital_session.source_audio_filename:
                     source_audio_filename = self.aggregation_engine.aggregate_session_audio(recital_session.id)
                     if not source_audio_filename:
@@ -121,6 +149,15 @@ class RecitalManager:
                         continue
 
                     self.recitals_ra.upsert(recital_session)
+
+                    self.posthog.capture(
+                        "server",
+                        "Session Aggregation Done",
+                        {
+                            "session_id": session_id,
+                            "duration": recital_session.duration,
+                        },
+                    )
 
             except Exception as e:
                 print(f"Error aggregating session {session_id} - skipping")
@@ -194,6 +231,7 @@ class RecitalManager:
 
             original_status = recital_session.status
             recital_session.status = SessionStatus.DISCARDED
+            recital_session.duration = 0
             # This will try to ensure no new content is added for this session moving forward
             self.recitals_ra.upsert(recital_session)
 
@@ -239,3 +277,13 @@ class RecitalManager:
                     "session_id": session_id,
                 },
             )
+
+    def add_text_segment(self, session_id: str, user: User, segment: TextSegmentRequestBody) -> None:
+        recital_session = self.recitals_ra.get_by_id_and_user_id(session_id, user.id)
+        if not recital_session or recital_session.disavowed:
+            raise MissingSessionError()
+
+        text_segment = RecitalTextSegment(recital_session=recital_session, seek_end=segment.seek_end, text=segment.text)
+        self.recitals_ra.add_text_segment(text_segment)
+
+        self.schedule_session_duration_update_job(session_id, segment.seek_end)
