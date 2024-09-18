@@ -25,7 +25,7 @@ const useControlCallback = (
             uploadActiveSentence();
           }
           if (!move.nextSentence()) {
-            shouldStopRecording = true;
+            shouldStopRecording = !!recording;
           }
           break;
         case NavigationControls.PrevSentence:
