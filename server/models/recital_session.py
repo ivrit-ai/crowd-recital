@@ -3,6 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
+from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin
@@ -21,7 +22,8 @@ class SessionStatus(str, Enum):
 class RecitalSessionBase(SQLModel, DateFieldsMixin):
     id: str = Field(default=None, primary_key=True)
     status: str = Field(index=True, default=SessionStatus.ACTIVE)
-    disavowed: Optional[bool] = Field(default=False, index=True, nullable=False)
+    duration: Optional[float] = Field(default=None, nullable=True)
+    disavowed: Optional[bool] = Field(default=False, nullable=False)
 
 
 class RecitalSession(RecitalSessionBase, SQLModel, table=True):
@@ -39,6 +41,9 @@ class RecitalSession(RecitalSessionBase, SQLModel, table=True):
     text_segments: list["RecitalTextSegment"] = Relationship(back_populates="recital_session")
     audio_segments: list["RecitalAudioSegment"] = Relationship(back_populates="recital_session")
     document: Optional["TextDocument"] = Relationship(back_populates="recital_sessions")
+
+
+Index("ix_recital_sessions_disavowed_status", RecitalSession.disavowed, RecitalSession.status)
 
 
 class SessionTextDocument(BaseModel):

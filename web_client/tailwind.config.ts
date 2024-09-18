@@ -9,6 +9,9 @@ export default {
         nokbd: {
           raw: "(not (hover: hover)) or (not (pointer: fine))",
         },
+        nomouse: {
+          raw: "not (pointer: fine)",
+        },
       },
       spacing: {
         topbar: "var(--topbar-height)",
