@@ -115,10 +115,14 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
 
   const [awaitingSessionFinalization, setAwaitingSessionFinalization] =
     useState(false);
+  const [readyToFinalize, setReadyToFinalize] = useState(false);
+  useState(false);
   const finalizeSession = useCallback(async () => {
+    setReadyToFinalize(false);
+    setAwaitingSessionFinalization(true);
     await stopRecording();
     await uploadActiveSentence();
-    setAwaitingSessionFinalization(true);
+    setReadyToFinalize(true);
   }, [stopRecording, uploadActiveSentence, endSession, sessionId]);
 
   const onControl = useControlCallback(
@@ -253,7 +257,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
                 <span
                   key={`${pidx}-${sidx}`}
                   className={twJoin(
-                    "last:border-e-0 me-2 cursor-pointer border-b-2 border-e-8 border-neutral-content",
+                    "me-2 cursor-pointer border-b-2 border-e-8 border-neutral-content last:border-e-0",
                     activeParagraphIndex == pidx &&
                       activeSentenceIndex == sidx &&
                       "bg-primary text-primary-content",
@@ -315,6 +319,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
       </div>
       <SessionFinalizeModal
         sessionId={sessionId}
+        readyToFinalize={readyToFinalize}
         endSession={endSession}
         awaitingFinalization={awaitingSessionFinalization}
         setAwaitingFinalization={setAwaitingSessionFinalization}

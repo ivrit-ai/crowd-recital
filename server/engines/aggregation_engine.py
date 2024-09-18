@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 import re
 import shutil
 import subprocess
@@ -102,8 +103,12 @@ class AggregationEngine:
             os.remove(Path(self.data_folder, seg_filename))
 
     def delete_session_audio(self, session_id: str) -> None:
-        audio_segments_filenames = self._get_audio_segment_file_names(session_id)
-        self._delete_audio_segment_file_names(audio_segments_filenames)
+        # Find all files that start with the session_id and end with .seg.*
+        # and delete them
+        # We do not rely on the recorded audio segments since we want to clear as much data
+        # from the local storage as possible for this session
+        for file_to_del in pathlib.Path(self.data_folder).glob(f"{session_id}*.seg.*"):
+            os.remove(file_to_del)
 
     def aggregate_session_audio(self, session_id: str) -> str:
         audio_segments_filenames = self._get_audio_segment_file_names(session_id)
