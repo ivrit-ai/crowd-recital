@@ -103,17 +103,18 @@ class RecitalManager:
                     raise MissingSessionError()
 
                 # Aggregate text
-                vtt_file_content = self.aggregation_engine.aggregate_session_captions(recital_session.id)
-                if vtt_file_content:
-                    text_filename = f"{session_id}.vtt"
-                    self.recitals_ra.store_session_text(vtt_file_content, text_filename)
-                    recital_session.text_filename = text_filename
-                    self.recitals_ra.upsert(recital_session)
-                else:
-                    print(f"No content found for session {session_id} - disavowing")
-                    recital_session.disavowed = True
-                    self.recitals_ra.upsert(recital_session)
-                    continue
+                if not recital_session.text_filename:
+                    vtt_file_content = self.aggregation_engine.aggregate_session_captions(recital_session.id)
+                    if vtt_file_content:
+                        text_filename = f"{session_id}.vtt"
+                        self.recitals_ra.store_session_text(vtt_file_content, text_filename)
+                        recital_session.text_filename = text_filename
+                        self.recitals_ra.upsert(recital_session)
+                    else:
+                        print(f"No textual content found for session {session_id} - disavowing")
+                        recital_session.disavowed = True
+                        self.recitals_ra.upsert(recital_session)
+                        continue
 
                 # Aggregate audio segments into a single file if not done yet
                 if not recital_session.source_audio_filename:
@@ -238,6 +239,9 @@ class RecitalManager:
             if original_status in [SessionStatus.ACTIVE, SessionStatus.ENDED]:
                 # delete audio segment files which may have been uploaded (but not yet aggregated)
                 self.aggregation_engine.delete_session_audio(session_id)
+                # In case audio aggregation failed and the session is not yet marked as aggregated
+                if recital_session.text_filename:
+                    self.recitals_content_ra.remove_local_data_file(recital_session.text_filename)
 
             if original_status in [SessionStatus.AGGREGATED, SessionStatus.UPLOADED]:
                 # Delete local files which may have already been deleted after upload
