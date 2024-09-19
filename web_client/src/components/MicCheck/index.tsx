@@ -3,7 +3,7 @@ import { usePostHog } from "posthog-js/react";
 import { MicOffIcon } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-import { secondsToMinuteSecondMillisecondString } from "@/utils";
+import { secondsToHourMinuteSecondString } from "@/utils";
 import { useRecorder } from "@/hooks/recodingUploader";
 
 // Get nispired by this https://restream.io/tools/mic-test
@@ -177,7 +177,7 @@ const MicCheck = ({ open, onClose }: Props) => {
         <div className="relative flex h-[170px] items-center justify-center overflow-clip rounded-lg bg-base-200 px-5">
           {recording && (
             <div className="absolute top-0 pt-4 font-mono text-sm text-base-content">
-              {secondsToMinuteSecondMillisecondString(recordingTimestamp)}
+              {secondsToHourMinuteSecondString(recordingTimestamp)}
             </div>
           )}
           {hasAudio && (

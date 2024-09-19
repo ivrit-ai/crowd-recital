@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { twJoin } from "tailwind-merge";
 import { Link } from "@tanstack/react-router";
 
-import { secondsToMinuteSecondMillisecondString } from "@/utils";
+import { secondsToHourMinuteSecondString } from "@/utils";
 import { SortOrder } from "@/client/types/common";
 import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import useTrackPageView from "@/analytics/useTrackPageView";
@@ -169,7 +169,7 @@ const Sessions = () => {
                   <StatusDisplay status={rs.status} disavowed={rs.disavowed} />
                 </td>
                 <td>
-                  {secondsToMinuteSecondMillisecondString(
+                  {secondsToHourMinuteSecondString(
                     rs.duration || 0,
                     false,
                   )}

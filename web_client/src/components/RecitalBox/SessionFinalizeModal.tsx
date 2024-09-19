@@ -62,6 +62,7 @@ const SessionFinalizeModal = ({
           className="btn btn-primary btn-sm"
           onClick={() => onEndSession()}
           disabled={progress}
+          autoFocus
         >
           שמור
         </button>

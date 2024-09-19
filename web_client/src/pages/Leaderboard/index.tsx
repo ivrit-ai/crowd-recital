@@ -18,7 +18,7 @@ const Leaderboard = () => {
           <img src={ivritAiLogo} alt="Ivrit.ai logo" />
         </aside>
         <div className="card mx-1 w-full bg-base-100 text-center">
-          <h1 className="my-4 text-2xl">אין עליהם</h1>
+          <h1 className="my-4 text-2xl">🏅🏆👏 קבלו אותם! 👏🏆🏅</h1>
           <LeaderboardTable />
         </div>
       </div>

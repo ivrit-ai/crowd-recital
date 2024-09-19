@@ -5,7 +5,7 @@ import { twJoin } from "tailwind-merge";
 import { RefreshCwIcon } from "lucide-react";
 
 import { UserContext } from "@/context/user";
-import { secondsToMinuteSecondMillisecondString } from "@/utils";
+import { secondsToHourMinuteSecondString } from "@/utils";
 import {
   getLeaderboardOptions,
   getMyUserStatsOptions,
@@ -52,7 +52,7 @@ const LeaderboardTable = () => {
         <td>{thisUserGlobalRank}</td>
         <td>{currentUserEntry.name}</td>
         <td>
-          {secondsToMinuteSecondMillisecondString(
+          {secondsToHourMinuteSecondString(
             currentUserEntry.total_duration || 0,
             false,
           )}
@@ -94,7 +94,7 @@ const LeaderboardTable = () => {
               <td>{idx + 1}</td>
               <td>{ldre.name}</td>
               <td>
-                {secondsToMinuteSecondMillisecondString(
+                {secondsToHourMinuteSecondString(
                   ldre.total_duration || 0,
                   false,
                 )}
