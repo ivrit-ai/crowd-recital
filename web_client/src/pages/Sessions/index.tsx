@@ -164,7 +164,7 @@ const Sessions = () => {
                 )}
                 key={rs.id}
               >
-                <td>{new Date(rs.created_at).toLocaleString()}</td>
+                <td dir="ltr">{new Date(rs.created_at).toLocaleString()}</td>
                 <td>
                   <StatusDisplay status={rs.status} disavowed={rs.disavowed} />
                 </td>
@@ -210,7 +210,7 @@ const Sessions = () => {
                     {rs.id}
                   </span>
                 </td>
-                <td>{new Date(rs.updated_at).toLocaleString()}</td>
+                <td dir="ltr">{new Date(rs.updated_at).toLocaleString()}</td>
                 <td>{rs.document?.title}</td>
               </tr>
             ))}
