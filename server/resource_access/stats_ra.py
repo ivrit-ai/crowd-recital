@@ -31,6 +31,7 @@ class StatsRA:
     ) -> None:
         self.session_factory = session_factory
 
+    @region.cache_on_arguments(namespace={"key_range": CacheKeys.user_stats}, expiration_time=60 * 1)
     def user_stats(self, user_id: str):
         with self.session_factory() as session:
 

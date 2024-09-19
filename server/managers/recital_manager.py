@@ -209,6 +209,9 @@ class RecitalManager:
                 self.recitals_ra.upsert(recital_session)
                 uploaded_sessions_mutated = True
 
+                # Invalidate the stats cache for this user
+                stats_cache.invalidate_stats_by_user_id(recital_session.user_id)
+
             except Exception as e:
                 print(f"Error uploading session {session_id} - skipping")
                 print(e)
@@ -248,6 +251,9 @@ class RecitalManager:
             recital_session.duration = 0
             # This will try to ensure no new content is added for this session moving forward
             self.recitals_ra.upsert(recital_session)
+
+            # Invalidate the stats cache for this user
+            stats_cache.invalidate_stats_by_user_id(recital_session.user_id)
 
             if original_status in [SessionStatus.ACTIVE, SessionStatus.ENDED]:
                 # delete audio segment files which may have been uploaded (but not yet aggregated)

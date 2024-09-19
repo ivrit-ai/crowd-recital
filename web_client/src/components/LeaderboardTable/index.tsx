@@ -1,22 +1,44 @@
+import { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
-
 import { Link } from "@tanstack/react-router";
-import { secondsToMinuteSecondMillisecondString } from "@/utils";
-import { getLeaderboardOptions } from "@/client/queries/stats";
-import { LeaderboardEntry } from "@/types/stats";
 import { twJoin } from "tailwind-merge";
+import { RefreshCwIcon } from "lucide-react";
 
-type CurrentUserLeaderboardEntry = {
-  global_rank: number;
-} & LeaderboardEntry;
+import { UserContext } from "@/context/user";
+import { secondsToMinuteSecondMillisecondString } from "@/utils";
+import {
+  getLeaderboardOptions,
+  getMyUserStatsOptions,
+} from "@/client/queries/stats";
 
-type Props = {
-  currentUserEntry?: CurrentUserLeaderboardEntry;
-};
+const LeaderboardTable = () => {
+  const {
+    auth: { user },
+  } = useContext(UserContext);
+  const {
+    data: myUserStats,
+    isPending: userStatsPending,
+    refetch: userStatsRefetch,
+  } = useQuery(getMyUserStatsOptions());
 
-const LeaderboardTable = ({ currentUserEntry }: Props) => {
   const data = useQuery(getLeaderboardOptions());
   const leaderboard = data.data;
+
+  const doRefetch = () => {
+    data.refetch();
+    userStatsRefetch();
+  };
+
+  let currentUserEntry;
+  if (!userStatsPending && myUserStats && user) {
+    currentUserEntry = {
+      name: user.name,
+      created_at: "",
+      global_rank: myUserStats.global_rank,
+      total_duration: myUserStats.total_duration,
+      total_recordings: myUserStats.total_recordings,
+    };
+  }
 
   const thisUserGlobalRank = currentUserEntry?.global_rank || 0;
   const leaderboardLength = leaderboard?.length || 0;
@@ -51,6 +73,13 @@ const LeaderboardTable = ({ currentUserEntry }: Props) => {
 
   return (
     <div dir="rtl" className="overflow-x-scroll">
+      <button className="btn btn-xs m-2 sm:btn-sm" onClick={() => doRefetch()}>
+        {data.isPending ? (
+          <span className="loading loading-infinity loading-sm" />
+        ) : (
+          <RefreshCwIcon className="h-4 w-4" />
+        )}
+      </button>
       <table className="table table-auto">
         <thead>
           <tr>
