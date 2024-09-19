@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { LucideMenu, MedalIcon, MicIcon, TrophyIcon } from "lucide-react";
+import { LucideMenu, MicIcon, TrophyIcon } from "lucide-react";
 import { Link, ToOptions, useRouteContext } from "@tanstack/react-router";
 
 import { UserContext } from "@/context/user";
