@@ -96,6 +96,9 @@ const Header = () => {
               <HeaderMenuLink to="/sessions">רשימת הקלטות</HeaderMenuLink>
             </HeaderMenuItem>
             <HeaderMenuItem closeMenu={closeMenu}>
+              <HeaderMenuLink to="/leaderboard">טבלת השיאים</HeaderMenuLink>
+            </HeaderMenuItem>
+            <HeaderMenuItem closeMenu={closeMenu}>
               <a onClick={() => logout()}>התנתק</a>
             </HeaderMenuItem>
           </ul>

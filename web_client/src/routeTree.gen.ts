@@ -15,6 +15,7 @@ import { Route as LoginImport } from './routes/login'
 import { Route as MainImport } from './routes/_main'
 import { Route as IndexImport } from './routes/index'
 import { Route as MainSessionsImport } from './routes/_main/sessions'
+import { Route as MainLeaderboardImport } from './routes/_main/leaderboard'
 import { Route as MainDocumentsImport } from './routes/_main/documents'
 import { Route as MainReciteDocIdImport } from './routes/_main/recite.$docId'
 
@@ -37,6 +38,11 @@ const IndexRoute = IndexImport.update({
 
 const MainSessionsRoute = MainSessionsImport.update({
   path: '/sessions',
+  getParentRoute: () => MainRoute,
+} as any)
+
+const MainLeaderboardRoute = MainLeaderboardImport.update({
+  path: '/leaderboard',
   getParentRoute: () => MainRoute,
 } as any)
 
@@ -82,6 +88,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainDocumentsImport
       parentRoute: typeof MainImport
     }
+    '/_main/leaderboard': {
+      id: '/_main/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof MainLeaderboardImport
+      parentRoute: typeof MainImport
+    }
     '/_main/sessions': {
       id: '/_main/sessions'
       path: '/sessions'
@@ -103,12 +116,14 @@ declare module '@tanstack/react-router' {
 
 interface MainRouteChildren {
   MainDocumentsRoute: typeof MainDocumentsRoute
+  MainLeaderboardRoute: typeof MainLeaderboardRoute
   MainSessionsRoute: typeof MainSessionsRoute
   MainReciteDocIdRoute: typeof MainReciteDocIdRoute
 }
 
 const MainRouteChildren: MainRouteChildren = {
   MainDocumentsRoute: MainDocumentsRoute,
+  MainLeaderboardRoute: MainLeaderboardRoute,
   MainSessionsRoute: MainSessionsRoute,
   MainReciteDocIdRoute: MainReciteDocIdRoute,
 }
@@ -120,6 +135,7 @@ export interface FileRoutesByFullPath {
   '': typeof MainRouteWithChildren
   '/login': typeof LoginRoute
   '/documents': typeof MainDocumentsRoute
+  '/leaderboard': typeof MainLeaderboardRoute
   '/sessions': typeof MainSessionsRoute
   '/recite/$docId': typeof MainReciteDocIdRoute
 }
@@ -129,6 +145,7 @@ export interface FileRoutesByTo {
   '': typeof MainRouteWithChildren
   '/login': typeof LoginRoute
   '/documents': typeof MainDocumentsRoute
+  '/leaderboard': typeof MainLeaderboardRoute
   '/sessions': typeof MainSessionsRoute
   '/recite/$docId': typeof MainReciteDocIdRoute
 }
@@ -139,21 +156,37 @@ export interface FileRoutesById {
   '/_main': typeof MainRouteWithChildren
   '/login': typeof LoginRoute
   '/_main/documents': typeof MainDocumentsRoute
+  '/_main/leaderboard': typeof MainLeaderboardRoute
   '/_main/sessions': typeof MainSessionsRoute
   '/_main/recite/$docId': typeof MainReciteDocIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/login' | '/documents' | '/sessions' | '/recite/$docId'
+  fullPaths:
+    | '/'
+    | ''
+    | '/login'
+    | '/documents'
+    | '/leaderboard'
+    | '/sessions'
+    | '/recite/$docId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/login' | '/documents' | '/sessions' | '/recite/$docId'
+  to:
+    | '/'
+    | ''
+    | '/login'
+    | '/documents'
+    | '/leaderboard'
+    | '/sessions'
+    | '/recite/$docId'
   id:
     | '__root__'
     | '/'
     | '/_main'
     | '/login'
     | '/_main/documents'
+    | '/_main/leaderboard'
     | '/_main/sessions'
     | '/_main/recite/$docId'
   fileRoutesById: FileRoutesById
@@ -195,6 +228,7 @@ export const routeTree = rootRoute
       "filePath": "_main.tsx",
       "children": [
         "/_main/documents",
+        "/_main/leaderboard",
         "/_main/sessions",
         "/_main/recite/$docId"
       ]
@@ -204,6 +238,10 @@ export const routeTree = rootRoute
     },
     "/_main/documents": {
       "filePath": "_main/documents.tsx",
+      "parent": "/_main"
+    },
+    "/_main/leaderboard": {
+      "filePath": "_main/leaderboard.tsx",
       "parent": "/_main"
     },
     "/_main/sessions": {
