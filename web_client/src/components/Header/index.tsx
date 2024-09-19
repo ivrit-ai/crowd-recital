@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { LucideMenu, MicIcon } from "lucide-react";
+import { LucideMenu, MedalIcon, MicIcon, TrophyIcon } from "lucide-react";
 import { Link, ToOptions, useRouteContext } from "@tanstack/react-router";
 
 import { UserContext } from "@/context/user";
@@ -96,7 +96,9 @@ const Header = () => {
               <HeaderMenuLink to="/sessions">רשימת הקלטות</HeaderMenuLink>
             </HeaderMenuItem>
             <HeaderMenuItem closeMenu={closeMenu}>
-              <HeaderMenuLink to="/leaderboard">טבלת השיאים</HeaderMenuLink>
+              <HeaderMenuLink to="/leaderboard">
+                היכל התהילה <TrophyIcon className="h-4 w-4" />
+              </HeaderMenuLink>
             </HeaderMenuItem>
             <HeaderMenuItem closeMenu={closeMenu}>
               <a onClick={() => logout()}>התנתק</a>

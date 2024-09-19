@@ -48,7 +48,7 @@ const LeaderboardTable = () => {
 
   const userTableRow =
     currentUserEntry && isOutOfTable ? (
-      <tr>
+      <tr className="bg-base-300">
         <td>{thisUserGlobalRank}</td>
         <td>{currentUserEntry.name}</td>
         <td>
@@ -60,26 +60,32 @@ const LeaderboardTable = () => {
         <td>{currentUserEntry?.total_recordings}</td>
         <td>
           <Link
-            className="btn-outline btn-primary btn-sm text-xs sm:text-sm"
+            className="btn btn-outline btn-primary btn-xs text-xs sm:btn-sm sm:text-sm"
             to="/documents"
           >
-            <span>הקלט</span>
-            <span className="hidden sm:inline"> וטפס מעלה</span>
-            <span>!</span>
+            הקלט עוד!
           </Link>
         </td>
       </tr>
     ) : null;
 
   return (
-    <div dir="rtl" className="overflow-x-scroll">
-      <table className="table table-auto">
+    <div dir="rtl" className="overflow-x-scroll py-8">
+      <table className="table table-sm table-auto sm:table-md">
         <thead>
           <tr>
-            <th></th>
+            <th className="p-0">
+              <button className="btn btn-sm" onClick={() => doRefetch()}>
+                {data.isPending ? (
+                  <span className="loading loading-infinity loading-sm" />
+                ) : (
+                  <RefreshCwIcon className="h-4 w-4" />
+                )}
+              </button>
+            </th>
             <th>שם</th>
             <th>אורך כולל</th>
-            <th>מס׳ הקלטות</th>
+            <th>הקלטות</th>
             <th>הצטרף</th>
           </tr>
         </thead>
@@ -88,7 +94,7 @@ const LeaderboardTable = () => {
             <tr
               key={idx}
               className={twJoin(
-                thisUserGlobalRank === idx + 1 && "text-primary",
+                thisUserGlobalRank === idx + 1 && "bg-base-300",
               )}
             >
               <td>{idx + 1}</td>
@@ -100,12 +106,14 @@ const LeaderboardTable = () => {
                 )}
               </td>
               <td>{ldre.total_recordings}</td>
-              <td dir="ltr">{new Date(ldre.created_at).toLocaleString()}</td>
+              <td dir="ltr">
+                {new Date(ldre.created_at).toLocaleDateString()}
+              </td>
             </tr>
           ))}
           {gapBelowTheTable ? (
             <tr>
-              <td colSpan={4} className="text-center text-xl">
+              <td colSpan={5} className="text-center text-xl">
                 ...
               </td>
             </tr>
@@ -113,13 +121,13 @@ const LeaderboardTable = () => {
           {userTableRow}
         </tbody>
       </table>
-      <button className="btn btn-md my-2 sm:btn-sm" onClick={() => doRefetch()}>
-        {data.isPending ? (
-          <span className="loading loading-infinity loading-sm" />
-        ) : (
-          <RefreshCwIcon className="h-4 w-4" />
-        )}
-      </button>
+      {!isOutOfTable && (
+        <div>
+          <Link className="btn btn-primary btn-sm mt-2" to="/documents">
+            מרשים! הקלט עוד...
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
