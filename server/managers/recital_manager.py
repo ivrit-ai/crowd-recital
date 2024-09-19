@@ -15,6 +15,7 @@ from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
 from utility.analytics.posthog import ConfiguredPosthog
 from utility.scheduler import JobScheduler
+from utility.cache import stats as stats_cache
 
 
 class TextSegmentRequestBody(BaseModel):
@@ -75,7 +76,6 @@ class RecitalManager:
         )
 
     def _session_finalization_task(self) -> None:
-
         self.aggregate_ended_sessions()
         self.upload_aggregated_sessions()
         self.discard_disavowed_sessions()
@@ -155,6 +155,8 @@ class RecitalManager:
                         "server",
                         "Session Aggregation Done",
                         {
+                            "source": "server",
+                            "$process_person_profile": False,
                             "session_id": session_id,
                             "duration": recital_session.duration,
                         },
@@ -170,6 +172,8 @@ class RecitalManager:
 
         if len(aggregated_sessions) == 0:
             return
+
+        uploaded_sessions_mutated = False
 
         for aggregated_session in aggregated_sessions:
             session_id = aggregated_session.id
@@ -203,11 +207,15 @@ class RecitalManager:
                 # Mark the session as published
                 recital_session.status = SessionStatus.UPLOADED
                 self.recitals_ra.upsert(recital_session)
+                uploaded_sessions_mutated = True
 
             except Exception as e:
                 print(f"Error uploading session {session_id} - skipping")
                 print(e)
                 continue
+
+        if uploaded_sessions_mutated:
+            stats_cache.region.delete(stats_cache.CacheKeys.leaderboard)
 
     def discard_disavowed_sessions(self) -> None:
         disavowed_sessions = self.recitals_ra.get_disavowed_pending_sessions()
@@ -215,12 +223,17 @@ class RecitalManager:
         if len(disavowed_sessions) == 0:
             return
 
+        discarded_sessions_mutated = False
         for disavowed_session in disavowed_sessions:
             session_id = disavowed_session.id
 
-            self.discard_session(session_id)
+            if self.discard_session(session_id):
+                discarded_sessions_mutated = True
 
-    def discard_session(self, session_id: str) -> None:
+        if discarded_sessions_mutated:
+            stats_cache.region.delete(stats_cache.CacheKeys.leaderboard)
+
+    def discard_session(self, session_id: str) -> bool:
         try:
             recital_session = self.recitals_ra.get_by_id(session_id)
             if not recital_session:
@@ -228,7 +241,7 @@ class RecitalManager:
 
             # If already discarded - nothing to do
             if recital_session.status == SessionStatus.DISCARDED:
-                return
+                return False
 
             original_status = recital_session.status
             recital_session.status = SessionStatus.DISCARDED
@@ -268,6 +281,8 @@ class RecitalManager:
                         "server",
                         "error deleting session content from storage",
                         {
+                            "source": "server",
+                            "$process_person_profile": False,
                             "session_id": session_id,
                         },
                     )
@@ -281,6 +296,8 @@ class RecitalManager:
                     "session_id": session_id,
                 },
             )
+
+        return True
 
     def add_text_segment(self, session_id: str, user: User, segment: TextSegmentRequestBody) -> None:
         recital_session = self.recitals_ra.get_by_id_and_user_id(session_id, user.id)

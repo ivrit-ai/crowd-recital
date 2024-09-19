@@ -1,4 +1,3 @@
-from email.policy import default
 import logging
 
 from environs import Env

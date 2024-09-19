@@ -12,6 +12,7 @@ from nanoid import generate
 from pydantic import BaseModel
 
 from containers import Container
+from errors import MissingSessionError
 from managers.recital_manager import RecitalManager, TextSegmentRequestBody
 from models.database import get_async_session
 from models.recital_audio_segment import RecitalAudioSegment
@@ -21,11 +22,9 @@ from models.recital_session import (
     SessionStatus,
     SessionTextDocument,
 )
-from models.recital_text_segment import RecitalTextSegment
 from models.text_document import TextDocument
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
-from errors import MissingSessionError
 
 from .crud.utils import create_dynamic_filters_dep, gen_get_multi, gen_get_single
 from .dependencies.analytics import Tracker

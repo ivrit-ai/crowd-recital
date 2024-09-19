@@ -10,6 +10,7 @@ from models.database import Database
 from resource_access.documents_ra import DocumentsRA
 from resource_access.recitals_content_ra import RecitalsContentRA
 from resource_access.recitals_ra import RecitalsRA
+from resource_access.stats_ra import StatsRA
 from resource_access.users_ra import UsersRA
 from utility.analytics.posthog import ConfiguredPosthog
 from utility.scheduler import JobScheduler
@@ -42,6 +43,10 @@ class Container(containers.DeclarativeContainer):
     )
     users_ra = providers.Factory(
         UsersRA,
+        session_factory=db.provided.session,
+    )
+    stats_ra = providers.Factory(
+        StatsRA,
         session_factory=db.provided.session,
     )
 
