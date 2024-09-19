@@ -8,6 +8,7 @@ const useKeyboardControl = (
     control: NavigationControls,
     navigationArgs?: NavigationArgs,
   ) => Promise<void>,
+  enabled: boolean,
 ) => {
   const handleKeyDown = useCallback(
     async (e: KeyboardEvent) => {
@@ -40,7 +41,7 @@ const useKeyboardControl = (
   );
 
   useKeyPress(
-    ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Enter"],
+    enabled ? ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Enter"] : [],
     handleKeyDown,
   );
 };

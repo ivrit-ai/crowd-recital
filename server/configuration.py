@@ -1,4 +1,3 @@
-from email.policy import default
 import logging
 
 from environs import Env
@@ -41,6 +40,8 @@ def configure(container: "Container"):
 
     container.config.analytics.posthog.api_key.from_value(env("PUBLIC_POSTHOG_KEY"))
     container.config.analytics.posthog.host.from_value(env("PUBLIC_POSTHOG_HOST"))
+
+    container.config.client.disable_soup.from_value(env.bool("DISABLE_SOUP", default=False))
 
     container.config.debug_mode.from_value(env.bool("DEBUG", default=False))
 

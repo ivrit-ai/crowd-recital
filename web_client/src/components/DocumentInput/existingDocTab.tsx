@@ -89,7 +89,7 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
         >
           <td className="text-xs md:text-sm">{doc.title}</td>
           <td className="hidden text-xs sm:table-cell md:text-sm">{doc.id}</td>
-          <td className="text-xs md:text-sm">
+          <td dir="ltr" className="text-xs md:text-sm">
             {new Date(doc.created_at).toLocaleString()}
           </td>
         </tr>

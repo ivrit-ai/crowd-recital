@@ -46,26 +46,51 @@ export const useKeyPress = (
   }, [handleKeyPress, node]);
 };
 
-export function secondsToMinuteSecondMillisecondString(
+export function secondsToHourMinuteSecondString(
   seconds: number,
   showMilis: boolean = true,
 ): string {
-  // Rounded seconds to ms
-  const roundedSeconds = Math.round(seconds * 1000) / 1000;
-  // Extract whole minutes, remaining whole seconds, and milliseconds
-  const minutes = Math.floor(roundedSeconds / 60);
-  const completeSeconds = Math.floor(roundedSeconds);
-  const remainingSeconds = completeSeconds % 60;
-  const milliseconds = Math.round((roundedSeconds - completeSeconds) * 1000);
+  // Check if the time is more than or equal to 1 hour
+  const hasHours = seconds >= 3600;
 
-  // Pad the minutes, seconds, and milliseconds with zeros to ensure correct length
+  // Ignore milliseconds if we have hours
+  if (hasHours) {
+    showMilis = false;
+  }
+
+  // Rounded seconds to milliseconds or whole seconds based on showMilis
+  const roundedSeconds = showMilis
+    ? Math.round(seconds * 1000) / 1000
+    : Math.floor(seconds);
+
+  // Total whole seconds
+  const totalSeconds = Math.floor(roundedSeconds);
+
+  // Calculate hours, minutes, and seconds
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  // Calculate milliseconds if needed
+  const milliseconds = showMilis
+    ? Math.round((roundedSeconds - totalSeconds) * 1000)
+    : 0;
+
+  // Pad hours, minutes, seconds, and milliseconds with zeros
+  const paddedHours = hours.toString().padStart(2, "0");
   const paddedMinutes = minutes.toString().padStart(2, "0");
   const paddedSeconds = remainingSeconds.toString().padStart(2, "0");
   const paddedMilliseconds = milliseconds.toString().padStart(3, "0");
 
-  // Concatenate minutes, seconds, and milliseconds as a mm:ss.zzz format
-  const milisPart = showMilis ? `.${paddedMilliseconds}` : "";
-  return `${paddedMinutes}:${paddedSeconds}${milisPart}`;
+  // Build the time string based on whether hours are present
+  if (hasHours) {
+    // Format: HH:MM:SS
+    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+  } else {
+    // Format: MM:SS or MM:SS.mmm
+    const milisPart = showMilis ? `.${paddedMilliseconds}` : "";
+    return `${paddedMinutes}:${paddedSeconds}${milisPart}`;
+  }
 }
 
 export { getErrorMessage } from "./tsErrorMessage";

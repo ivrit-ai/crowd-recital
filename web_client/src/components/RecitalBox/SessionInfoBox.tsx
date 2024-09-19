@@ -1,33 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
 import { HeadphonesIcon } from "lucide-react";
 
-import { secondsToMinuteSecondMillisecondString } from "@/utils";
-import { RecitalSessionStatus } from "@/types/session";
-import { getSessionOptions } from "@/client/queries/sessions";
+import { secondsToHourMinuteSecondString } from "@/utils";
+import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import SessionPreview from "@/components/SessionPreview";
 import useSessionPreview from "@/components/SessionPreview/useSessionPreview";
 
 type Props = {
   id: string;
+  sessionData?: RecitalSessionType;
+  isPending: boolean;
 };
 
-const SessionInfoBox = ({ id }: Props) => {
-  const { data: sessionData, isPending } = useQuery({
-    ...getSessionOptions(id),
-    refetchInterval: !id
-      ? false
-      : (query) => {
-          const lastFetchedData = query.state.data;
-          if (
-            lastFetchedData?.status !== RecitalSessionStatus.Uploaded &&
-            !lastFetchedData?.disavowed
-          ) {
-            return 2000;
-          } else {
-            return false;
-          }
-        },
-  });
+const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
   const [
     sessionPreviewRef,
     previewedSessionId,
@@ -50,10 +34,7 @@ const SessionInfoBox = ({ id }: Props) => {
       >
         <span>השמע</span>{" "}
         <span>
-          {secondsToMinuteSecondMillisecondString(
-            sessionData.duration || 0,
-            false,
-          )}
+          {secondsToHourMinuteSecondString(sessionData.duration || 0, false)}
         </span>
         <HeadphonesIcon className="h-4 w-4" />
       </button>

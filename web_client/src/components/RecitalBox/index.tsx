@@ -5,14 +5,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { InfoIcon, MicIcon } from "lucide-react";
+
+import { InfoIcon } from "lucide-react";
 import { useVisibilityChange } from "@uidotdev/usehooks";
 import { twJoin } from "tailwind-merge";
-import { Link, useRouteContext } from "@tanstack/react-router";
-
 import { EnvConfig } from "@/config";
 import { Document } from "@/models";
-import { secondsToMinuteSecondMillisecondString } from "@/utils";
+import { secondsToHourMinuteSecondString } from "@/utils";
 import useDocumentNavigation, {
   NavigationControls,
 } from "./useDocumentNavigation";
@@ -21,8 +20,8 @@ import useControlCallback from "./useControleCallback";
 import { useRecordingUploader } from "@/hooks/recodingUploader";
 import { useTextSegmentUploader } from "@/hooks/textSegmentUploader";
 import { useRecordingSession } from "@/hooks/useRecordingSession";
-import SessionInfoBox from "./SessionInfoBox";
 import SessionFinalizeModal from "./SessionFinalizeModal";
+import Header from "./Header";
 
 const useAutoSessionStop = (
   recording: boolean,
@@ -79,7 +78,6 @@ type RecitalBoxProps = {
 };
 
 const RecitalBox = ({ document }: RecitalBoxProps) => {
-  const { mic } = useRouteContext({ strict: false });
   const [sessionStartError, setSessionStartError] = useState<Error | null>(
     null,
   );
@@ -137,7 +135,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
     clearTextUploaderError,
   );
 
-  useKeyboardControl(onControl);
+  useKeyboardControl(onControl, !awaitingSessionFinalization);
 
   useEffect(() => {
     activeSentenceElementRef.current?.scrollIntoView({
@@ -157,54 +155,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
 
   return (
     <div className="flex h-screen-minus-topbar w-full flex-col content-between">
-      <header className="bg-base-200 p-4">
-        <div className="flex flex-row justify-between">
-          <div className="mx-auto flex w-full max-w-4xl flex-col justify-center gap-2 md:flex-row md:items-center md:justify-around md:gap-4 md:px-6">
-            <div className="min-w-0">
-              <div className="text-sm font-bold md:text-lg">
-                מסמך טקסט{" "}
-                {!recording && (
-                  <Link
-                    to="/documents"
-                    className="btn btn-link btn-sm text-primary"
-                  >
-                    החלף
-                  </Link>
-                )}
-              </div>
-              <div className="truncate text-sm">{document.title}</div>
-            </div>
-            <div className="min-w-0">
-              <div className="text-sm font-bold md:text-lg">
-                סשן הקלטה{" "}
-                {!recording && (
-                  <Link
-                    className="btn btn-link btn-sm text-primary"
-                    to="/sessions"
-                  >
-                    הקלטות
-                  </Link>
-                )}
-              </div>
-              <div className="truncate text-sm">
-                {recording ? (
-                  <span className="text-error">מקליט</span>
-                ) : (
-                  <SessionInfoBox id={sessionId} />
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex-shrink-0">
-            <span
-              className="btn btn-outline btn-sm sm:btn-xs"
-              onClick={() => mic?.setMicCheckActive(true)}
-            >
-              בדיקה <MicIcon className="inline-block h-4 w-4" />
-            </span>
-          </div>
-        </div>
-      </header>
+      <Header sessionId={sessionId} recording={recording} />
 
       {autoStopReason ? (
         <div className="alert alert-error mx-auto max-w-2xl">
@@ -301,7 +252,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
               <div className="btn btn-error join-item mx-auto w-full">
                 <span>עצור הקלטה</span>
                 <span className="font-mono text-xs font-bold md:text-lg">
-                  {secondsToMinuteSecondMillisecondString(recordingTimestamp)}
+                  {secondsToHourMinuteSecondString(recordingTimestamp)}
                 </span>
               </div>
             ) : (

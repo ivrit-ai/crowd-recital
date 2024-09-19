@@ -3,6 +3,7 @@ apscheduler
 beautifulsoup4
 boto3
 dependency-injector
+dogpile.cache
 environs
 fastapi
 fastcrud
