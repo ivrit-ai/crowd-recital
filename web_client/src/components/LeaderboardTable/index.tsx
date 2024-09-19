@@ -73,13 +73,6 @@ const LeaderboardTable = () => {
 
   return (
     <div dir="rtl" className="overflow-x-scroll">
-      <button className="btn btn-xs m-2 sm:btn-sm" onClick={() => doRefetch()}>
-        {data.isPending ? (
-          <span className="loading loading-infinity loading-sm" />
-        ) : (
-          <RefreshCwIcon className="h-4 w-4" />
-        )}
-      </button>
       <table className="table table-auto">
         <thead>
           <tr>
@@ -120,6 +113,13 @@ const LeaderboardTable = () => {
           {userTableRow}
         </tbody>
       </table>
+      <button className="btn btn-md my-2 sm:btn-sm" onClick={() => doRefetch()}>
+        {data.isPending ? (
+          <span className="loading loading-infinity loading-sm" />
+        ) : (
+          <RefreshCwIcon className="h-4 w-4" />
+        )}
+      </button>
     </div>
   );
 };
