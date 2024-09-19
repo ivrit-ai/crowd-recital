@@ -21,4 +21,8 @@ export class EnvConfig {
   static getInteger(key: string): number {
     return parseInt(this.get(key), 10);
   }
+
+  static getBoolean(key: string): boolean {
+    return this.get(key) === "1";
+  }
 }

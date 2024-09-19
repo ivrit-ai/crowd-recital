@@ -24,6 +24,8 @@ class ClientConfig(BaseModel):
     analytics_posthog_api_key: str | None = None
     analytics_posthog_host: str | None = None
 
+    disable_soup: str = "0"
+
 
 class ClientEnv(BaseModel):
     config: ClientConfig
@@ -38,6 +40,7 @@ def get_env_config(
     google_client_id: str = Provide[Container.config.auth.google.client_id],
     posthog_api_key: str = Provide[Container.config.analytics.posthog.api_key],
     posthog_host: str = Provide[Container.config.analytics.posthog.host],
+    disable_soup: str = Provide[Container.config.client.disable_soup],
 ) -> str:
     client_env = ClientEnv(
         config=ClientConfig(
@@ -45,6 +48,7 @@ def get_env_config(
             audio_segment_upload_length_seconds=10,
             analytics_posthog_api_key=posthog_api_key,
             analytics_posthog_host=posthog_host,
+            disable_soup="1" if disable_soup else "0",
         )
     )
     config_script_content = f"window.__env__ = {client_env.model_dump_json()}"
