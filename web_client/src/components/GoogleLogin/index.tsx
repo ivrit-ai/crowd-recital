@@ -15,13 +15,9 @@ const initializeGoogleAccountsIdentity = async (
   google.accounts.id.initialize({
     client_id: googleClientId,
     callback,
+    use_fedcm_for_prompt: true,
   });
-  google.accounts.id.prompt((notification) => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      // console.log(notification);
-      // TODO - consider handling dismissale of the prompt
-    }
-  });
+  google.accounts.id.prompt();
 };
 
 type OnCredentialCallback = (credential: string) => void;
@@ -34,6 +30,7 @@ const Login = ({ onCredential }: LoginProps) => {
   const posthog = usePostHog();
   const loginButtonParentRef = useRef(null);
   const onCredentialCallback = useRef(onCredential);
+  const isLoginButtonInitialized = useRef(false);
 
   useLayoutEffect(() => {
     onCredentialCallback.current = onCredential;
@@ -44,16 +41,19 @@ const Login = ({ onCredential }: LoginProps) => {
   };
 
   useEffect(() => {
-    initializeGoogleAccountsIdentity(
-      EnvConfig.get("auth_google_client_id"),
-      (response) => {
-        onCredentialCallback.current(response.credential);
-      },
-    );
-    googleAccounts.id.renderButton(loginButtonParentRef.current!, {
-      type: "standard",
-      click_listener: onLoginClicked,
-    });
+    if (!isLoginButtonInitialized.current) {
+      initializeGoogleAccountsIdentity(
+        EnvConfig.get("auth_google_client_id"),
+        (response) => {
+          onCredentialCallback.current(response.credential);
+        },
+      );
+      isLoginButtonInitialized.current = true;
+      googleAccounts.id.renderButton(loginButtonParentRef.current!, {
+        type: "standard",
+        click_listener: onLoginClicked,
+      });
+    }
   }, []);
 
   return (
