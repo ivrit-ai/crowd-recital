@@ -9,6 +9,12 @@
   --topbar-height: 4rem;
 }
 
+/* This is a Google Login Client bug patch */
+/* https://stackoverflow.com/questions/75428722/a-horizontal-scrollbar-appears-after-logging-in-with-google-one-tap-on-mobile-de/79005666#79005666 */
+#g_a11y_announcement {
+  inset-inline-start: -10000px;
+}
+
 .medium-captions::cue {
   font-size: 1.25rem;
   @apply bg-neutral text-neutral-content;
