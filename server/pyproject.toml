@@ -1,6 +1,50 @@
+[project]
+name = "ivritai-crowd-recital-server"
+description = "Crowd Recital Server - Part of the Ivrit.ai project"
+version = "1.0.1"
+requires-python = ">= 3.11"
+authors = [{ name = "Yoad Snapir", email = "yoadsn@gmail.com" }]
+license = { text = "MIT License" }
+
+[project.urls]
+Homepage = "https://ivrit.ai"
+Repository = "https://github.com/ivrit-ai/crowd-recital"
+
 [tool.black]
 line-length = 120
 
 [tool.isort]
 profile = "black"
 no_lines_before = []
+
+[tool.tbump]
+github_url = "https://github.com/ivrit-ai/crowd-recital"
+
+[tool.tbump.version]
+current = "1.0.1"
+
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  '''
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "v{new_version}"
+
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+search = 'version = "{current_version}"'
+
+[[tool.tbump.file]]
+src = "../web_client/package.json"
+search = '"version": "{current_version}"'
+
+
+[[tool.tbump.before_commit]]
+name = "check changelog"
+cmd = "cd ../web_client && pnpm run build && cd ../server"
