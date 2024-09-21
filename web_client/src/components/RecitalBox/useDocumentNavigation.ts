@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useLocalStorage } from "@uidotdev/usehooks";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Document } from "@/models";
 
@@ -24,9 +25,86 @@ export enum NavigationControls {
   Record,
 }
 
+type LocationCheckpoint = {
+  id: string;
+  paragraphIdx: number;
+  sentenceIdx: number;
+  lastUpdate: Date;
+};
+
+const StoreLocCheckpointsKey = "doclocs";
+const maxStoredLocCheckpoints = 5;
+
 const useDocumentNavigation = (document: Document) => {
   const [activeParagraphIndex, setActiveParagraphIndex] = useState<number>(0);
   const [activeSentenceIndex, setActiveSentenceIndex] = useState<number>(0);
+  const [locationCheckpoints, setLocationCheckpoints] = useLocalStorage<
+    LocationCheckpoint[]
+  >(StoreLocCheckpointsKey, []);
+
+  // Store the latest location checkpoint of the active doc
+  useEffect(() => {
+    // Anything meaningful to store?
+    if (document.id && (activeParagraphIndex > 0 || activeSentenceIndex > 0)) {
+      const locationCheckpoint = {
+        id: document.id,
+        paragraphIdx: activeParagraphIndex,
+        sentenceIdx: activeSentenceIndex,
+        lastUpdate: new Date(),
+      };
+      setLocationCheckpoints((checkpoints) => {
+        let nextCpsState = checkpoints || [];
+        const existsAtIdx = nextCpsState.findIndex(
+          (cp) => cp.id === document.id,
+        );
+        if (existsAtIdx >= 0) {
+          // Do not store if already reflects current state - this would be
+          // an infinte loop
+          const {
+            paragraphIdx: lastParagraphIdx,
+            sentenceIdx: lastSentenceIdx,
+          } = nextCpsState[existsAtIdx];
+          if (
+            locationCheckpoint.paragraphIdx !== lastParagraphIdx ||
+            locationCheckpoint.sentenceIdx !== lastSentenceIdx
+          ) {
+            nextCpsState = [...nextCpsState];
+            nextCpsState[existsAtIdx] = locationCheckpoint;
+          }
+        } else {
+          nextCpsState = [...nextCpsState];
+          // If have room to add one more - push to end.
+          if (nextCpsState.length + 1 <= maxStoredLocCheckpoints) {
+            nextCpsState.push(locationCheckpoint);
+          } else {
+            // Find the least recently updated one and replace it
+            const replaceAtIdx = nextCpsState.reduce((minIdx, cp, idx) => {
+              if (cp.lastUpdate < nextCpsState[minIdx].lastUpdate) {
+                return idx;
+              }
+              return minIdx;
+            }, 0);
+            nextCpsState[replaceAtIdx] = locationCheckpoint;
+          }
+        }
+        return nextCpsState;
+      });
+    }
+  }, [
+    document,
+    setLocationCheckpoints,
+    activeParagraphIndex,
+    activeSentenceIndex,
+  ]);
+
+  // Recall doc location if available
+  useEffect(() => {
+    const thisDocCp = locationCheckpoints?.find((cp) => cp.id === document.id);
+    if (thisDocCp) {
+      setActiveParagraphIndex(thisDocCp.paragraphIdx);
+      setActiveSentenceIndex(thisDocCp.sentenceIdx);
+    }
+  }, [locationCheckpoints, document]);
 
   const goToParagraphSentence = useCallback(
     (paragraphIndex: number, sentenceIndex: number) => {
