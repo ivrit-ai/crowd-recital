@@ -1,22 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { HeadphonesIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { twJoin } from "tailwind-merge";
 import { Link } from "@tanstack/react-router";
+import { HeadphonesIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 
-import { secondsToHourMinuteSecondString } from "@/utils";
-import { SortOrder } from "@/client/types/common";
-import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import useTrackPageView from "@/analytics/useTrackPageView";
 import { getSessionsOptions } from "@/client/queries/sessions";
+import { SortOrder } from "@/client/types/common";
 import SortCol from "@/components/DataTable/SortCol";
 import { useSortState } from "@/components/DataTable/useSortState";
-import WholePageLoading from "@/components/WholePageLoading";
-import StatusDisplay from "@/components/SessionStatusDisplay";
-import TablePager from "@/components/TablePager";
-import SessionPreview from "@/components/SessionPreview";
 import SessionDelete from "@/components/SessionDelete";
 import useSessionDelete from "@/components/SessionDelete/useSessionDelete";
+import SessionPreview from "@/components/SessionPreview";
+import StatusDisplay from "@/components/SessionStatusDisplay";
+import TablePager from "@/components/TablePager";
+import WholePageLoading from "@/components/WholePageLoading";
+import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
+import { secondsToHourMinuteSecondString } from "@/utils";
 
 type RecordNowCtaProps = {
   ctaText: string;
@@ -31,13 +32,16 @@ const RecordNowCta = ({ ctaText }: RecordNowCtaProps) => {
 };
 
 const NoRecordingsHero = () => {
+  const { t } = useTranslation("recordings");
   return (
     <div className="container hero mx-auto min-h-screen-minus-topbar">
       <div className="hero-content text-center">
         <div className="max-w-md">
-          <h1 className="text-4xl font-bold">בינתיים, אין שום הקלטות 🤦🏾‍♂️</h1>
-          <p className="py-6">אבל מומלץ בחום להקליט אחת עכשיו!</p>
-          <RecordNowCta ctaText="בחר טקסט להקלטה" />
+          <h1 className="text-4xl font-bold">
+            {t("nimble_house_carp_intend")}
+          </h1>
+          <p className="py-6">{t("orange_zesty_flea_coax")}</p>
+          <RecordNowCta ctaText={t("shy_level_bird_mix")} />
         </div>
       </div>
     </div>
@@ -60,6 +64,7 @@ const isSessionExpectedToBeUpdated = (session: RecitalSessionType) =>
   (session.disavowed && session.status !== RecitalSessionStatus.Discarded);
 
 const Sessions = () => {
+  const { t } = useTranslation("recordings");
   useTrackPageView("sessions");
 
   // Sessions Table Data
@@ -115,7 +120,7 @@ const Sessions = () => {
   }
 
   if (isError) {
-    return <div>ארעה בעיה בטעינת המידע</div>;
+    return <div>{t("early_icy_beetle_pull")}</div>;
   }
 
   if (totalItems === 0) {
@@ -125,7 +130,9 @@ const Sessions = () => {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <div className="mx-4 mb-4 flex items-center justify-between">
-        <h1 className="text-2xl">הקלטות</h1>
+        <h1 className="text-2xl">
+          {t("warm_green_trout_propel", { count: 0 })}
+        </h1>
         <button className="btn btn-xs m-2 sm:btn-sm" onClick={() => refetch()}>
           {isFetching ? (
             <span className="loading loading-infinity loading-sm" />
@@ -139,20 +146,20 @@ const Sessions = () => {
           <thead>
             <tr>
               <SortCol
-                label="נוצר"
+                label={t("agent_factual_toucan_stop")}
                 colName={SortColumnsEnum.CREATED_AT}
                 {...sortState}
               />
-              <th>סטטוס</th>
-              <th>משך</th>
+              <th>{t("lazy_sour_lamb_race")}</th>
+              <th>{t("lost_fair_jay_cry")}</th>
               <th></th>
-              <th>סשן</th>
+              <th>{t("cozy_fuzzy_canary_loop")}</th>
               <SortCol
-                label="עודכן"
+                label={t("royal_short_scallop_feast")}
                 colName={SortColumnsEnum.UPDATED_AT}
                 {...sortState}
               />
-              <th>מסמך טקסט</th>
+              <th>{t("each_mad_chicken_slurp")}</th>
             </tr>
           </thead>
           <tbody>
@@ -169,10 +176,7 @@ const Sessions = () => {
                   <StatusDisplay status={rs.status} disavowed={rs.disavowed} />
                 </td>
                 <td>
-                  {secondsToHourMinuteSecondString(
-                    rs.duration || 0,
-                    false,
-                  )}
+                  {secondsToHourMinuteSecondString(rs.duration || 0, false)}
                 </td>
                 <td>
                   <div className="flex min-w-24 items-center justify-center gap-2">
@@ -181,7 +185,9 @@ const Sessions = () => {
                         onClick={() => setPreviewedSessionId(rs.id)}
                         className="btn btn-outline btn-sm sm:btn-xs sm:gap-2"
                       >
-                        <div className="hidden sm:block">השמע</div>
+                        <div className="hidden sm:block">
+                          {t("suave_bad_moth_intend")}
+                        </div>
                         <HeadphonesIcon className="h-4 w-4 sm:h-4 sm:w-4" />
                       </button>
                     )}
@@ -224,7 +230,7 @@ const Sessions = () => {
         setPage={setPage}
       />
       <div className="sticky my-6 text-center">
-        <RecordNowCta ctaText="הקלט עכשיו" />
+        <RecordNowCta ctaText={t("few_least_fox_compose")} />
       </div>
       <SessionPreview
         id={previewedSessionId}

@@ -1,5 +1,7 @@
-import { RecitalSessionStatus } from "@/types/session";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+
+import { RecitalSessionStatus } from "@/types/session";
 
 type StatusDisplay = {
   label: string;
@@ -7,21 +9,22 @@ type StatusDisplay = {
   className: string;
 };
 
-function getSessionStatusDisplay(
+function useSessionStatusDisplay(
   status: RecitalSessionStatus,
   disavowed: boolean,
 ): StatusDisplay {
+  const { t } = useTranslation("recordings");
   if (disavowed) {
     switch (status) {
       case RecitalSessionStatus.Discarded:
         return {
-          label: "נמחק",
+          label: t("quick_front_thrush_cut"),
           progress: false,
           className: "badge-neutral",
         };
       default:
         return {
-          label: "במחיקה",
+          label: t("strong_alive_cow_fall"),
           progress: true,
           className: "badge-error",
         };
@@ -32,25 +35,25 @@ function getSessionStatusDisplay(
       case RecitalSessionStatus.Ended:
       case RecitalSessionStatus.Aggregated:
         return {
-          label: "בעבודה",
+          label: t("tired_true_dove_tear"),
           progress: true,
           className: "badge-warning",
         };
       case RecitalSessionStatus.Uploaded:
         return {
-          label: "זמין",
+          label: t("candid_away_starfish_aspire"),
           progress: false,
           className: "badge-success",
         };
       case RecitalSessionStatus.Discarded:
         return {
-          label: "ריק",
+          label: t("arable_dirty_tern_grin"),
           progress: false,
           className: "badge-neutral",
         };
       default:
         return {
-          label: "לא ידוע",
+          label: t("arable_cute_seal_enrich"),
           progress: false,
           className: "badge-error",
         };
@@ -65,7 +68,7 @@ function StatusDisplay({
   status: RecitalSessionStatus;
   disavowed: boolean;
 }) {
-  const { label, progress, className } = getSessionStatusDisplay(
+  const { label, progress, className } = useSessionStatusDisplay(
     status as RecitalSessionStatus,
     disavowed,
   );
