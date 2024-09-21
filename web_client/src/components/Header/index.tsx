@@ -3,7 +3,6 @@ import { LanguagesIcon, LucideMenu, MicIcon, TrophyIcon } from "lucide-react";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import i18n from "@/i18n";
 import { UserContext } from "@/context/user";
 import ThemeModeSelector from "./ThemeModeSelector";
 
