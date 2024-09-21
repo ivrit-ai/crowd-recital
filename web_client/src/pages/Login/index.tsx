@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { useTranslation } from "react-i18next";
 import GoogleLogin from "@/components/GoogleLogin";
 
 import useTrackPageView from "@/analytics/useTrackPageView";
@@ -8,6 +9,7 @@ import HebrewSoup from "@/components/HebrewSoup/HebrewSoup";
 
 const Login = () => {
   useTrackPageView("login");
+  const { t } = useTranslation();
   const { googleLoginProps } = useContext(UserContext);
 
   return (
@@ -19,14 +21,18 @@ const Login = () => {
             <img src={ivritAiLogo} alt="Ivrit.ai logo" />
           </aside>
           <div className="flex-col">
-            <div className="text-center align-middle">
-              <h1 className="text-4xl font-bold">עברית.ai</h1>
-              <p className="pt-6 text-xl">מה אתה אומר?!</p>
+            <div className="my-8 text-center align-middle">
+              <h1 className="text-3xl font-bold">{t("glossary.ivritai")}</h1>
+              <h1 className="text-xl font-bold">
+                {t("glossary.crowdRecitalSystem")}
+              </h1>
             </div>
             <div className="card-actions my-4 flex flex-row justify-center">
               <GoogleLogin {...googleLoginProps} />
             </div>
-            <p className="py-2">רק תתחבר זריז שנדע מי אתה וזה...</p>
+            <div className="text-center">
+              <p className="py-2">{t("maroon_factual_leopard_rest")}</p>
+            </div>
           </div>
         </div>
       </div>

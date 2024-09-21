@@ -1,9 +1,10 @@
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 
-import { RecitalSessionStatus } from "@/types/session";
 import { getMyUserStatsOptions } from "@/client/queries/stats";
+import { RecitalSessionStatus } from "@/types/session";
 import { secondsToHourMinuteSecondString } from "@/utils";
 
 type HeaderUserStatsProps = {
@@ -15,6 +16,7 @@ const HeaderUserStats = ({
   sessionId,
   sessionStatus,
 }: HeaderUserStatsProps) => {
+  const { t } = useTranslation("recordings");
   const {
     data: myUserStats,
     isPending: userStatsPending,
@@ -32,12 +34,18 @@ const HeaderUserStats = ({
       myUserStats
         ? secondsToHourMinuteSecondString(myUserStats.total_duration, false)
         : "00:00",
-      "סה״כ הוקלט",
+      t("deft_mean_javelina_dazzle"),
     ],
-    [myUserStats ? myUserStats.total_recordings : 0, "סה״כ הקלטות"],
+    [
+      myUserStats ? myUserStats.total_recordings : 0,
+      t("royal_tame_eagle_walk"),
+    ],
   ];
   if (myUserStats?.global_rank) {
-    statsList.push([myUserStats.global_rank, "דירוג"]);
+    statsList.push([
+      myUserStats.global_rank,
+      t("mealy_ornate_firefox_inspire"),
+    ]);
   }
 
   return (

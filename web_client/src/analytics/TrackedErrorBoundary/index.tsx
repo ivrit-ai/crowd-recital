@@ -1,9 +1,11 @@
+import { ErrorComponentProps } from "@tanstack/react-router";
 import { useCopyToClipboard } from "@uidotdev/usehooks";
+import { Trans, useTranslation } from "react-i18next";
 
 import Footer from "@/components/Footer";
-import { ErrorComponentProps } from "@tanstack/react-router";
 
 export const FallbackErrorPage = ({ error, reset }: ErrorComponentProps) => {
+  const { t } = useTranslation();
   const [copiedText, copyToClipboard] = useCopyToClipboard();
 
   const errorText = `${error?.message || "unknown error"}\n${error?.stack || "no stack"}`;
@@ -13,22 +15,23 @@ export const FallbackErrorPage = ({ error, reset }: ErrorComponentProps) => {
       <div className="flex min-h-screen w-full flex-col justify-center">
         <div className="hero-content text-center">
           <div className="max-w-md">
-            <h1 className="text-5xl font-bold">אוֹי ווַיזְמִיר!</h1>
+            <h1 className="text-5xl font-bold">
+              {t("grassy_funny_orangutan_arrive")}
+            </h1>
             <div className="py-4">
-              <p className="py-6">
-                משהו ממש לא צפוי קרה פה. נסה לרענן את העמוד (אל תבנה על זה)
-                וכשזה לא עובד, נשמח אם{" "}
-                <a type="email" href="mailto:yair@lifshitz.io">
-                  תפנה אלינו
-                </a>{" "}
-                להביע את תסכולך.
-              </p>
-              <p className="text-sm">
-                אם תחליט לצרף גם את הטקסט הקריפטי שמופיע למטה - זה יעזור
-              </p>
+              <Trans i18nKey="error_page_main_content">
+                <span>error </span>
+                <a className="link" type="email" href="mailto:yair@lifshitz.io">
+                  let us know
+                </a>
+                <span>please </span>
+              </Trans>
+            </div>
+            <div className="py-4">
+              <p className="text-sm">{t("honest_super_thrush_dream")}</p>
             </div>
             <button className="btn btn-primary" onClick={() => reset()}>
-              רענן
+              {t("keen_caring_bobcat_blend")}
             </button>
           </div>
         </div>
@@ -43,7 +46,7 @@ export const FallbackErrorPage = ({ error, reset }: ErrorComponentProps) => {
           className="btn btn-outline mx-auto max-w-40"
           onClick={() => copyToClipboard(errorText)}
         >
-          {copiedText ? "הועתק!" : "העתק"}
+          {copiedText ? t("fancy_clear_dingo_leap") : t("loose_raw_dingo_aim")}
         </button>
       </div>
       <Footer />

@@ -1,6 +1,7 @@
-import { useContext, useState } from "react";
-import { LucideMenu, MicIcon, TrophyIcon } from "lucide-react";
 import { Link, ToOptions, useRouteContext } from "@tanstack/react-router";
+import { LanguagesIcon, LucideMenu, MicIcon, TrophyIcon } from "lucide-react";
+import { useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { UserContext } from "@/context/user";
 import ThemeModeSelector from "./ThemeModeSelector";
@@ -29,6 +30,7 @@ const HeaderMenuLink = ({ children, ...linkProps }: HeaderMenuLinkProps) => {
 };
 
 const Header = () => {
+  const { t, i18n } = useTranslation();
   const { mic } = useRouteContext({ strict: false });
   const { auth, logout } = useContext(UserContext);
   const [imgError, setImgError] = useState(false);
@@ -38,6 +40,10 @@ const Header = () => {
     if (elem) {
       (elem as HTMLElement).blur();
     }
+  };
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
   };
 
   if (!auth?.user) {
@@ -84,24 +90,42 @@ const Header = () => {
                 <a>ממשק ניהול</a>
               </HeaderMenuItem>
             )} */}
+            {auth.user.isAdmin() && (
+              <HeaderMenuItem closeMenu={closeMenu}>
+                {i18n.language !== "yi" && (
+                  <button type="button" onClick={() => changeLanguage("yi")}>
+                    יידיש <LanguagesIcon className="h-4 w-4" />
+                  </button>
+                )}
+                {i18n.language !== "he" && (
+                  <button type="button" onClick={() => changeLanguage("he")}>
+                    עבר <LanguagesIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </HeaderMenuItem>
+            )}
             <HeaderMenuItem closeMenu={closeMenu}>
               <a onClick={() => mic?.setMicCheckActive(true)}>
-                בדיקת מיקרופון <MicIcon className="h-4 w-4" />
+                {t("tiny_soft_whale_dazzle")} <MicIcon className="h-4 w-4" />
               </a>
             </HeaderMenuItem>
             <HeaderMenuItem closeMenu={closeMenu}>
-              <HeaderMenuLink to="/documents">ממשק הקלטה</HeaderMenuLink>
-            </HeaderMenuItem>
-            <HeaderMenuItem closeMenu={closeMenu}>
-              <HeaderMenuLink to="/sessions">רשימת הקלטות</HeaderMenuLink>
-            </HeaderMenuItem>
-            <HeaderMenuItem closeMenu={closeMenu}>
-              <HeaderMenuLink to="/leaderboard">
-                היכל התהילה <TrophyIcon className="h-4 w-4" />
+              <HeaderMenuLink to="/documents">
+                {t("silly_super_lemur_forgive")}
               </HeaderMenuLink>
             </HeaderMenuItem>
             <HeaderMenuItem closeMenu={closeMenu}>
-              <a onClick={() => logout()}>התנתק</a>
+              <HeaderMenuLink to="/sessions">
+                {t("weak_lost_dingo_value")}
+              </HeaderMenuLink>
+            </HeaderMenuItem>
+            <HeaderMenuItem closeMenu={closeMenu}>
+              <HeaderMenuLink to="/leaderboard">
+                {t("brief_sharp_boar_pout")} <TrophyIcon className="h-4 w-4" />
+              </HeaderMenuLink>
+            </HeaderMenuItem>
+            <HeaderMenuItem closeMenu={closeMenu}>
+              <a onClick={() => logout()}>{t("sleek_keen_crow_zap")}</a>
             </HeaderMenuItem>
           </ul>
         </div>

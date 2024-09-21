@@ -1,5 +1,7 @@
-import { tw } from "@/utils";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+
+import { tw } from "@/utils";
 
 const pagePagesFromEitherSide = 2;
 
@@ -10,6 +12,7 @@ type PagerProps = {
 };
 
 const TablePager = ({ page, totalPages, setPage }: PagerProps) => {
+  const { t } = useTranslation();
   const safePageStep = (page: number, step: number) => {
     return Math.min(Math.max(1, page + step), totalPages);
   };
@@ -45,7 +48,7 @@ const TablePager = ({ page, totalPages, setPage }: PagerProps) => {
           className={btnBaseClassName}
           onClick={() => setPage((page) => safePageStep(page, -1))}
         >
-          קודם
+          {t("maroon_giant_moose_achieve")}
         </button>
         {pagesToShow.map((pageId) =>
           pageId === -1 || pageId === -2 ? (
@@ -74,7 +77,7 @@ const TablePager = ({ page, totalPages, setPage }: PagerProps) => {
           className={btnBaseClassName}
           onClick={() => setPage((page) => safePageStep(page, 1))}
         >
-          הבא
+          {t("warm_game_seal_nurture")}
         </button>
       </div>
     </div>

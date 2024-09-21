@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 
 import { markSessionForDeletion } from "@/client/sessions";
@@ -19,6 +20,7 @@ const SessionFinalizeModal = ({
   setAwaitingFinalization,
   endSession,
 }: Props) => {
+  const { t } = useTranslation("recordings");
   const [progress, setProgress] = useState(false);
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -44,9 +46,9 @@ const SessionFinalizeModal = ({
 
   const modalContent = readyToFinalize ? (
     <>
-      <h1 className="text-xl">איך הלך?</h1>
-      <p>במידה ומשהו בהקלטה לא הלך טוב, עדיף למחוק ולנסות שוב.</p>
-      <p>אחרת, אפשר לשמור.</p>
+      <h1 className="text-xl">{t("aware_level_ocelot_pick")}</h1>
+      <p>{t("brown_ninja_apple_dome")}</p>
+      <p>{t("alpine_worm_veto_target")}</p>
       <div className="modal-action justify-end gap-2">
         <button
           className="btn btn-ghost btn-sm text-error"
@@ -55,7 +57,7 @@ const SessionFinalizeModal = ({
           {progress ? (
             <span className="loading loading-infinity loading-xs" />
           ) : (
-            <span>מחק</span>
+            <span>{t("seemly_teal_finch_comfort")}</span>
           )}
         </button>
         <button
@@ -64,13 +66,13 @@ const SessionFinalizeModal = ({
           disabled={progress}
           autoFocus
         >
-          שמור
+          {t("frail_fluffy_loris_scold")}
         </button>
       </div>
     </>
   ) : (
     <div className="text-center">
-      <p>ההקלטה עדיין נשמרת - אנא המתן.</p>
+      <p>{t("strong_kind_toucan_lock")}</p>
       <div className="loading loading-infinity loading-lg" />
     </div>
   );
