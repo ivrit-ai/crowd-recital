@@ -184,7 +184,7 @@ const MicCheck = ({ open, onClose }: Props) => {
           )}
           {hasAudio && (
             <span className="badge badge-info badge-md absolute top-0 mt-2">
-              {displayedScore > 0.8
+              {displayedScore > 0.65
                 ? t("ago_sound_marlin_renew")
                 : t("ok_long_bullock_endure")}
             </span>
