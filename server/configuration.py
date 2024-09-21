@@ -2,6 +2,8 @@ import logging
 
 from environs import Env
 
+from version import __version__
+
 env = Env()
 env.read_env()
 
@@ -18,6 +20,7 @@ def get_db_connection_str() -> str:
 
 
 def configure(container: "Container"):
+    container.config.version.from_value(__version__)
     container.config.web_client_dist_folder.from_value(env("WEB_CLIENT_DIST_FOLDER", default="web_client_dist"))
 
     container.config.db.connection_str.from_value(get_db_connection_str())
