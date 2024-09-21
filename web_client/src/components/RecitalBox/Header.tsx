@@ -5,15 +5,17 @@ import { useTranslation } from "react-i18next";
 
 import { getSessionOptions } from "@/client/queries/sessions";
 import { RecitalSessionStatus } from "@/types/session";
+import { Document } from "@/models";
 import HeaderUserStats from "./HeaderUserStats";
 import SessionInfoBox from "./SessionInfoBox";
 
 type Props = {
   sessionId: string;
   recording: boolean;
+  document: Document;
 };
 
-const Header = ({ sessionId, recording }: Props) => {
+const Header = ({ sessionId, recording, document }: Props) => {
   const { t } = useTranslation("recordings");
   const { mic } = useRouteContext({ strict: false });
   const { data: sessionData, isPending } = useQuery({
@@ -65,7 +67,9 @@ const Header = ({ sessionId, recording }: Props) => {
             </div>
             <div className="truncate text-sm">
               {recording ? (
-                <span className="text-error">{t("white_pretty_ostrich_bask")}</span>
+                <span className="text-error">
+                  {t("white_pretty_ostrich_bask")}
+                </span>
               ) : (
                 <SessionInfoBox
                   id={sessionId}
@@ -81,7 +85,8 @@ const Header = ({ sessionId, recording }: Props) => {
             className="btn btn-outline btn-sm sm:btn-xs"
             onClick={() => mic?.setMicCheckActive(true)}
           >
-            {t("honest_sea_halibut_reap")} <MicIcon className="inline-block h-4 w-4" />
+            {t("honest_sea_halibut_reap")}{" "}
+            <MicIcon className="inline-block h-4 w-4" />
           </span>
         </div>
       </div>

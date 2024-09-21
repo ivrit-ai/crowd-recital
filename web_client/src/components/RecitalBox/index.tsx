@@ -152,7 +152,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
 
   return (
     <div className="flex h-screen-minus-topbar w-full flex-col content-between">
-      <Header sessionId={sessionId} recording={recording} />
+      <Header sessionId={sessionId} recording={recording} document={document} />
 
       {autoStopReason ? (
         <div className="alert alert-error mx-auto max-w-2xl">
@@ -169,19 +169,23 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
           </span>
           {!recording && (
             <span>
-              <kbd className="kbd kbd-sm">&uarr;</kbd> {t("ornate_quiet_turtle_hurl")}
+              <kbd className="kbd kbd-sm">&uarr;</kbd>{" "}
+              {t("ornate_quiet_turtle_hurl")}
             </span>
           )}
           {!recording && (
             <span>
-              <kbd className="kbd kbd-sm">&darr;</kbd> {t("weird_moving_mongoose_cry")}
+              <kbd className="kbd kbd-sm">&darr;</kbd>{" "}
+              {t("weird_moving_mongoose_cry")}
             </span>
           )}
           <span>
-            <kbd className="kbd kbd-sm">&larr;</kbd> {t("zippy_safe_halibut_spur")}
+            <kbd className="kbd kbd-sm">&larr;</kbd>{" "}
+            {t("zippy_safe_halibut_spur")}
           </span>
           <span>
-            <kbd className="kbd kbd-sm">&rarr;</kbd> {t("loose_loved_flea_drip")}
+            <kbd className="kbd kbd-sm">&rarr;</kbd>{" "}
+            {t("loose_loved_flea_drip")}
           </span>
         </div>
       )}
