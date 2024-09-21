@@ -4,7 +4,15 @@ import "./index.css";
 
 import "./i18n";
 
+import { EnvConfig } from "@/config";
 import App from "./App";
+
+console.log(
+  "%cעברית.ai",
+  "color: black; background-color: white; font-size: 2rem; padding: 16px 4px; border-radius: 10px;",
+  `\n-- Crowed Recital Client ${import.meta.env.VITE_VERSION}`,
+  `\n-- Server Version ${EnvConfig.get("version")}`,
+);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

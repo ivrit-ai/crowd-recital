@@ -41,10 +41,11 @@ src = "pyproject.toml"
 search = 'version = "{current_version}"'
 
 [[tool.tbump.file]]
+src = "version.py"
+
+[[tool.tbump.file]]
 src = "../web_client/package.json"
 search = '"version": "{current_version}"'
 
-
-[[tool.tbump.before_commit]]
-name = "check changelog"
-cmd = "cd ../web_client && pnpm run build && cd ../server"
+[[tool.tbump.file]]
+src = "../web_client/.env"

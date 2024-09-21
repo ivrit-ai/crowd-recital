@@ -221,6 +221,7 @@ from the root folder.
 
 - Python >= 3.11 and < 3.12 Installed
 - Node 20 available on PATH
+- Install tbump with `pipx install tbump`
 
 You need to start two web servers from two shells.
 
@@ -241,6 +242,11 @@ You need to start two web servers from two shells.
 
 - Access the app on `https://localhost:5173`
 
+## Bump versions
+
+Use tbump from the "server" folder:
+
+`tbump 4.3.2`
 
 
 

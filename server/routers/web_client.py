@@ -17,6 +17,8 @@ def get_web_client_env_app() -> FastAPI:
 
 
 class ClientConfig(BaseModel):
+    version: str
+    
     auth_google_client_id: str
 
     audio_segment_upload_length_seconds: int
@@ -37,6 +39,7 @@ def get_env_config(
     # For safety - we bother to list each configuration entry we want to expose,
     # and in multiple places - so exposing anything from the server env to the client
     # is (hopefully) a deliberate decision.
+    version: str = Provide[Container.config.version],
     google_client_id: str = Provide[Container.config.auth.google.client_id],
     posthog_api_key: str = Provide[Container.config.analytics.posthog.api_key],
     posthog_host: str = Provide[Container.config.analytics.posthog.host],
@@ -44,6 +47,7 @@ def get_env_config(
 ) -> str:
     client_env = ClientEnv(
         config=ClientConfig(
+            version=version,
             auth_google_client_id=google_client_id,
             audio_segment_upload_length_seconds=10,
             analytics_posthog_api_key=posthog_api_key,
