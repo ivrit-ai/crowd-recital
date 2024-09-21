@@ -17,7 +17,7 @@ i18n
   .use(initReactI18next)
   .init({
     supportedLngs: ["he", "yi"],
-    debug: true,
+    // debug: true,
     defaultNS,
     fallbackLng: "he",
     resources: {
