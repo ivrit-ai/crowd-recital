@@ -1,17 +1,19 @@
-import { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { twJoin } from "tailwind-merge";
 import { RefreshCwIcon } from "lucide-react";
+import { useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 
-import { UserContext } from "@/context/user";
-import { secondsToHourMinuteSecondString } from "@/utils";
 import {
   getLeaderboardOptions,
   getMyUserStatsOptions,
 } from "@/client/queries/stats";
+import { UserContext } from "@/context/user";
+import { secondsToHourMinuteSecondString } from "@/utils";
 
 const LeaderboardTable = () => {
+  const { t } = useTranslation("recordings");
   const {
     auth: { user },
   } = useContext(UserContext);
@@ -63,7 +65,7 @@ const LeaderboardTable = () => {
             className="btn btn-outline btn-primary btn-xs text-xs sm:btn-sm sm:text-sm"
             to="/documents"
           >
-            הקלט עוד!
+            {t("stout_these_dingo_laugh")}
           </Link>
         </td>
       </tr>
@@ -83,10 +85,10 @@ const LeaderboardTable = () => {
                 )}
               </button>
             </th>
-            <th>שם</th>
-            <th>אורך כולל</th>
-            <th>הקלטות</th>
-            <th>הצטרף</th>
+            <th>{t("sea_antsy_koala_cheer", { ns: "translation" })}</th>
+            <th>{t("weary_sharp_badger_love")}</th>
+            <th>{t("warm_green_trout_propel", { count: 0 })}</th>
+            <th>{t("royal_trick_gopher_thrive", { ns: "translation" })}</th>
           </tr>
         </thead>
         <tbody>
@@ -124,7 +126,7 @@ const LeaderboardTable = () => {
       {!isOutOfTable && (
         <div>
           <Link className="btn btn-primary btn-sm mt-2" to="/documents">
-            מרשים! הקלט עוד...
+            {t("mean_mean_iguana_pick")}
           </Link>
         </div>
       )}
