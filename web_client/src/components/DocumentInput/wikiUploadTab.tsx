@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import { usePostHog } from "posthog-js/react";
 import { Link2Off } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 
 import type { TabContentProps } from "./types";
@@ -18,6 +19,7 @@ const WikiArticleUpload = ({
   setError,
   loadNewDocumentFromWikiArticle,
 }: Props) => {
+  const { t } = useTranslation("documents");
   const posthog = usePostHog();
   const [wikiArticleUrl, setWikiArticleUrl] = useState("");
   const [validUrl, setValidUrl] = useState(false);
@@ -43,19 +45,19 @@ const WikiArticleUpload = ({
         });
       posthog?.capture("Upload Wiki URL", { wiki_url: wikiArticleUrl });
     } else {
-      setError("זהו אינו קישור חוקי");
+      setError(t("many_mushy_scallop_gasp"));
       posthog?.capture("Invalid Upload Wiki URL", { wiki_url: wikiArticleUrl });
     }
   }, [loadNewDocumentFromWikiArticle, wikiArticleUrl, validUrl]);
 
   return (
     <div className="flex flex-col justify-end gap-4">
-      <label className="label">קישור למאמר ויקיפדיה</label>
+      <label className="label">{t("plane_merry_mallard_cut")}</label>
       <div className="flex gap-2">
         <input
           type="url"
           dir="ltr"
-          placeholder="לדוגמה https://he.wikipedia.org/wiki/פומפיי"
+          placeholder={t("smart_shy_impala_assure")}
           className={twJoin(
             "input input-sm input-bordered w-full max-w-xl text-end",
             !validUrl && "input-error",
@@ -70,11 +72,11 @@ const WikiArticleUpload = ({
         >
           {uploading ? (
             <span className="flex items-center">
-              זה ייקח רגע
+              {t("fancy_tame_grizzly_renew")}
               <span className="loading loading-infinity loading-xs px-4" />
             </span>
           ) : (
-            <span>המשך להקלטה</span>
+            <span>{t("warm_next_alligator_laugh")}</span>
           )}
         </button>
       </div>

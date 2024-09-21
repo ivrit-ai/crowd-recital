@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
-import { RefreshCwIcon } from "lucide-react";
-import { useNavigate, useRouteContext } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useRouteContext } from "@tanstack/react-router";
+import { Link2Off, RefreshCwIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { Link2Off } from "lucide-react";
 
-import type { TabContentProps } from "./types";
+import { getDocumentsOptions } from "@/client/queries/documents";
 import { SortOrder } from "@/client/types/common";
 import SortCol from "@/components/DataTable/SortCol";
 import { useSortState } from "@/components/DataTable/useSortState";
-import { getDocumentsOptions } from "@/client/queries/documents";
 import TablePager from "@/components/TablePager";
+import type { TabContentProps } from "./types";
 
 type Props = TabContentProps & {
   setNoDocsFound: (notFound: boolean | null) => void;
@@ -23,6 +23,7 @@ enum SortColumnsEnum {
 const itemsPerPage = 10;
 
 const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
+  const { t } = useTranslation("documents");
   const navigate = useNavigate({ from: "/documents" });
   const [onlyMine, setOnlyMine] = useState(false);
   const [existingId, setExistingId] = useState("");
@@ -114,13 +115,13 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
   const tableElement = (
     <>
       <div className="mx-4 flex flex-row items-center justify-between">
-        <label className="label">בחר מסמך קיים</label>
+        <label className="label">{t("house_equal_bird_vent")}</label>
         {refreshButton}
       </div>
       <div className="mx-4 mb-4 flex flex-row items-center justify-between">
         <label className="label cursor-pointer">
           <span className="label-text me-4 text-xs sm:text-sm">
-            הצג רק מסמכים שלי
+            {t("brief_cozy_gull_bloom")}
           </span>
           <input
             type="checkbox"
@@ -134,10 +135,12 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
         <table className="table">
           <thead>
             <tr>
-              <th>כותרת</th>
-              <th className="hidden sm:table-cell">מזהה</th>
+              <th>{t("major_dark_husky_launch")}</th>
+              <th className="hidden sm:table-cell">
+                {t("many_nimble_tapir_fade")}
+              </th>
               <SortCol
-                label="נוצר"
+                label={t("long_suave_bobcat_succeed")}
                 colName={SortColumnsEnum.CREATED_AT}
                 {...sortState}
               />
@@ -155,7 +158,7 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
       {isError && (
         <div>
           <div className="alert alert-error text-sm">
-            ארעה שגיאה בעת טעינת הטקסטים
+            {t("gross_only_llama_play")}
           </div>
         </div>
       )}
@@ -164,15 +167,17 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
 
   const noDocsPlaceholder = (
     <div className="text-center">
-      <h2 className="my-10 text-center text-lg">אין מסמכים קיימים עדיין</h2>
-      <p>נסה לטעון מאמר ויקיפדיה</p>
+      <h2 className="my-10 text-center text-lg">
+        {t("proof_nimble_puma_dream")}
+      </h2>
+      <p>{t("short_blue_mink_boost")}</p>
     </div>
   );
 
   const errorPlaceholder = (
     <div className="text-center text-error">
       <h2 className="my-10 text-center text-lg">ארעה שגיאה</h2>
-      <p>נסה מחדש - לא הצלחנו לטעון טקסטים</p>
+      <p>{t("bold_active_moose_dream")}</p>
       {refreshButton}
     </div>
   );
@@ -186,7 +191,7 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
           : noDocsPlaceholder}
       <div className="divider"></div>
       <div className="flex flex-col justify-end gap-4">
-        <label className="label">הזן מזהה מסמך קיים</label>
+        <label className="label">{t("short_spry_rooster_swim")}</label>
         <div className="flex gap-2">
           <input
             type="text"
@@ -201,7 +206,7 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
               navigate({ to: "/recite/$docId", params: { docId: existingId } })
             }
           >
-            המשך להקלטה
+            {t("warm_next_alligator_laugh")}
           </button>
         </div>
         {!!error && (
