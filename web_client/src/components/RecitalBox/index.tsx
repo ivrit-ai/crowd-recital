@@ -1,3 +1,5 @@
+import { useVisibilityChange } from "@uidotdev/usehooks";
+import { InfoIcon } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -5,23 +7,22 @@ import {
   useRef,
   useState,
 } from "react";
-
-import { InfoIcon } from "lucide-react";
-import { useVisibilityChange } from "@uidotdev/usehooks";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+
 import { EnvConfig } from "@/config";
+import { useRecordingUploader } from "@/hooks/recodingUploader";
+import { useTextSegmentUploader } from "@/hooks/textSegmentUploader";
+import { useRecordingSession } from "@/hooks/useRecordingSession";
 import { Document } from "@/models";
 import { secondsToHourMinuteSecondString } from "@/utils";
+import Header from "./Header";
+import SessionFinalizeModal from "./SessionFinalizeModal";
+import useControlCallback from "./useControleCallback";
 import useDocumentNavigation, {
   NavigationControls,
 } from "./useDocumentNavigation";
 import useKeyboardControl from "./useKeyboardControl";
-import useControlCallback from "./useControleCallback";
-import { useRecordingUploader } from "@/hooks/recodingUploader";
-import { useTextSegmentUploader } from "@/hooks/textSegmentUploader";
-import { useRecordingSession } from "@/hooks/useRecordingSession";
-import SessionFinalizeModal from "./SessionFinalizeModal";
-import Header from "./Header";
 
 const useAutoSessionStop = (
   recording: boolean,
@@ -29,6 +30,7 @@ const useAutoSessionStop = (
   audioUploaderError: Error | null,
   textUploaderError: Error | null,
 ) => {
+  const { t } = useTranslation("recordings");
   const finalizeSessionCbRef = useRef(finalizeSession); // Latest ref trick
   useLayoutEffect(() => {
     finalizeSessionCbRef.current = finalizeSession;
@@ -40,9 +42,21 @@ const useAutoSessionStop = (
     if (recording) {
       let autoStoppedForReason = null;
       if (audioUploaderError || textUploaderError) {
-        autoStoppedForReason = AutoStopReasons.uploadErrorReason;
+        autoStoppedForReason = (
+          <div>
+            <div>{t("trite_yummy_martin_aspire")}</div>
+            <div>{t("these_active_leopard_engage")}</div>
+            <div>{t("close_equal_dragonfly_work")}</div>
+          </div>
+        );
       } else if (!documentVisible) {
-        autoStoppedForReason = AutoStopReasons.documentInvisible;
+        autoStoppedForReason = (
+          <div>
+            <div>{t("trite_yummy_martin_aspire")}</div>
+            <div>{t("these_active_leopard_engage")}</div>
+            <div>{t("close_equal_dragonfly_work")}</div>
+          </div>
+        );
       }
 
       if (autoStoppedForReason) {
@@ -55,29 +69,12 @@ const useAutoSessionStop = (
   return { autoStopReason };
 };
 
-const AutoStopReasons = {
-  uploadErrorReason: (
-    <div>
-      <div>ארעה שגיאה בזמן ההקלטה - עצרנו את ההקלטה ליתר ביטחון.</div>
-      <div>
-        מה שהוקלט עד כה, ככל הנראה נשמר - על כל פנים, אנא יידע אותנו בבעיה.
-      </div>
-      <div>נודה לך אם תתחיל הקלטה מהמקום בו זו נעצרה, משפט אחד אחורה.</div>
-    </div>
-  ),
-  documentInvisible: (
-    <div>
-      <div>נראה שעברת לעבוד על משהו אחר - עצרנו את ההקלטה בינתיים.</div>
-      <div>מה שהוקלט עד כה נשמר.</div>
-    </div>
-  ),
-} as const;
-
 type RecitalBoxProps = {
   document: Document;
 };
 
 const RecitalBox = ({ document }: RecitalBoxProps) => {
+  const { t } = useTranslation("recordings");
   const [sessionStartError, setSessionStartError] = useState<Error | null>(
     null,
   );
@@ -165,24 +162,26 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
       ) : (
         <div className="flex items-center justify-center gap-4 pt-4 nokbd:hidden">
           <span>
-            <kbd className="kbd kbd-sm">⏎</kbd> {recording ? "עצור" : "התחל"}{" "}
-            הקלטה
+            <kbd className="kbd kbd-sm">⏎</kbd>{" "}
+            {recording
+              ? t("bold_weird_okapi_win")
+              : t("odd_next_gazelle_transform")}
           </span>
           {!recording && (
             <span>
-              <kbd className="kbd kbd-sm">&uarr;</kbd> פסקה קודמת
+              <kbd className="kbd kbd-sm">&uarr;</kbd> {t("ornate_quiet_turtle_hurl")}
             </span>
           )}
           {!recording && (
             <span>
-              <kbd className="kbd kbd-sm">&darr;</kbd> פסקה הבאה
+              <kbd className="kbd kbd-sm">&darr;</kbd> {t("weird_moving_mongoose_cry")}
             </span>
           )}
           <span>
-            <kbd className="kbd kbd-sm">&larr;</kbd> משפט הבא
+            <kbd className="kbd kbd-sm">&larr;</kbd> {t("zippy_safe_halibut_spur")}
           </span>
           <span>
-            <kbd className="kbd kbd-sm">&rarr;</kbd> משפט קודם
+            <kbd className="kbd kbd-sm">&rarr;</kbd> {t("loose_loved_flea_drip")}
           </span>
         </div>
       )}
@@ -239,7 +238,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
 
       {!!sessionStartError && (
         <div className="text-center text-error">
-          ארעה תקלה ביצירת סשן ההקלטה
+          {t("arable_teal_tern_greet")}
         </div>
       )}
       <div className="sm:mx-auto sm:max-w-xl sm:px-2">
@@ -250,20 +249,20 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
           >
             {recording ? (
               <div className="btn btn-error join-item mx-auto w-full">
-                <span>עצור הקלטה</span>
+                <span>{t("bold_weird_okapi_win")}</span>
                 <span className="font-mono text-xs font-bold md:text-lg">
                   {secondsToHourMinuteSecondString(recordingTimestamp)}
                 </span>
               </div>
             ) : (
               <div className="btn btn-primary join-item mx-auto w-full">
-                התחל הקלטה
+                {t("odd_next_gazelle_transform")}
               </div>
             )}
           </div>
         ) : (
           <div className="btn btn-disabled mx-auto my-4 flex w-full items-center">
-            <span>מאתחל מיקרופון</span>
+            <span>{t("whole_lofty_starfish_propel")}</span>
             <span className="loading loading-dots loading-md mx-4"></span>
           </div>
         )}

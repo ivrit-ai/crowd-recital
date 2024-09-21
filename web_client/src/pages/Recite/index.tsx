@@ -8,6 +8,7 @@ type Props = {
 
 const Recite = ({ document }: Props) => {
   useTrackPageView("recite");
+  throw new Error("sdf")
   return <RecitalBox document={document} />;
 };
 

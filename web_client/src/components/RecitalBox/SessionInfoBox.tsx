@@ -1,9 +1,10 @@
 import { HeadphonesIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import { secondsToHourMinuteSecondString } from "@/utils";
-import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import SessionPreview from "@/components/SessionPreview";
 import useSessionPreview from "@/components/SessionPreview/useSessionPreview";
+import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
+import { secondsToHourMinuteSecondString } from "@/utils";
 
 type Props = {
   id: string;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
+  const { t } = useTranslation("recordings");
   const [
     sessionPreviewRef,
     previewedSessionId,
@@ -23,7 +25,7 @@ const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
   if (sessionData?.disavowed) {
     statusElement = (
       <div className="btn btn-ghost btn-xs">
-        <span>נמחק</span>
+        <span>{t("sound_nimble_spider_burn")}</span>
       </div>
     );
   } else if (sessionData?.status === RecitalSessionStatus.Uploaded) {
@@ -32,7 +34,7 @@ const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
         className="btn btn-accent btn-xs"
         onClick={() => setPreviewedSessionId(id)}
       >
-        <span>השמע</span>{" "}
+        <span>{t("small_moving_raven_buy")}</span>{" "}
         <span>
           {secondsToHourMinuteSecondString(sessionData.duration || 0, false)}
         </span>
@@ -49,7 +51,7 @@ const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-      <div>{id ? <span>הסתיים</span> : "ממתין להקלטה"}</div>
+      <div>{id ? <span>{t("stock_major_myna_advise")}</span> : t("fun_cute_mayfly_earn")}</div>
       {!isPending && statusElement}
       <SessionPreview
         ref={sessionPreviewRef}

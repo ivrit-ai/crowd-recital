@@ -1,11 +1,12 @@
-import { useRouteContext } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Link, MicIcon } from "lucide-react";
+import { Link, useRouteContext } from "@tanstack/react-router";
+import { MicIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
+import { getSessionOptions } from "@/client/queries/sessions";
 import { RecitalSessionStatus } from "@/types/session";
 import HeaderUserStats from "./HeaderUserStats";
 import SessionInfoBox from "./SessionInfoBox";
-import { getSessionOptions } from "@/client/queries/sessions";
 
 type Props = {
   sessionId: string;
@@ -13,6 +14,7 @@ type Props = {
 };
 
 const Header = ({ sessionId, recording }: Props) => {
+  const { t } = useTranslation("recordings");
   const { mic } = useRouteContext({ strict: false });
   const { data: sessionData, isPending } = useQuery({
     ...getSessionOptions(sessionId),
@@ -37,13 +39,13 @@ const Header = ({ sessionId, recording }: Props) => {
         <div className="mx-auto flex w-full max-w-4xl flex-col justify-center gap-2 md:flex-row md:items-center md:justify-around md:gap-4 md:px-6">
           <div className="min-w-0">
             <div className="text-sm font-bold md:text-lg">
-              מסמך טקסט{" "}
+              {t("fancy_smart_tadpole_slurp")}{" "}
               {!recording && (
                 <Link
                   to="/documents"
                   className="btn btn-link btn-sm text-primary"
                 >
-                  החלף
+                  {t("jumpy_long_racoon_hunt")}
                 </Link>
               )}
             </div>
@@ -51,19 +53,19 @@ const Header = ({ sessionId, recording }: Props) => {
           </div>
           <div className="min-w-0">
             <div className="text-sm font-bold md:text-lg">
-              סשן הקלטה{" "}
+              {t("every_inclusive_ape_endure")}{" "}
               {!recording && (
                 <Link
                   className="btn btn-link btn-sm text-primary"
                   to="/sessions"
                 >
-                  הקלטות
+                  {t("funny_glad_clownfish_drip")}
                 </Link>
               )}
             </div>
             <div className="truncate text-sm">
               {recording ? (
-                <span className="text-error">מקליט</span>
+                <span className="text-error">{t("white_pretty_ostrich_bask")}</span>
               ) : (
                 <SessionInfoBox
                   id={sessionId}
@@ -79,7 +81,7 @@ const Header = ({ sessionId, recording }: Props) => {
             className="btn btn-outline btn-sm sm:btn-xs"
             onClick={() => mic?.setMicCheckActive(true)}
           >
-            בדיקה <MicIcon className="inline-block h-4 w-4" />
+            {t("honest_sea_halibut_reap")} <MicIcon className="inline-block h-4 w-4" />
           </span>
         </div>
       </div>
