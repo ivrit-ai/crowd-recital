@@ -1,7 +1,8 @@
 {
   "glossary": {
     "ivritai": "עברית.ai",
-    "crowdRecitalSystem": "מערכת הקראת המונים"
+    "crowdRecitalSystem": "מערכת הקראת המונים",
+    "ivritaiSlogan": "עברים, דברו עברית"
   },
   "maroon_factual_leopard_rest": "(עכשיו צריך להתחבר...)",
   "maroon_giant_moose_achieve": "קודם",
@@ -20,5 +21,6 @@
   "due_cute_gorilla_bump": "כדאי לציין כי התחברת עם המייל {{userEmail}}",
   "careful_great_turkey_dine": "לא, אין אותנו..",
   "tough_royal_swallow_treasure": "אנחנו לא מוצאים את זה, אולי זה מעולם לא היה קיים...",
-  "sound_tidy_opossum_learn": "בדקו שוב את הקישור או פנו אלינו לעזרה"
+  "sound_tidy_opossum_learn": "בדקו שוב את הקישור או פנו אלינו לעזרה",
+  "clear_large_clownfish_dream": "לך תדע"
 }

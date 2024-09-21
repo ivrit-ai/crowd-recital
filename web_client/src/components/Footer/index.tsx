@@ -1,6 +1,9 @@
+import { useTranslation } from "react-i18next";
+
 import ivritAiLogo from "../../assets/ivrit_ai_logo.webp";
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="footer self-end bg-base-200 p-10 text-base-content">
       <aside>
@@ -12,13 +15,13 @@ const Footer = () => {
           />
         </a>
         <p>
-          עברית.ai
+          {t("glossary.ivritai")}
           <br />
-          עברים, דברו עברית
+          {t("glossary.ivritaiSlogan")}
         </p>
       </aside>
       <nav>
-        <h6 className="footer-title">לך תדע</h6>
+        <h6 className="footer-title">{t("clear_large_clownfish_dream")}</h6>
         <div className="grid grid-flow-col gap-4">
           <a className="link" href="https://github.com/ivrit-ai">
             Github
