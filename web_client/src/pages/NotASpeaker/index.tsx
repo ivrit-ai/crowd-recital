@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import useTrackPageView from "@/analytics/useTrackPageView";
 import CentredPage from "@/components/CenteredPage";
 
@@ -6,6 +8,7 @@ interface Props {
 }
 
 const NotASpeaker = ({ userEmail }: Props) => {
+  const { t } = useTranslation();
   useTrackPageView("notASpeaker");
   return (
     <CentredPage>
@@ -13,12 +16,10 @@ const NotASpeaker = ({ userEmail }: Props) => {
         <div className="hero-content">
           <div className="text-center">
             <div className="text-5xl">🤷🏾‍♀️🤷‍♂️</div>
-            <h1 className="text-4xl">זה לא את/ה...</h1>
-            <p className="pt-6">
-              לא רשמנו אותך כמקליט במערכת עדיין אבל נשמח לעזרתך!
-            </p>
-            <p>פנה אלינו במייל כדי להרשם.</p>
-            <p>(אנא ציין כי התחברת עם המייל {userEmail})</p>
+            <h1 className="text-4xl">{t("novel_born_jackal_heal")}</h1>
+            <p className="pt-6">{t("cute_late_mayfly_lead")}</p>
+            <p>{t("empty_front_worm_twirl")}</p>
+            <p>({t("due_cute_gorilla_bump", { userEmail })})</p>
           </div>
         </div>
       </div>
