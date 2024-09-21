@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 import { getErrorMessage } from "@/utils";
 import { useDocuments } from "@/hooks/documents";
@@ -10,6 +11,7 @@ import SelectExistingDocument from "./existingDocTab";
 import type { TabContentProps } from "./types";
 
 const DocumentInput = () => {
+  const { t } = useTranslation("documents");
   const navigate = useNavigate({ from: "/documents" });
   const [noDocsFound, setNoDocsFound] = useState<boolean | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -29,7 +31,7 @@ const DocumentInput = () => {
 
       return id;
     } catch (error) {
-      setError(`ארעה שגיאה - ${getErrorMessage(error)}`);
+      setError(t("caring_polite_ape_amuse", { error: getErrorMessage(error) }));
       console.error(error);
     } finally {
       setProcessing(false);
@@ -45,7 +47,7 @@ const DocumentInput = () => {
 
   return (
     <div className="container mx-auto max-w-4xl self-stretch px-4 py-12">
-      <h1 className="pb-6 text-2xl">בחירת טקסט להקראה</h1>
+      <h1 className="pb-6 text-2xl">{t("mad_weird_sheep_stab")}</h1>
 
       {noDocsFound === null && (
         <div className="my-11 text-center">
@@ -53,7 +55,7 @@ const DocumentInput = () => {
         </div>
       )}
 
-      <Collapse title="מסמך קיים" defaultOpen={true}>
+      <Collapse title={t("moving_drab_lark_compose")} defaultOpen={true}>
         <SelectExistingDocument
           {...tabContentProps}
           setNoDocsFound={setNoDocsFound}
@@ -61,7 +63,7 @@ const DocumentInput = () => {
       </Collapse>
 
       {noDocsFound !== null && (
-        <Collapse title="טען מאמר ויקיפדיה" defaultOpen={noDocsFound}>
+        <Collapse title={t("teal_loved_stork_buy")} defaultOpen={noDocsFound}>
           <WikiArticleUpload
             {...tabContentProps}
             loadNewDocumentFromWikiArticle={uploadWikiDocument}
@@ -69,8 +71,8 @@ const DocumentInput = () => {
         </Collapse>
       )}
 
-      <Collapse title="העלה מסמך (בקרוב)" disabled></Collapse>
-      <Collapse title="הדבק טקסט חופשי (בקרוב)" disabled></Collapse>
+      <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
+      <Collapse title={t("cuddly_dull_toucan_fulfill")} disabled></Collapse>
     </div>
   );
 };

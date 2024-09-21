@@ -1,0 +1,16 @@
+{
+  "$schema": "https://inlang.com/schema/project-settings",
+  "sourceLanguageTag": "he",
+  "languageTags": [
+    "he"
+  ],
+  "modules": [
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-i18next@latest/dist/index.js"
+  ],
+  "plugin.inlang.i18next": {
+    "pathPattern": {
+      "translation": "./src/locales/{languageTag}/translation.json",
+      "documents": "./src/locales/{languageTag}/documents.json"
+    }
+  }
+}
