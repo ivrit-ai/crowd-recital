@@ -2,7 +2,8 @@
   "$schema": "https://inlang.com/schema/project-settings",
   "sourceLanguageTag": "he",
   "languageTags": [
-    "he"
+    "he",
+    "yi"
   ],
   "modules": [
     "https://cdn.jsdelivr.net/npm/@inlang/plugin-i18next@latest/dist/index.js"
