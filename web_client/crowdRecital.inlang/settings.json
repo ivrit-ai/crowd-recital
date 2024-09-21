@@ -10,7 +10,12 @@
   "plugin.inlang.i18next": {
     "pathPattern": {
       "translation": "./src/locales/{languageTag}/translation.json",
-      "documents": "./src/locales/{languageTag}/documents.json"
-    }
+      "documents": "./src/locales/{languageTag}/documents.json",
+      "recordings": "./src/locales/{languageTag}/recordings.json"
+    },
+    "variableReferencePattern": [
+      "{{",
+      "}}"
+    ]
   }
 }

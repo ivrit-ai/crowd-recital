@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { usePostHog } from "posthog-js/react";
 import { MicOffIcon } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 
-import { secondsToHourMinuteSecondString } from "@/utils";
 import { useRecorder } from "@/hooks/recodingUploader";
+import { secondsToHourMinuteSecondString } from "@/utils";
 
-// Get nispired by this https://restream.io/tools/mic-test
+// Get inspired by this https://restream.io/tools/mic-test
 
 function getBinIndexByFrequency(frequency: number, frequencyBinWidth: number) {
   return Math.round(frequency / frequencyBinWidth);
@@ -88,6 +89,7 @@ type Props = {
 };
 
 const MicCheck = ({ open, onClose }: Props) => {
+  const { t } = useTranslation("recordings");
   const posthog = usePostHog();
   const [hasAudio, setHasAudio] = useState(false);
   const audioHtmlElemRef = useRef<HTMLMediaElement>(null);
@@ -170,9 +172,9 @@ const MicCheck = ({ open, onClose }: Props) => {
 
   return (
     <div className="card card-compact">
-      <div className="card-title">הלו? הלו?!</div>
+      <div className="card-title">{t("helpful_few_leopard_skip")}</div>
       <div className="card-body">
-        <p>רצוי לנסות לבצע הקלטה ולשמוע את עצמך מדבר</p>
+        <p>{t("last_sad_sparrow_bubble")}</p>
         <audio ref={audioHtmlElemRef} onEnded={() => setPlaying(false)} />
         <div className="relative flex h-[170px] items-center justify-center overflow-clip rounded-lg bg-base-200 px-5">
           {recording && (
@@ -182,7 +184,9 @@ const MicCheck = ({ open, onClose }: Props) => {
           )}
           {hasAudio && (
             <span className="badge badge-info badge-md absolute top-0 mt-2">
-              {displayedScore > 0.8 ? "נשמע טוב!" : "כנראה חלש מידי"}
+              {displayedScore > 0.8
+                ? t("ago_sound_marlin_renew")
+                : t("ok_long_bullock_endure")}
             </span>
           )}
           <canvas
@@ -197,7 +201,7 @@ const MicCheck = ({ open, onClose }: Props) => {
                   {stopping ? (
                     <span className="loading-sx loading-infinity" />
                   ) : (
-                    "עצור"
+                    t("shy_small_shrike_twist")
                   )}
                 </button>
               ) : (
@@ -205,9 +209,9 @@ const MicCheck = ({ open, onClose }: Props) => {
                   {starting ? (
                     <span className="loading-sx loading-infinity" />
                   ) : hasAudio ? (
-                    "נסיון נוסף"
+                    t("candid_glad_lizard_sprout")
                   ) : (
-                    "הקלט"
+                    t("raw_noisy_goat_favor")
                   )}
                 </button>
               )}
@@ -219,22 +223,22 @@ const MicCheck = ({ open, onClose }: Props) => {
                 {playLoading ? (
                   <span className="loading loading-infinity loading-xs" />
                 ) : playing ? (
-                  "עצור"
+                  t("shy_small_shrike_twist")
                 ) : (
-                  "נגן"
+                  t("factual_fancy_flamingo_evoke")
                 )}
               </button>
             </div>
           ) : (
             <div className="alert alert-info text-sm">
-              <span>אנא אשר שימוש במיקרופון</span>
+              <span>{t("direct_minor_kitten_pray")}</span>
               <MicOffIcon className="h-4 w-4 text-red-500" />
             </div>
           )}
         </div>
         <div className="card-actions justify-center sm:justify-end">
           <button className="btn btn-primary btn-sm" onClick={onClose}>
-            סיימתי
+            {t("late_warm_blackbird_read")}
           </button>
         </div>
       </div>
