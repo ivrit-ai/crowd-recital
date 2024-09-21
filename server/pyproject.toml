@@ -1,7 +1,7 @@
 [project]
 name = "ivritai-crowd-recital-server"
 description = "Crowd Recital Server - Part of the Ivrit.ai project"
-version = "1.1.0"
+version = "1.2.0"
 requires-python = ">= 3.11"
 authors = [{ name = "Yoad Snapir", email = "yoadsn@gmail.com" }]
 license = { text = "MIT License" }
@@ -21,7 +21,7 @@ no_lines_before = []
 github_url = "https://github.com/ivrit-ai/crowd-recital"
 
 [tool.tbump.version]
-current = "1.1.0"
+current = "1.2.0"
 
 regex = '''
   (?P<major>\d+)
