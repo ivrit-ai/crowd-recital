@@ -4,10 +4,14 @@ import { EnvConfig } from "@/config";
 
 const posthogConfigured = !!EnvConfig.get("analytics_posthog_api_key");
 if (posthogConfigured) {
-  posthog.init(EnvConfig.get("analytics_posthog_api_key"), {
-    api_host: EnvConfig.get("analytics_posthog_host"),
-    person_profiles: "identified_only",
-  });
+  posthog
+    .init(EnvConfig.get("analytics_posthog_api_key"), {
+      api_host: EnvConfig.get("analytics_posthog_host"),
+      person_profiles: "identified_only",
+    })
+    ?.register({
+      version: EnvConfig.get("version"),
+    });
 }
 
 export function getPosthogClient() {
