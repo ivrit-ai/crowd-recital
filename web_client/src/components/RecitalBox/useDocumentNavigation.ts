@@ -36,46 +36,34 @@ const StoreLocCheckpointsKey = "doclocs";
 const maxStoredLocCheckpoints = 5;
 
 const useDocumentNavigation = (document: Document) => {
+  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const [activeParagraphIndex, setActiveParagraphIndex] = useState<number>(0);
   const [activeSentenceIndex, setActiveSentenceIndex] = useState<number>(0);
   const [locationCheckpoints, setLocationCheckpoints] = useLocalStorage<
     LocationCheckpoint[]
   >(StoreLocCheckpointsKey, []);
 
-  // Store the latest location checkpoint of the active doc
+  // Set active doc id and ensure a checkpoint entry exists
   useEffect(() => {
-    // Anything meaningful to store?
-    if (document.id && (activeParagraphIndex > 0 || activeSentenceIndex > 0)) {
-      const locationCheckpoint = {
-        id: document.id,
-        paragraphIdx: activeParagraphIndex,
-        sentenceIdx: activeSentenceIndex,
-        lastUpdate: new Date(),
-      };
+    if (!!document.id && document.id !== activeDocumentId) {
+      const documentIdToActivate = document.id;
+      setActiveDocumentId(documentIdToActivate);
       setLocationCheckpoints((checkpoints) => {
         let nextCpsState = checkpoints || [];
         const existsAtIdx = nextCpsState.findIndex(
-          (cp) => cp.id === document.id,
+          (cp) => cp.id === documentIdToActivate,
         );
-        if (existsAtIdx >= 0) {
-          // Do not store if already reflects current state - this would be
-          // an infinte loop
-          const {
-            paragraphIdx: lastParagraphIdx,
-            sentenceIdx: lastSentenceIdx,
-          } = nextCpsState[existsAtIdx];
-          if (
-            locationCheckpoint.paragraphIdx !== lastParagraphIdx ||
-            locationCheckpoint.sentenceIdx !== lastSentenceIdx
-          ) {
-            nextCpsState = [...nextCpsState];
-            nextCpsState[existsAtIdx] = locationCheckpoint;
-          }
-        } else {
+        if (existsAtIdx < 0) {
+          const initialCheckpoint = {
+            id: documentIdToActivate,
+            paragraphIdx: 0,
+            sentenceIdx: 0,
+            lastUpdate: new Date(),
+          };
           nextCpsState = [...nextCpsState];
           // If have room to add one more - push to end.
           if (nextCpsState.length + 1 <= maxStoredLocCheckpoints) {
-            nextCpsState.push(locationCheckpoint);
+            nextCpsState.push(initialCheckpoint);
           } else {
             // Find the least recently updated one and replace it
             const replaceAtIdx = nextCpsState.reduce((minIdx, cp, idx) => {
@@ -84,13 +72,52 @@ const useDocumentNavigation = (document: Document) => {
               }
               return minIdx;
             }, 0);
-            nextCpsState[replaceAtIdx] = locationCheckpoint;
+            nextCpsState[replaceAtIdx] = initialCheckpoint;
           }
+        } else {
+          // Ensure the component state reflects the known checkpoint
+          // As soon as we activate a document
+          const checkpoint = nextCpsState[existsAtIdx];
+          setActiveParagraphIndex(checkpoint.paragraphIdx);
+          setActiveSentenceIndex(checkpoint.sentenceIdx);
         }
         return nextCpsState;
       });
     }
+  }, [document.id, activeDocumentId, setLocationCheckpoints]);
+
+  // Store the latest location checkpoint of the active doc
+  useEffect(() => {
+    // Only store for the active document when its set
+    if (activeDocumentId !== document.id) return;
+    const locationCheckpoint = {
+      id: document.id,
+      paragraphIdx: activeParagraphIndex,
+      sentenceIdx: activeSentenceIndex,
+      lastUpdate: new Date(),
+    };
+    setLocationCheckpoints((checkpoints) => {
+      let nextCpsState = checkpoints || [];
+      const existsAtIdx = nextCpsState.findIndex((cp) => cp.id === document.id);
+      // We always expect to find a checkpoint for the active document
+      // But to be on the safe side - do nothing if not
+      if (existsAtIdx < 0) return nextCpsState;
+
+      // Do not store if already reflects current state - this would be
+      // an infinte loop
+      const { paragraphIdx: lastParagraphIdx, sentenceIdx: lastSentenceIdx } =
+        nextCpsState[existsAtIdx];
+      if (
+        locationCheckpoint.paragraphIdx !== lastParagraphIdx ||
+        locationCheckpoint.sentenceIdx !== lastSentenceIdx
+      ) {
+        nextCpsState = [...nextCpsState];
+        nextCpsState[existsAtIdx] = locationCheckpoint;
+      }
+      return nextCpsState;
+    });
   }, [
+    activeDocumentId,
     document,
     setLocationCheckpoints,
     activeParagraphIndex,
@@ -99,12 +126,17 @@ const useDocumentNavigation = (document: Document) => {
 
   // Recall doc location if available
   useEffect(() => {
-    const thisDocCp = locationCheckpoints?.find((cp) => cp.id === document.id);
-    if (thisDocCp) {
-      setActiveParagraphIndex(thisDocCp.paragraphIdx);
-      setActiveSentenceIndex(thisDocCp.sentenceIdx);
-    }
-  }, [locationCheckpoints, document]);
+    // Only recall from the active document when its set
+    if (activeDocumentId !== document.id) return;
+
+    const thisDocCp = locationCheckpoints.find((cp) => cp.id === document.id);
+    // We expect the checkpoint to exist for the active doc
+    // But to be explicit - do nothing if we do not find a checkpoint
+    if (!thisDocCp) return;
+
+    setActiveParagraphIndex(thisDocCp.paragraphIdx);
+    setActiveSentenceIndex(thisDocCp.sentenceIdx);
+  }, [locationCheckpoints, activeDocumentId, document]);
 
   const goToParagraphSentence = useCallback(
     (paragraphIndex: number, sentenceIndex: number) => {
