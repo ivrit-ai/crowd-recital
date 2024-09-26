@@ -4,8 +4,8 @@ import pathlib
 import re
 import shutil
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
-from time import gmtime, strftime
 
 from webvtt import Caption, WebVTT
 
@@ -17,11 +17,16 @@ def normalize_text_as_caption_text(text: str) -> str:
     return re.sub(r"\s+", " ", text)
 
 
+def get_caption_time_string(seconds: float) -> str:
+    # Format to hh:mm:ss.zzz
+    return datetime.fromtimestamp(seconds, tz=timezone.utc).strftime("%H:%M:%S.%f")[:-3]
+
+
 def create_caption(text: str, start: float, end: float) -> Caption:
     return Caption(
         # Format to hh:mm:ss.zzz
-        start=strftime("%H:%M:%S.000", gmtime(start)),
-        end=strftime("%H:%M:%S.000", gmtime(end)),
+        start=get_caption_time_string(start),
+        end=get_caption_time_string(end),
         text=normalize_text_as_caption_text(text),
     )
 
