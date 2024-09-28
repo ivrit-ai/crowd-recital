@@ -12,7 +12,7 @@ import SortCol from "@/components/DataTable/SortCol";
 import { useSortState } from "@/components/DataTable/useSortState";
 import SessionDelete from "@/components/SessionDelete";
 import useSessionDelete from "@/components/SessionDelete/useSessionDelete";
-import SessionPreview from "@/components/SessionPreview";
+import SubTrackingSessionPreview from "@/components/SessionPreview/subTrackingPreview";
 import StatusDisplay from "@/components/SessionStatusDisplay";
 import TablePager from "@/components/TablePager";
 import WholePageLoading from "@/components/WholePageLoading";
@@ -232,7 +232,7 @@ const Sessions = () => {
       <div className="sticky my-6 text-center">
         <RecordNowCta ctaText={t("few_least_fox_compose")} />
       </div>
-      <SessionPreview
+      <SubTrackingSessionPreview
         id={previewedSessionId}
         ref={sessionPreviewRef}
         onClose={onClose}
