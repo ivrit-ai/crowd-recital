@@ -211,10 +211,10 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
                 <span
                   key={`${pidx}-${sidx}`}
                   className={twJoin(
-                    "me-2 cursor-pointer border-b-2 border-e-8 border-neutral-content last:border-e-0",
+                    "me-2 cursor-pointer border-b-2 border-e-8 border-neutral-content text-2xl last:border-e-0",
                     activeParagraphIndex == pidx &&
                       activeSentenceIndex == sidx &&
-                      "bg-primary text-primary-content",
+                      "bg-base-content text-base-200",
                   )}
                   ref={
                     activeParagraphIndex == pidx && activeSentenceIndex == sidx
