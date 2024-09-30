@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import useTrackPageView from "@/analytics/useTrackPageView";
 import CentredPage from "@/components/CenteredPage";
 
-const NotASpeaker = () => {
+const NotFound = () => {
   const { t } = useTranslation();
   useTrackPageView("notFound");
   return (
@@ -24,4 +24,4 @@ const NotASpeaker = () => {
   );
 };
 
-export default NotASpeaker;
+export default NotFound;

@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from containers import Container
 from models.user import User
+from resource_access.users_ra import UsersRA
 
 from .google_login import GoogleIdentification
 
@@ -69,3 +70,11 @@ def create_access_token_payload_from_user(user: User):
 
 def create_empty_speaker_user(email: str):
     return User(email=email, email_verified=False, name=f"Pre Approved Speaker {email}", picture="")
+
+
+@inject
+def record_user_agreement(user: User, users_ra: UsersRA = Provide[Container.users_ra]):
+    agreement_version = "v2_2024-10-01"  # Could be made dynamic in a more complex system
+    user.agreement_signed_version = agreement_version
+    user.agreement_signed_at = datetime.now(timezone.utc)
+    users_ra.upsert(user)

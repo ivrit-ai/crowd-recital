@@ -53,7 +53,7 @@ const fetchMe = async () => {
     const fetchMeBody = await response.json();
     fetchMeResponse = {
       success: true,
-      user: fetchMeBody,
+      user: User.fromDTO(fetchMeBody),
     };
   }
 
