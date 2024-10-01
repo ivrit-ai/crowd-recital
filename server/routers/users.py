@@ -100,9 +100,6 @@ def get_me(active_user: Annotated[User, Depends(get_valid_user)]):
 
 @router.post("/me/agree")
 @inject
-def update_me(
-    track_event: Tracker,
-    active_user: Annotated[User, Depends(get_valid_user)],
-):
+def update_me(track_event: Tracker, active_user: Annotated[User, Depends(get_valid_user)]):
     record_user_agreement(active_user)
     track_event("User Agreed to Terms")

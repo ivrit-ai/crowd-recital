@@ -30,6 +30,9 @@ def configure(container: "Container"):
     container.config.auth.delegated_identity_secret_key.from_value(env("DELEGATED_IDENTITY_SECRET_KEY"))
     container.config.auth.access_token_secret_key.from_value(env("ACCESS_TOKEN_SECRET_KEY"))
 
+    container.config.email.sender_address.from_value(env("EMAIL_SENDER_ADDRESS"))
+    container.config.email.reply_to_address.from_value(env("EMAIL_REPLY_TO_ADDRESS", env("EMAIL_SENDER_ADDRESS")))
+
     container.config.data.root_folder.from_value(env("ROOT_DATA_FOLDER", default="data"))
     container.config.data.content_s3_bucket.from_value(env("CONTENT_STORAGE_S3_BUCKET"))
     container.config.data.content_s3_disabled.from_value(env.bool("CONTENT_DISABLE_S3_UPLOAD", default=False))
