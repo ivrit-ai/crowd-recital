@@ -7,7 +7,6 @@ from dependency_injector.wiring import Provide, inject
 from models.user import User
 
 logger = logging.getLogger(__name__)
-session = boto3.Session(profile_name="818814569071_SystemAdministrator")
 
 
 class SesDestination:
@@ -83,7 +82,7 @@ class SesMailSender:
 
 class Emailer:
     def __init__(self, email_sender_address: str, email_reply_to_address: str):
-        ses_client = session.client("ses")  # TMP Approach - need key/sec and not session based..
+        ses_client = boto3.client("ses")
         self.ses_client = ses_client
         self.sesSender = SesMailSender(ses_client)
         self.configured = True
