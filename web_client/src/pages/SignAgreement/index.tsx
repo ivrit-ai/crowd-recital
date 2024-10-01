@@ -6,11 +6,13 @@ import useTrackPageView from "@/analytics/useTrackPageView";
 import { getLoadEulaOptions } from "@/client/queries/staticContent";
 import { signUserAgreement } from "@/client/user";
 import CentredPage from "@/components/CenteredPage";
+import { useState } from "react";
 
 const SignAgreement = () => {
   useTrackPageView("signAgreement");
   const { t } = useTranslation();
-  const data = useQuery(getLoadEulaOptions());
+  const [licenseLang, setLicenseLang] = useState("en");
+  const data = useQuery(getLoadEulaOptions(licenseLang));
   const mutation = useMutation({
     mutationFn: signUserAgreement,
     onSettled: () => {
@@ -30,9 +32,20 @@ const SignAgreement = () => {
       <div className="hero">
         <div className="hero-content h-screen-minus-topbar flex-col justify-start">
           <div className="text-center">
-            <div className="text-4xl">📝👩‍⚖️🖊️</div>
+            <div className="text-4xl">👩‍⚖️🖊️</div>
             <h1 className="text-3xl">{t("last_heavy_bulldog_favor")}</h1>
             <p className="pt-6">{t("curly_lazy_manatee_wave")}</p>
+            <label className="btn btn-outline swap mt-4">
+              <input
+                type="checkbox"
+                checked={licenseLang === "en"}
+                onChange={() =>
+                  setLicenseLang(licenseLang === "en" ? "he" : "en")
+                }
+              />
+              <div className="swap-on">English Version</div>
+              <div className="swap-off">גרסה עברית</div>
+            </label>
           </div>
           <div className="grow basis-0 overflow-auto">
             <article className="prose">
