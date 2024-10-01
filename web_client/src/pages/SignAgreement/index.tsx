@@ -12,7 +12,8 @@ const SignAgreement = () => {
   useTrackPageView("signAgreement");
   const { t } = useTranslation();
   const [licenseLang, setLicenseLang] = useState("en");
-  const data = useQuery(getLoadEulaOptions(licenseLang));
+  const data_en = useQuery(getLoadEulaOptions("en"));
+  const data_he = useQuery(getLoadEulaOptions("he"));
   const mutation = useMutation({
     mutationFn: signUserAgreement,
     onSettled: () => {
@@ -26,6 +27,10 @@ const SignAgreement = () => {
     root: null,
     rootMargin: "50px",
   });
+
+  const firstData = licenseLang === "en" ? data_en : data_he;
+  const secondData = licenseLang === "en" ? data_he : data_en;
+  const bothDataLoaded = !firstData.isPending && !secondData.isPending;
 
   return (
     <CentredPage>
@@ -49,9 +54,14 @@ const SignAgreement = () => {
           </div>
           <div className="grow basis-0 overflow-auto">
             <article className="prose">
-              {!data.isPending && !!data.data ? (
+              {bothDataLoaded ? (
                 <>
-                  <div dangerouslySetInnerHTML={{ __html: data.data }}></div>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: firstData.data! }}
+                  ></div>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: secondData.data! }}
+                  ></div>
                   <div ref={ref}></div>
                 </>
               ) : (
