@@ -1,3 +1,5 @@
+import { logDevOnly } from "@/utils";
+
 // Content types we want to capture into - in desc priority
 // Grab the one that is supported
 const targetRecordingMediaTypes = [
@@ -16,7 +18,7 @@ for (const targetRecordingMediaTypeToConsider of targetRecordingMediaTypes) {
     break;
   }
 }
-console.log("Using media type", targetRecordingMediaType || "default");
+logDevOnly("Using media type", targetRecordingMediaType || "default");
 
 class Microphone extends EventTarget {
   private audioSegmentLengthSec: number;
@@ -48,12 +50,12 @@ class Microphone extends EventTarget {
   }
 
   async requestPermission() {
-    console.log("Requesting access...");
+    logDevOnly("Requesting access...");
     if (!this.stream) {
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
-      console.log("got it.");
+      logDevOnly("got it.");
     }
   }
 
@@ -67,8 +69,6 @@ class Microphone extends EventTarget {
         audio: true,
       });
     }
-
-    console.log("startRecording()");
 
     this.recording = true;
 
@@ -110,7 +110,6 @@ class Microphone extends EventTarget {
     };
 
     this.mediaRecorder.onstop = () => {
-      console.log("mediarecorder-on stop");
       this.notifyMediaRecorderStopped();
     };
 
@@ -118,14 +117,11 @@ class Microphone extends EventTarget {
       this.emitTimestampEvent.bind(this),
       100,
     );
-
-    console.log(`startRecording()-Done: ${this.audioContext.currentTime}`);
   }
 
   async stopRecording() {
     if (!this.recording) return;
     this.stopping = true;
-    console.log("stopRecording()");
 
     // Stop the source - no more audio should be captured
     this.stream?.getTracks().forEach((track) => track.stop());
@@ -146,7 +142,6 @@ class Microphone extends EventTarget {
     this.stream = null;
     this.recording = false;
     this.analyzer = null;
-    console.log("stopRecording()-Done.");
     this.stopping = false;
   }
 
