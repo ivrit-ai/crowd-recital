@@ -1,5 +1,5 @@
 from contextlib import AbstractContextManager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Callable, Iterator
 
 from sqlmodel import Session, and_, or_, select
@@ -36,7 +36,9 @@ class RecitalsRA:
 
     def get_ended_sessions(self, limit: int = 100, consider_abandoned_after_hours: int = 2) -> Iterator[RecitalSession]:
         with self.session_factory() as session:
-            cutoff_consider_active_as_ended = datetime.now() - timedelta(hours=consider_abandoned_after_hours)
+            cutoff_consider_active_as_ended = datetime.now(timezone.utc) - timedelta(
+                hours=consider_abandoned_after_hours
+            )
             results = session.exec(
                 select(RecitalSession)
                 .filter(

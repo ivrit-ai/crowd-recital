@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.date import DateTrigger
@@ -53,7 +53,7 @@ class RecitalManager:
 
         # Run now, and every specified internal
         # If the job exists - reschedule it
-        run_soon_at = DateTrigger(run_date=datetime.now() + timedelta(seconds=2))
+        run_soon_at = DateTrigger(run_date=datetime.now(timezone.utc) + timedelta(seconds=2))
         run_every = IntervalTrigger(seconds=self.session_finalization_job_interval)
         now_and_onward = OrTrigger([run_soon_at, run_every])
         trigger = run_every if defer else now_and_onward
@@ -156,7 +156,6 @@ class RecitalManager:
                         "Session Aggregation Done",
                         {
                             "source": "server",
-                            "$process_person_profile": False,
                             "session_id": session_id,
                             "duration": recital_session.duration,
                         },
@@ -211,6 +210,16 @@ class RecitalManager:
 
                 # Invalidate the stats cache for this user
                 stats_cache.invalidate_stats_by_user_id(recital_session.user_id)
+
+                self.posthog.capture(
+                    "server",
+                    "Session Upload Done",
+                    {
+                        "source": "server",
+                        "session_id": session_id,
+                        "duration": recital_session.duration,
+                    },
+                )
 
             except Exception as e:
                 print(f"Error uploading session {session_id} - skipping")
