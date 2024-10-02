@@ -100,8 +100,8 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
     clearUploaderError: clearTextUploaderError,
   } = useTextSegmentUploader(sessionId, recordingTimestamp);
 
-  const uploadActiveSentence = useCallback(() => {
-    uploadTextSegment(activeSentence.text).then(() => {
+  const uploadActiveSentence = useCallback(async () => {
+    await uploadTextSegment(activeSentence.text).then(() => {
       if (import.meta.env.DEV) {
         console.log("Uploaded Text Segment!");
       }
