@@ -8,6 +8,7 @@ import { useDocuments } from "@/hooks/documents";
 import useLogin from "@/hooks/useLogin";
 import Collapse from "@/components/Collapse";
 import WikiArticleUpload from "./wikiUploadTab";
+import FreeTextUpload from "./freeTextUploadTab";
 import SelectExistingDocument from "./existingDocTab";
 import type { TabContentProps } from "./types";
 
@@ -20,25 +21,48 @@ const DocumentInput = () => {
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
-  const { createWikiArticleDocument } = useDocuments();
+  const { createWikiArticleDocument, createFreeTextDocument } = useDocuments();
 
-  const uploadWikiDocument = useCallback(async (wikiArticleUrl: string) => {
-    setProcessing(true);
-    try {
-      const decodedUrl = decodeURIComponent(wikiArticleUrl);
-      const { id } = await createWikiArticleDocument(decodedUrl);
-      queryClient.invalidateQueries({ queryKey: ["documents"] });
-      navigate({ to: "/recite/$docId", params: { docId: id } });
-      setError("");
+  const uploadWikiDocument = useCallback(
+    async (wikiArticleUrl: string) => {
+      setProcessing(true);
+      try {
+        const decodedUrl = decodeURIComponent(wikiArticleUrl);
+        const { id } = await createWikiArticleDocument(decodedUrl);
+        queryClient.invalidateQueries({ queryKey: ["documents"] });
+        navigate({ to: "/recite/$docId", params: { docId: id } });
+        setError("");
+      } catch (error) {
+        setError(
+          t("caring_polite_ape_amuse", { error: getErrorMessage(error) }),
+        );
+        console.error(error);
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [createWikiArticleDocument],
+  );
 
-      return id;
-    } catch (error) {
-      setError(t("caring_polite_ape_amuse", { error: getErrorMessage(error) }));
-      console.error(error);
-    } finally {
-      setProcessing(false);
-    }
-  }, []);
+  const uploadFreeTextDocument = useCallback(
+    async (text: string, title?: string) => {
+      setProcessing(true);
+      try {
+        const { id } = await createFreeTextDocument(text, title);
+        queryClient.invalidateQueries({ queryKey: ["documents"] });
+        navigate({ to: "/recite/$docId", params: { docId: id } });
+        setError("");
+      } catch (error) {
+        setError(
+          t("caring_polite_ape_amuse", { error: getErrorMessage(error) }),
+        );
+        console.error(error);
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [createFreeTextDocument],
+  );
 
   const tabContentProps: TabContentProps = {
     error,
@@ -74,8 +98,13 @@ const DocumentInput = () => {
               loadNewDocumentFromWikiArticle={uploadWikiDocument}
             />
           </Collapse>
+          <Collapse title={t("cuddly_dull_toucan_fulfill")}>
+            <FreeTextUpload
+              {...tabContentProps}
+              loadNewDocumentFromFreeText={uploadFreeTextDocument}
+            />
+          </Collapse>
           <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
-          <Collapse title={t("cuddly_dull_toucan_fulfill")} disabled></Collapse>
         </>
       )}
     </div>
