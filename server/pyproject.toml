@@ -48,4 +48,4 @@ src = "../web_client/package.json"
 search = '"version": "{current_version}"'
 
 [[tool.tbump.file]]
-src = "../web_client/.env"
+src = "../web_client/src/version.ts"
