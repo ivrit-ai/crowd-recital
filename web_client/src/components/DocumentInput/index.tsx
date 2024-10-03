@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { getErrorMessage } from "@/utils";
 import { useDocuments } from "@/hooks/documents";
+import useLogin from "@/hooks/useLogin";
 import Collapse from "@/components/Collapse";
 import WikiArticleUpload from "./wikiUploadTab";
 import SelectExistingDocument from "./existingDocTab";
@@ -12,6 +13,7 @@ import type { TabContentProps } from "./types";
 
 const DocumentInput = () => {
   const { t } = useTranslation("documents");
+  const { activeUser } = useLogin();
   const navigate = useNavigate({ from: "/documents" });
   const [noDocsFound, setNoDocsFound] = useState<boolean | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -45,6 +47,8 @@ const DocumentInput = () => {
     setProcessing,
   };
 
+  const isAdmin = activeUser?.isAdmin();
+
   return (
     <div className="container mx-auto max-w-4xl self-stretch px-4 py-12">
       <h1 className="pb-6 text-2xl">{t("mad_weird_sheep_stab")}</h1>
@@ -62,17 +66,18 @@ const DocumentInput = () => {
         />
       </Collapse>
 
-      {noDocsFound !== null && (
-        <Collapse title={t("teal_loved_stork_buy")} defaultOpen={noDocsFound}>
-          <WikiArticleUpload
-            {...tabContentProps}
-            loadNewDocumentFromWikiArticle={uploadWikiDocument}
-          />
-        </Collapse>
+      {isAdmin && noDocsFound !== null && (
+        <>
+          <Collapse title={t("teal_loved_stork_buy")} defaultOpen={noDocsFound}>
+            <WikiArticleUpload
+              {...tabContentProps}
+              loadNewDocumentFromWikiArticle={uploadWikiDocument}
+            />
+          </Collapse>
+          <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
+          <Collapse title={t("cuddly_dull_toucan_fulfill")} disabled></Collapse>
+        </>
       )}
-
-      <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
-      <Collapse title={t("cuddly_dull_toucan_fulfill")} disabled></Collapse>
     </div>
   );
 };
