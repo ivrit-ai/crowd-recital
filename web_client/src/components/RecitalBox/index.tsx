@@ -18,7 +18,7 @@ import { Document } from "@/models";
 import { secondsToHourMinuteSecondString } from "@/utils";
 import Header from "./Header";
 import SessionFinalizeModal from "./SessionFinalizeModal";
-import useControlCallback from "./useControleCallback";
+import useControlCallback from "./useControlCallback";
 import useDocumentNavigation, {
   NavigationControls,
 } from "./useDocumentNavigation";
@@ -84,6 +84,12 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   const activeSentenceElementRef = useRef<HTMLSpanElement>(null);
 
   const [createNewSession, endSession] = useRecordingSession(document?.id);
+  const endSessionAndMoveOn = useCallback(
+    (sessionId: string) => {
+      endSession(sessionId).then(() => move.nextSentence());
+    },
+    [endSession, move],
+  );
   const {
     ready,
     uploaderError: audioUploaderError,
@@ -118,7 +124,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
     await stopRecording();
     await uploadActiveSentence();
     setReadyToFinalize(true);
-  }, [stopRecording, uploadActiveSentence, endSession, sessionId]);
+  }, [stopRecording, uploadActiveSentence, sessionId]);
 
   const onControl = useControlCallback(
     move,
@@ -274,7 +280,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
       <SessionFinalizeModal
         sessionId={sessionId}
         readyToFinalize={readyToFinalize}
-        endSession={endSession}
+        endSession={endSessionAndMoveOn}
         awaitingFinalization={awaitingSessionFinalization}
         setAwaitingFinalization={setAwaitingSessionFinalization}
       />
