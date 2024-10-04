@@ -1,9 +1,8 @@
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Optional
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, Response, status
-from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 
 from containers import Container
@@ -19,6 +18,7 @@ from utility.authentication.users import (
     create_user_from_google_id,
     encode_access_token,
     get_access_token_expire_minutes,
+    record_user_agreement,
 )
 
 from .dependencies.analytics import AnonTracker, RawTracker, Tracker
@@ -96,3 +96,10 @@ def logout(track_event: AnonTracker, response: Response, auth_cookie: AuthCookie
 @inject
 def get_me(active_user: Annotated[User, Depends(get_valid_user)]):
     return active_user
+
+
+@router.post("/me/agree")
+@inject
+def update_me(track_event: Tracker, active_user: Annotated[User, Depends(get_valid_user)]):
+    record_user_agreement(active_user)
+    track_event("User Agreed to Terms")

@@ -6,6 +6,9 @@ from pydantic import BaseModel
 
 from containers import Container
 from models.user import User
+from resource_access.users_ra import UsersRA
+from utility.communication.email import Emailer
+from utility.communication.email_templates import agreement_signed_notification_email
 
 from .google_login import GoogleIdentification
 
@@ -69,3 +72,26 @@ def create_access_token_payload_from_user(user: User):
 
 def create_empty_speaker_user(email: str):
     return User(email=email, email_verified=False, name=f"Pre Approved Speaker {email}", picture="")
+
+
+@inject
+def record_user_agreement(
+    user: User, users_ra: UsersRA = Provide[Container.users_ra], emailer: Emailer = Provide[Container.emailer]
+):
+    # only if the user had not signed the agreement yet
+    first_time_signer = user.agreement_signed_at is None
+    agreement_version = "v2"  # Could be made dynamic in a more complex system
+    user.agreement_signed_version = agreement_version
+    user.agreement_signed_at = datetime.now(timezone.utc)
+    users_ra.upsert(user)
+
+    if first_time_signer:
+        emailer.send_to_user(
+            user,
+            agreement_signed_notification_email["subject"],
+            agreement_signed_notification_email["body"].format(
+                name=user.name,
+                sign_date=user.agreement_signed_at.strftime("%Y-%m-%d"),
+                agreement_version=agreement_version,
+            ),
+        )

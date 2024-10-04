@@ -50,6 +50,8 @@ const Header = () => {
     return null; // Not expected
   }
 
+  const isSpeaker = auth.user.isSpaker();
+
   return (
     <header className="navbar sticky top-0 z-10 flex h-[--topbar-height] items-center gap-4 border-b bg-base-100 px-4 md:px-6">
       <Link to="/" className="flex-1 cursor-pointer select-none">
@@ -109,16 +111,20 @@ const Header = () => {
                 {t("tiny_soft_whale_dazzle")} <MicIcon className="h-4 w-4" />
               </a>
             </HeaderMenuItem>
-            <HeaderMenuItem closeMenu={closeMenu}>
-              <HeaderMenuLink to="/documents">
-                {t("silly_super_lemur_forgive")}
-              </HeaderMenuLink>
-            </HeaderMenuItem>
-            <HeaderMenuItem closeMenu={closeMenu}>
-              <HeaderMenuLink to="/sessions">
-                {t("weak_lost_dingo_value")}
-              </HeaderMenuLink>
-            </HeaderMenuItem>
+            {isSpeaker && (
+              <HeaderMenuItem closeMenu={closeMenu}>
+                <HeaderMenuLink to="/documents">
+                  {t("silly_super_lemur_forgive")}
+                </HeaderMenuLink>
+              </HeaderMenuItem>
+            )}
+            {isSpeaker && (
+              <HeaderMenuItem closeMenu={closeMenu}>
+                <HeaderMenuLink to="/sessions">
+                  {t("weak_lost_dingo_value")}
+                </HeaderMenuLink>
+              </HeaderMenuItem>
+            )}
             <HeaderMenuItem closeMenu={closeMenu}>
               <HeaderMenuLink to="/leaderboard">
                 {t("brief_sharp_boar_pout")} <TrophyIcon className="h-4 w-4" />

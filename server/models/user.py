@@ -1,8 +1,9 @@
 import uuid
+from datetime import datetime
 from enum import StrEnum
 from typing import Optional
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import TIMESTAMP, Field, Relationship, SQLModel
 
 from .mixins.date_fields import DateFieldsMixin
 
@@ -30,6 +31,12 @@ class User(UserBase, DateFieldsMixin, table=True):
     name: str
     picture: Optional[str]
 
+    agreement_signed_version: Optional[str] = Field(default=None, nullable=True)
+    agreement_signed_at: Optional[datetime] = Field(
+        nullable=True,
+        sa_type=TIMESTAMP(timezone=True),
+    )
+
     group: Optional[str] = Field(default=None)
 
     recital_sessions: list["RecitalSession"] = Relationship(back_populates="user")
@@ -38,10 +45,6 @@ class User(UserBase, DateFieldsMixin, table=True):
 
 class UserCreate(UserBase):
     pass
-
-
-# class UserRead(UserBase):
-#     id: uuid.UUID
 
 
 class UserUpdate(SQLModel):

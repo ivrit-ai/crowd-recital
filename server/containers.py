@@ -13,19 +13,24 @@ from resource_access.recitals_ra import RecitalsRA
 from resource_access.stats_ra import StatsRA
 from resource_access.users_ra import UsersRA
 from utility.analytics.posthog import ConfiguredPosthog
+from utility.communication.email import Emailer
 from utility.scheduler import JobScheduler
 
 
 class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(
-        packages=["routers", "routers.dependencies", "utility", "utility.authentication"], modules=["application"]
+        packages=["routers", "routers.dependencies", "utility", "utility.authentication", "utility.communication"],
+        modules=["application"],
     )
 
     config = providers.Configuration()
 
     posthog = providers.Singleton(
         ConfiguredPosthog, api_key=config.analytics.posthog.api_key, host=config.analytics.posthog.host
+    )
+    emailer = providers.Singleton(
+        Emailer, email_sender_address=config.email.sender_address, email_reply_to_address=config.email.reply_to_address
     )
 
     db = providers.Singleton(Database, connection_str=config.db.connection_str)
