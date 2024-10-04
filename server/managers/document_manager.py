@@ -59,9 +59,12 @@ class DocumentManager:
         extracted_text = self.extraction_engine.extract_text_document(source, source_type, title)
 
         # Add any provided metadata
-        title = extracted_text.text[:60]
+        title = None
         if "title" in extracted_text.metadata:
-            title = extracted_text.metadata["title"]
+            if extracted_text.metadata["title"]:
+                title = extracted_text.metadata["title"]
+        if not title and len(extracted_text.text) > 0:
+            title = extracted_text.text[0][0]
 
         # Create the document and store it
         doc = self.documents_ra.upsert(

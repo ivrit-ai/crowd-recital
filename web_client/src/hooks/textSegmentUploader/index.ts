@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { reportResponseError } from "@/analytics";
 import { alterSessionBaseUrl } from "@/client/sessions";
@@ -36,18 +36,28 @@ export function useTextSegmentUploader(
   sessionId: string,
   recordingTimestamp: number,
 ) {
+  const lastUploadPromise = useRef<Promise<void>>(Promise.resolve());
   const [uploaderError, setUploaderError] = useState<Error | null>(null);
   const clearUploaderError = useCallback(() => setUploaderError(null), []);
   const uploadTextSegment = useCallback(
     async (text: string) => {
       if (uploaderError) return; // Wait for a clear before trying again
 
-      try {
-        await upload(sessionId, recordingTimestamp, text);
-      } catch (err) {
-        console.error(err);
-        setUploaderError(err as Error);
-      }
+      const thisUpload = async () => {
+        try {
+          await upload(sessionId, recordingTimestamp, text);
+        } catch (err) {
+          console.error(err);
+          setUploaderError(err as Error);
+        }
+      };
+
+      // If an existing, non resolved promise is in progress.
+      // Replace it with a Promise for this operation.
+      // Wait on the existing promise to resolve before proceeding.
+      // And finally after upload completes (or rejects) complete the curent promise.
+      lastUploadPromise.current = lastUploadPromise.current.then(thisUpload);
+      return lastUploadPromise.current;
     },
     [sessionId, uploaderError, recordingTimestamp],
   );

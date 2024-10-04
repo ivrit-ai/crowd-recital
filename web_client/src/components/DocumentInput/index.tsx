@@ -5,38 +5,64 @@ import { useTranslation } from "react-i18next";
 
 import { getErrorMessage } from "@/utils";
 import { useDocuments } from "@/hooks/documents";
+import useLogin from "@/hooks/useLogin";
 import Collapse from "@/components/Collapse";
 import WikiArticleUpload from "./wikiUploadTab";
+import FreeTextUpload from "./freeTextUploadTab";
 import SelectExistingDocument from "./existingDocTab";
 import type { TabContentProps } from "./types";
 
 const DocumentInput = () => {
   const { t } = useTranslation("documents");
+  const { activeUser } = useLogin();
   const navigate = useNavigate({ from: "/documents" });
   const [noDocsFound, setNoDocsFound] = useState<boolean | null>(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
-  const { createWikiArticleDocument } = useDocuments();
+  const { createWikiArticleDocument, createFreeTextDocument } = useDocuments();
 
-  const uploadWikiDocument = useCallback(async (wikiArticleUrl: string) => {
-    setProcessing(true);
-    try {
-      const decodedUrl = decodeURIComponent(wikiArticleUrl);
-      const { id } = await createWikiArticleDocument(decodedUrl);
-      queryClient.invalidateQueries({ queryKey: ["documents"] });
-      navigate({ to: "/recite/$docId", params: { docId: id } });
-      setError("");
+  const uploadWikiDocument = useCallback(
+    async (wikiArticleUrl: string) => {
+      setProcessing(true);
+      try {
+        const decodedUrl = decodeURIComponent(wikiArticleUrl);
+        const { id } = await createWikiArticleDocument(decodedUrl);
+        queryClient.invalidateQueries({ queryKey: ["documents"] });
+        navigate({ to: "/recite/$docId", params: { docId: id } });
+        setError("");
+      } catch (error) {
+        setError(
+          t("caring_polite_ape_amuse", { error: getErrorMessage(error) }),
+        );
+        console.error(error);
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [createWikiArticleDocument],
+  );
 
-      return id;
-    } catch (error) {
-      setError(t("caring_polite_ape_amuse", { error: getErrorMessage(error) }));
-      console.error(error);
-    } finally {
-      setProcessing(false);
-    }
-  }, []);
+  const uploadFreeTextDocument = useCallback(
+    async (text: string, title?: string) => {
+      setProcessing(true);
+      try {
+        const { id } = await createFreeTextDocument(text, title);
+        queryClient.invalidateQueries({ queryKey: ["documents"] });
+        navigate({ to: "/recite/$docId", params: { docId: id } });
+        setError("");
+      } catch (error) {
+        setError(
+          t("caring_polite_ape_amuse", { error: getErrorMessage(error) }),
+        );
+        console.error(error);
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [createFreeTextDocument],
+  );
 
   const tabContentProps: TabContentProps = {
     error,
@@ -44,6 +70,8 @@ const DocumentInput = () => {
     processing,
     setProcessing,
   };
+
+  const isAdmin = activeUser?.isAdmin();
 
   return (
     <div className="container mx-auto max-w-4xl self-stretch px-4 py-12">
@@ -63,16 +91,26 @@ const DocumentInput = () => {
       </Collapse>
 
       {noDocsFound !== null && (
-        <Collapse title={t("teal_loved_stork_buy")} defaultOpen={noDocsFound}>
-          <WikiArticleUpload
-            {...tabContentProps}
-            loadNewDocumentFromWikiArticle={uploadWikiDocument}
-          />
-        </Collapse>
+        <>
+          <Collapse title={t("teal_loved_stork_buy")} defaultOpen={noDocsFound}>
+            <WikiArticleUpload
+              {...tabContentProps}
+              loadNewDocumentFromWikiArticle={uploadWikiDocument}
+            />
+          </Collapse>
+          {isAdmin && (
+            <>
+              <Collapse title={t("cuddly_dull_toucan_fulfill")}>
+                <FreeTextUpload
+                  {...tabContentProps}
+                  loadNewDocumentFromFreeText={uploadFreeTextDocument}
+                />
+              </Collapse>
+              <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
+            </>
+          )}
+        </>
       )}
-
-      <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
-      <Collapse title={t("cuddly_dull_toucan_fulfill")} disabled></Collapse>
     </div>
   );
 };

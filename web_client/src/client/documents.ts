@@ -12,11 +12,13 @@ const documentsApiBase = "/api/documents";
 
 export enum SourceType {
   WikiArticle = "wiki-article",
+  PlainText = "plain-text",
 }
 
 export const createDocument = async (
   source: string,
   sourceType: SourceType,
+  title?: string,
 ) => {
   const response = await fetch(`${documentsApiBase}/from_source`, {
     method: "POST",
@@ -26,6 +28,7 @@ export const createDocument = async (
     body: JSON.stringify({
       source,
       source_type: sourceType,
+      title,
     }),
   });
   if (!response.ok) {

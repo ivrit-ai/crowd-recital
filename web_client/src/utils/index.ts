@@ -93,4 +93,10 @@ export function secondsToHourMinuteSecondString(
   }
 }
 
+export const logDevOnly = (...args: unknown[]) => {
+  if (import.meta.env.DEV) {
+    console.log(...args);
+  }
+};
+
 export { getErrorMessage } from "./tsErrorMessage";
