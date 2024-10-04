@@ -119,4 +119,5 @@ class Emailer:
                 [self.default_email_reply_to_address],
             )
         except ClientError as e:
+            logger.warning("Failed to send email to %s - Silent error.", user.email)
             logger.exception(e)

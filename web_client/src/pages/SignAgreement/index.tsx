@@ -7,6 +7,8 @@ import { getLoadEulaOptions } from "@/client/queries/staticContent";
 import { signUserAgreement } from "@/client/user";
 import CentredPage from "@/components/CenteredPage";
 import { useState } from "react";
+import { ArrowLeftRight } from "lucide-react";
+import { twJoin } from "tailwind-merge";
 
 const SignAgreement = () => {
   useTrackPageView("signAgreement");
@@ -40,7 +42,7 @@ const SignAgreement = () => {
             <div className="text-4xl">👩‍⚖️🖊️</div>
             <h1 className="text-3xl">{t("last_heavy_bulldog_favor")}</h1>
             <p className="pt-6">{t("curly_lazy_manatee_wave")}</p>
-            <label className="btn btn-outline swap mt-4">
+            <label className="btn btn-outline swap btn-sm mt-4">
               <input
                 type="checkbox"
                 checked={licenseLang === "en"}
@@ -48,8 +50,15 @@ const SignAgreement = () => {
                   setLicenseLang(licenseLang === "en" ? "he" : "en")
                 }
               />
-              <div className="swap-on">English Version</div>
-              <div className="swap-off">גרסה עברית</div>
+              <div className="flex items-center gap-2 font-light">
+                <span className={twJoin(licenseLang === "he" && "font-bold")}>
+                  עבר
+                </span>
+                <ArrowLeftRight className="h-4 w-4" />
+                <span className={twJoin(licenseLang === "en" && "font-bold")}>
+                  Eng
+                </span>
+              </div>
             </label>
           </div>
           <div className="grow basis-0 overflow-auto">
