@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 
 import { getDocumentsOptions } from "@/client/queries/documents";
+import useLogin from "@/hooks/useLogin";
 import { SortOrder } from "@/client/types/common";
 import SortCol from "@/components/DataTable/SortCol";
 import { useSortState } from "@/components/DataTable/useSortState";
@@ -25,7 +26,8 @@ const itemsPerPage = 10;
 const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
   const { t } = useTranslation("documents");
   const navigate = useNavigate({ from: "/documents" });
-  const [onlyMine, setOnlyMine] = useState(false);
+  const { activeUser } = useLogin();
+  const [onlyMine, setOnlyMine] = useState(true);
   const [existingId, setExistingId] = useState("");
 
   // Documents table loading
@@ -44,7 +46,7 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
           sortColumns: [sortState.sortCol],
           sortOrders: [sortState.sortOrder],
         },
-        onlyMine ? auth?.user?.id : undefined,
+        onlyMine || !activeUser?.isAdmin() ? auth?.user?.id : undefined,
       ),
       refetchOnMount: true,
     });
@@ -118,19 +120,21 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
         <label className="label">{t("house_equal_bird_vent")}</label>
         {refreshButton}
       </div>
-      <div className="mx-4 mb-4 flex flex-row items-center justify-between">
-        <label className="label cursor-pointer">
-          <span className="label-text me-4 text-xs sm:text-sm">
-            {t("brief_cozy_gull_bloom")}
-          </span>
-          <input
-            type="checkbox"
-            className="checkbox-primary checkbox sm:checkbox-xs"
-            checked={onlyMine}
-            onChange={(e) => setOnlyMine(e.target.checked)}
-          />
-        </label>
-      </div>
+      {!!activeUser?.isAdmin() && (
+        <div className="mx-4 mb-4 flex flex-row items-center justify-between">
+          <label className="label cursor-pointer">
+            <span className="label-text me-4 text-xs sm:text-sm">
+              {t("brief_cozy_gull_bloom")}
+            </span>
+            <input
+              type="checkbox"
+              className="checkbox-primary checkbox sm:checkbox-xs"
+              checked={onlyMine}
+              onChange={(e) => setOnlyMine(e.target.checked)}
+            />
+          </label>
+        </div>
+      )}
       <div dir="rtl" className="overflow-x-auto">
         <table className="table">
           <thead>
