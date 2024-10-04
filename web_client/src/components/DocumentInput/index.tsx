@@ -90,7 +90,7 @@ const DocumentInput = () => {
         />
       </Collapse>
 
-      {isAdmin && noDocsFound !== null && (
+      {noDocsFound !== null && (
         <>
           <Collapse title={t("teal_loved_stork_buy")} defaultOpen={noDocsFound}>
             <WikiArticleUpload
@@ -98,13 +98,17 @@ const DocumentInput = () => {
               loadNewDocumentFromWikiArticle={uploadWikiDocument}
             />
           </Collapse>
-          <Collapse title={t("cuddly_dull_toucan_fulfill")}>
-            <FreeTextUpload
-              {...tabContentProps}
-              loadNewDocumentFromFreeText={uploadFreeTextDocument}
-            />
-          </Collapse>
-          <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
+          {isAdmin && (
+            <>
+              <Collapse title={t("cuddly_dull_toucan_fulfill")}>
+                <FreeTextUpload
+                  {...tabContentProps}
+                  loadNewDocumentFromFreeText={uploadFreeTextDocument}
+                />
+              </Collapse>
+              <Collapse title={t("icy_loud_stork_catch")} disabled></Collapse>
+            </>
+          )}
         </>
       )}
     </div>

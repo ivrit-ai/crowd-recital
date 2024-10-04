@@ -19,7 +19,7 @@ from models.user import User
 
 from .crud.utils import create_dynamic_filters_dep, gen_get_multi, gen_get_single
 from .dependencies.analytics import Tracker
-from .dependencies.users import User, get_speaker_user, get_admin_user
+from .dependencies.users import User, get_speaker_user
 
 router = APIRouter()
 
@@ -75,7 +75,7 @@ async def create_document_from_source(
 @inject
 async def create_document_from_source(
     track_event: Tracker,
-    speaker_user: Annotated[User, Depends(get_admin_user)],
+    speaker_user: Annotated[User, Depends(get_speaker_user)],
     create_from_source: CreateDocumentFromSourceBody,
     document_manager: DocumentManager = Depends(Provide[Container.document_manager]),
 ):
