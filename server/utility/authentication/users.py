@@ -91,7 +91,6 @@ def record_user_agreement(
             agreement_signed_notification_email["subject"],
             agreement_signed_notification_email["body"].format(
                 name=user.name,
-                sign_date=user.agreement_signed_at.strftime("%Y-%m-%d"),
                 agreement_version=agreement_version,
             ),
         )
