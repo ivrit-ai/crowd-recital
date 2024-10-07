@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 
 import { getDocumentsOptions } from "@/client/queries/documents";
-import useLogin from "@/hooks/useLogin";
 import { SortOrder } from "@/client/types/common";
 import SortCol from "@/components/DataTable/SortCol";
 import { useSortState } from "@/components/DataTable/useSortState";
