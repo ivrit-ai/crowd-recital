@@ -24,6 +24,11 @@ class UserStats(BaseModel):
     total_recordings: int
 
 
+class TotalStats(BaseModel):
+    total_duration: float
+    total_recordings: int
+
+
 class StatsRA:
     def __init__(
         self,
@@ -104,3 +109,23 @@ class StatsRA:
             results = session.exec(leader_board_selectable)
 
             return results.all()
+
+    @region.cache_on_arguments(namespace={"fixed_key": CacheKeys.totals}, expiration_time=60 * 10)
+    def totals(self) -> TotalStats:
+        with self.session_factory() as session:
+
+            system_totals = select(
+                cast(func.sum(RecitalSession.duration).label("total_duration"), Numeric),
+                func.count(RecitalSession.id).label("total_recordings"),
+            ).filter(RecitalSession.status == SessionStatus.UPLOADED)
+
+            results = session.exec(system_totals)
+            totals = results.one_or_none()
+
+            if totals is not None:
+                return TotalStats(
+                    total_duration=totals.total_duration,
+                    total_recordings=totals.total_recordings,
+                )
+            else:
+                return TotalStats(total_duration=0, total_recordings=0)

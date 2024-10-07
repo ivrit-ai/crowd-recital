@@ -227,7 +227,7 @@ class RecitalManager:
                 continue
 
         if uploaded_sessions_mutated:
-            stats_cache.region.delete(stats_cache.CacheKeys.leaderboard)
+            stats_cache.invalidate_cross_user_stats()
 
     def discard_disavowed_sessions(self) -> None:
         disavowed_sessions = self.recitals_ra.get_disavowed_pending_sessions()
@@ -243,7 +243,7 @@ class RecitalManager:
                 discarded_sessions_mutated = True
 
         if discarded_sessions_mutated:
-            stats_cache.region.delete(stats_cache.CacheKeys.leaderboard)
+            stats_cache.invalidate_cross_user_stats()
 
     def discard_session(self, session_id: str) -> bool:
         try:

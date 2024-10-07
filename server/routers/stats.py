@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 
 from containers import Container
-from resource_access.stats_ra import StatsRA, UserLeaderBoard, UserStats
+from resource_access.stats_ra import StatsRA, UserLeaderBoard, UserStats, TotalStats
 
 from .dependencies.analytics import Tracker
 from .dependencies.users import User, get_speaker_user
@@ -28,3 +28,12 @@ async def get_leaderboard(
 ):
 
     return stats_ra.leader_board(10)
+
+
+@router.get("/totals", response_model=TotalStats)
+@inject
+async def get_totals(
+    stats_ra: StatsRA = Depends(Provide[Container.stats_ra]),
+):
+
+    return stats_ra.totals()

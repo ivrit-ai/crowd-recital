@@ -10,3 +10,8 @@ export type UserStatsType = {
   total_duration: number;
   total_recordings: number;
 };
+
+export type SystemTotalStatsType = {
+  total_duration: number;
+  total_recordings: number;
+};
