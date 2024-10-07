@@ -227,7 +227,7 @@ async def get_session_preview(
 # Crud Generated API
 
 session_crud = FastCRUD(RecitalSession)
-session_filter_config = FilterConfig(status=None)
+session_filter_config = FilterConfig(status=None, user_id=None)
 
 join_with_text_doc_config = JoinConfig(
     model=TextDocument,
@@ -236,6 +236,22 @@ join_with_text_doc_config = JoinConfig(
     schema_to_select=SessionTextDocument,
     join_type="left",
 )
+
+
+def preprocess_filters(**kwargs) -> dict:
+    # Ownership filter processing
+    calling_user: User = kwargs.pop("__calling_user")
+    is_admin = calling_user.is_admin()
+
+    if is_admin and kwargs.get("user_id", None) is not None:
+        # the owner_id filter applies as is
+        pass
+    else:
+        # By default - users see their own session
+        kwargs["user_id"] = calling_user.id
+
+    return {}, kwargs
+
 
 router.add_api_route(
     "/{id}",
@@ -252,7 +268,9 @@ router.add_api_route(
     gen_get_multi(
         session_crud,
         get_async_session,
-        create_dynamic_filters_dep(session_filter_config),
+        create_dynamic_filters_dep(
+            session_filter_config, inject_current_user=True, preprocess_filters=preprocess_filters
+        ),
         join_configs=[join_with_text_doc_config],
         schema_to_select=RecitalSessionRead,
     ),

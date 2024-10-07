@@ -3,7 +3,7 @@ from typing import Annotated, Optional
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.exceptions import HTTPException
-from fastcrud import FastCRUD, FilterConfig, JoinConfig
+from fastcrud import FilterConfig, JoinConfig
 from pydantic import BaseModel
 
 from containers import Container
@@ -17,7 +17,7 @@ from models.text_document import (
 )
 from models.user import User
 
-from .crud.utils import create_dynamic_filters_dep, gen_get_multi, gen_get_single
+from .crud.utils import FastCrudWithOrFilters, create_dynamic_filters_dep, gen_get_multi, gen_get_single
 from .dependencies.analytics import Tracker
 from .dependencies.users import User, get_speaker_user
 
@@ -96,16 +96,41 @@ async def create_document_from_source(
 # Crud Generated API
 
 
-document_crud = FastCRUD(TextDocument)
-document_filter_config = FilterConfig(source_type=None, owner_id=None)
+document_crud = FastCrudWithOrFilters(TextDocument)
+document_filter_config = FilterConfig(source_type=None, owner_id=None, include_public=False)
+
+
+def preprocess_filters(**kwargs) -> dict:
+    filtered_params = {}
+
+    # Ownership filter processing
+    calling_user: User = kwargs.pop("__calling_user")
+    is_admin = calling_user.is_admin()
+    include_public = kwargs.pop("include_public", None) == "1"
+
+    if is_admin:
+        if kwargs.get("owner_id", None) is not None:
+            if include_public:
+                filtered_params["__or__specific_or_public"] = {"owner_id": kwargs.pop("owner_id"), "public": True}
+            else:
+                # the owner_id filter applies as is
+                pass
+        else:
+            kwargs.pop("owner_id", None)  # Clear it - meaningless for admin
+    else:
+        # You don't get to decide which user you see. hmm.
+        # regardless of the specified owner_id - we force the calling user
+        # owner id
+        kwargs["owner_id"] = calling_user.id
+        if include_public:
+            filtered_params["__or__mine_or_public"] = {"owner_id": kwargs.pop("owner_id"), "public": True}
+
+    return filtered_params, kwargs
+
 
 router.add_api_route(
     "/{id}",
-    gen_get_single(
-        document_crud,
-        get_async_session,
-        schema_to_select=TextDocumentRead,
-    ),
+    gen_get_single(document_crud, get_async_session, schema_to_select=TextDocumentRead, only_admins_see_others=False),
     methods=["GET"],
 )
 router.add_api_route(
@@ -113,7 +138,9 @@ router.add_api_route(
     gen_get_multi(
         document_crud,
         get_async_session,
-        create_dynamic_filters_dep(document_filter_config),
+        create_dynamic_filters_dep(
+            document_filter_config, inject_current_user=True, preprocess_filters=preprocess_filters
+        ),
         join_configs=[
             JoinConfig(
                 model=User,
@@ -124,7 +151,6 @@ router.add_api_route(
             )
         ],
         schema_to_select=TextDocumentListRead,
-        user_id_field_name=None,  # Can get documents of all owners for now
     ),
     methods=["GET"],
 )

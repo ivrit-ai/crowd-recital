@@ -26,7 +26,6 @@ const itemsPerPage = 10;
 const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
   const { t } = useTranslation("documents");
   const navigate = useNavigate({ from: "/documents" });
-  const { activeUser } = useLogin();
   const [onlyMine, setOnlyMine] = useState(true);
   const [existingId, setExistingId] = useState("");
 
@@ -37,6 +36,10 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
     SortColumnsEnum.CREATED_AT,
     SortOrder.DESC,
   );
+  // Note - non admins are forced on "own user id" so this only applies
+  // to admins
+  const ownerFilter = onlyMine ? auth?.user?.id : undefined;
+  const includePublicFilter = !onlyMine;
   const { data, isError, isPending, isPlaceholderData, refetch, isFetching } =
     useQuery({
       ...getDocumentsOptions(
@@ -46,7 +49,8 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
           sortColumns: [sortState.sortCol],
           sortOrders: [sortState.sortOrder],
         },
-        onlyMine || !activeUser?.isAdmin() ? auth?.user?.id : undefined,
+        ownerFilter,
+        includePublicFilter,
       ),
       refetchOnMount: true,
     });
@@ -90,10 +94,13 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
             navigate({ to: "/recite/$docId", params: { docId: doc.id } })
           }
         >
-          <td className="text-xs md:text-sm">{doc.title}</td>
+          <td className="text-xs md:text-sm">
+            {doc.title}
+            {doc.public ? <span className="text-accent"> [ציבורי]</span> : ""}
+          </td>
           <td className="hidden text-xs sm:table-cell md:text-sm">{doc.id}</td>
           <td dir="ltr" className="text-xs md:text-sm">
-            {new Date(doc.created_at).toLocaleString()}
+            {new Date(doc.created_at).toLocaleDateString()}
           </td>
         </tr>
       ));
@@ -114,29 +121,26 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
     ));
   }
 
+  const filtersElement = (
+    <div className="mb-4 flex flex-row items-center justify-between sm:mx-4">
+      <label className="label cursor-pointer">
+        <span className="label-text me-4 text-xs sm:text-sm">
+          {t("brief_cozy_gull_bloom")}
+        </span>
+        <input
+          type="checkbox"
+          className="checkbox-primary checkbox sm:checkbox-xs"
+          checked={onlyMine}
+          onChange={(e) => setOnlyMine(e.target.checked)}
+        />
+      </label>
+    </div>
+  );
+
   const tableElement = (
     <>
-      <div className="mx-4 flex flex-row items-center justify-between">
-        <label className="label">{t("house_equal_bird_vent")}</label>
-        {refreshButton}
-      </div>
-      {!!activeUser?.isAdmin() && (
-        <div className="mx-4 mb-4 flex flex-row items-center justify-between">
-          <label className="label cursor-pointer">
-            <span className="label-text me-4 text-xs sm:text-sm">
-              {t("brief_cozy_gull_bloom")}
-            </span>
-            <input
-              type="checkbox"
-              className="checkbox-primary checkbox sm:checkbox-xs"
-              checked={onlyMine}
-              onChange={(e) => setOnlyMine(e.target.checked)}
-            />
-          </label>
-        </div>
-      )}
       <div dir="rtl" className="overflow-x-auto">
-        <table className="table">
+        <table className="table table-md">
           <thead>
             <tr>
               <th>{t("major_dark_husky_launch")}</th>
@@ -188,6 +192,12 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
 
   return (
     <>
+      <div className="flex flex-row items-center justify-between sm:mx-4">
+        <label className="label">{t("house_equal_bird_vent")}</label>
+        {refreshButton}
+      </div>
+
+      {filtersElement}
       {tableBody
         ? tableElement
         : isError

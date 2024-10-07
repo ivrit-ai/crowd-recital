@@ -1,13 +1,38 @@
 import inspect
-from typing import Annotated, Any, Callable, Optional
+from typing import Annotated, Any, Callable, Optional, Union
 
+from sqlalchemy import (
+    or_,
+)
+from sqlalchemy.orm.util import AliasedClass
+from sqlalchemy.sql.elements import ColumnElement
 from fastapi import Depends, Query
 from fastcrud import FastCRUD, FilterConfig
+from fastcrud.types import (
+    ModelType,
+)
 from pydantic import create_model
 
 from models.user import User
 from routers.dependencies.analytics import Tracker
 from routers.dependencies.users import get_speaker_user
+
+
+class FastCrudWithOrFilters(FastCRUD):
+    def _parse_filters(
+        self, model: Optional[Union[type[ModelType], AliasedClass]] = None, **kwargs
+    ) -> list[ColumnElement]:
+        model = model or self.model
+        kwargs_rest = {}
+        or_filters = []
+        for key, value in kwargs.items():
+            if key.startswith("__or"):
+                or_filters_parsed = super()._parse_filters(model, **value)
+                or_filters.append(or_(*or_filters_parsed))
+            else:
+                kwargs_rest[key] = value
+
+        return super()._parse_filters(model, **kwargs_rest) + or_filters
 
 
 def compute_offset(page: int, items_per_page: int) -> int:
@@ -56,20 +81,38 @@ def paginated_response(crud_data: dict, page: int, items_per_page: int) -> dict[
     }
 
 
-def create_dynamic_filters_dep(filter_config: Optional[FilterConfig]) -> Callable[..., dict[str, Any]]:
+def create_dynamic_filters_dep(
+    filter_config: Optional[FilterConfig],
+    inject_current_user: bool = False,
+    preprocess_filters: Optional[Callable] = None,
+) -> Callable[..., dict[str, Any]]:
     if filter_config is None:
         return lambda: {}
 
     def filters(
         **kwargs: Any,
     ) -> dict[str, Any]:
+        kwargs_to_use = kwargs.copy()
         filtered_params = {}
-        for key, value in kwargs.items():
+        if preprocess_filters is not None:
+            filtered_params, kwargs_to_use = preprocess_filters(**kwargs_to_use)
+
+        for key, value in kwargs_to_use.items():
             if value is not None:
                 filtered_params[key] = value
+
         return filtered_params
 
     params = []
+    if inject_current_user:
+        params.append(
+            inspect.Parameter(
+                "__calling_user",
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                default=Depends(get_speaker_user),
+            )
+        )
+
     for key, value in filter_config.filters.items():
         params.append(
             inspect.Parameter(
@@ -124,11 +167,12 @@ def gen_get_single(
     join_configs=[],
     item_id_field_name: str = "id",
     user_id_field_name: str = "user_id",
+    only_admins_see_others: bool = True,
 ):
     @_apply_model_pk(**{item_id_field_name: str})
     async def endpoint(
         track_event: Tracker,
-        speaker_user: Annotated[User, Depends(get_speaker_user)],
+        calling_user: Annotated[User, Depends(get_speaker_user)],
         extra_columns: Annotated[list[str] | None, Query(alias="extraColumns")] = None,
         db: any = Depends(get_async_session),
         **pkeys,
@@ -140,8 +184,9 @@ def gen_get_single(
         )
 
         user_filter = dict()
-        if user_id_field_name:
-            user_filter[user_id_field_name] = speaker_user.id
+        # Force filter on "owned items" if only admins can see other's owned items
+        if user_id_field_name and only_admins_see_others and not calling_user.is_admin():
+            user_filter[user_id_field_name] = calling_user.id
 
         getter = crud.get
         if join_configs:
@@ -156,16 +201,14 @@ def gen_get_single(
 
 
 def gen_get_multi(
-    crud: FastCRUD,
+    crud: FastCrudWithOrFilters,
     get_async_session,
     dynamic_filters,
     schema_to_select=None,
     join_configs=[],
-    user_id_field_name: str = "user_id",
 ):
     async def endpoint(
         track_event: Tracker,
-        speaker_user: Annotated[User, Depends(get_speaker_user)],
         db: any = Depends(get_async_session),
         page: Optional[int] = Query(None, alias="page", description="Page number"),
         items_per_page: Optional[int] = Query(None, alias="itemsPerPage", description="Number of items per page"),
@@ -181,10 +224,6 @@ def gen_get_multi(
             sort_orders=sort_orders,
         )
 
-        user_filter = dict()
-        if user_id_field_name:
-            user_filter[user_id_field_name] = speaker_user.id
-
         track_event(f"Get {crud.model.__name__} Items")
 
         getter = crud.get_multi
@@ -199,11 +238,10 @@ def gen_get_multi(
                 offset=0,
                 limit=100,
                 **filters,
-                **user_filter,
             )
 
         offset = compute_offset(page=page, items_per_page=items_per_page)
-        crud_data = await getter(**common_read_params, offset=offset, limit=items_per_page, **filters, **user_filter)
+        crud_data = await getter(**common_read_params, offset=offset, limit=items_per_page, **filters)
 
         return paginated_response(crud_data=crud_data, page=page, items_per_page=items_per_page)  # pragma: no cover
 

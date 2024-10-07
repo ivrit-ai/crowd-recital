@@ -92,6 +92,7 @@ class Document {
   id?: string;
   title?: string;
   paragraphs: Paragraph[];
+  public?: boolean | null;
   constructor(paragraphs: Paragraph[]) {
     this.paragraphs = paragraphs;
   }
@@ -136,6 +137,7 @@ class Document {
     const document = Document.fromParagraphsTextList(textDocument.text);
     document.id = textDocument.id;
     document.title = textDocument.title;
+    document.public = textDocument.public;
     return document;
   }
 }
@@ -145,6 +147,7 @@ export type TextDocumentResponse = {
   title: string;
   text: string[][];
   source: string;
+  public: boolean | null;
   created_at: string;
 };
 
