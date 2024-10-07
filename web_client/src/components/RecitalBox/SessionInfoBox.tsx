@@ -1,7 +1,7 @@
 import { HeadphonesIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import SessionPreview from "@/components/SessionPreview";
+import SubTrackingSessionPreview from "@/components/SessionPreview/subTrackingPreview";
 import useSessionPreview from "@/components/SessionPreview/useSessionPreview";
 import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import { secondsToHourMinuteSecondString } from "@/utils";
@@ -51,9 +51,15 @@ const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-      <div>{id ? <span>{t("stock_major_myna_advise")}</span> : t("fun_cute_mayfly_earn")}</div>
+      <div>
+        {id ? (
+          <span>{t("stock_major_myna_advise")}</span>
+        ) : (
+          t("fun_cute_mayfly_earn")
+        )}
+      </div>
       {!isPending && statusElement}
-      <SessionPreview
+      <SubTrackingSessionPreview
         ref={sessionPreviewRef}
         id={previewedSessionId}
         onClose={onClose}

@@ -3,7 +3,7 @@ import { twJoin } from "tailwind-merge";
 
 import { tw } from "@/utils";
 
-const pagePagesFromEitherSide = 2;
+const pagePagesFromEitherSide = 3;
 
 type PagerProps = {
   page: number;
