@@ -8,10 +8,12 @@ export function getDocumentsOptions(
   itemsPerPage: number,
   sort?: SortConfiguration,
   owner?: string,
+  includePublic?: boolean,
 ) {
   return queryOptions({
-    queryKey: ["documents", page, itemsPerPage, owner, sort],
-    queryFn: () => loadDocuments({ page, itemsPerPage, owner, sort }),
+    queryKey: ["documents", page, itemsPerPage, sort, owner, includePublic],
+    queryFn: () =>
+      loadDocuments({ page, itemsPerPage, sort, owner, includePublic }),
     staleTime: 1000 * 60 * 10, // 10 minutes
     placeholderData: keepPreviousData,
   });

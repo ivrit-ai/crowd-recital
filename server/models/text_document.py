@@ -4,6 +4,7 @@ from typing import ClassVar, Optional
 from pydantic import BaseModel
 from pydantic.json_schema import SkipJsonSchema
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
+from sympy import public
 
 from .mixins.date_fields import DateFieldsMixin
 from .user import User
@@ -22,6 +23,8 @@ class TextDocumentBase(DateFieldsMixin, SQLModel):
     text: list[list[str]] = Field(default_factory=dict, sa_column=Column(JSON))
     title: Optional[str]
 
+    public: bool = Field(default=False, nullable=True)
+
 
 class TextDocument(TextDocumentBase, table=True):
     owner_id: Optional[uuid.UUID] = Field(default=None, foreign_key="users.id")
@@ -39,6 +42,7 @@ class TextDocumentListRead(DateFieldsMixin, BaseModel):
     source: ClassVar[str]
     source_type: str
     title: Optional[str]
+    public: bool
 
 
 class TextDocumentOwner(BaseModel):

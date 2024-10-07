@@ -84,6 +84,7 @@ export const getDocument = async (documentId: string) => {
 
 export type DocumentFilters = {
   owner?: string;
+  includePublic?: boolean;
 };
 
 export type LoadDocumentsQueryParams = PagingParams &
@@ -98,6 +99,9 @@ export async function loadDocuments(
   const requestQueryParams = new URLSearchParams();
   if (queryParams.owner) {
     requestQueryParams.append("owner_id", queryParams.owner);
+  }
+  if (queryParams.includePublic) {
+    requestQueryParams.append("include_public", "1");
   }
   setSortAndPagingQueryParams(queryParams, requestQueryParams);
 

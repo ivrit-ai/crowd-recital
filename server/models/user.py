@@ -21,6 +21,9 @@ class UserBase(SQLModel):
 
     group: Optional[str] = Field(default=None)
 
+    def is_admin(self) -> bool:
+        return self.group == UserGroups.ADMIN
+
 
 class User(UserBase, DateFieldsMixin, table=True):
     __tablename__ = "users"
