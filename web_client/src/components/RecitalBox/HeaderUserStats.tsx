@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -17,6 +17,7 @@ const HeaderUserStats = ({
   sessionStatus,
 }: HeaderUserStatsProps) => {
   const { t } = useTranslation("recordings");
+  const queryClient = useQueryClient();
   const {
     data: myUserStats,
     isPending: userStatsPending,
@@ -26,6 +27,7 @@ const HeaderUserStats = ({
   useEffect(() => {
     if (sessionId && sessionStatus === RecitalSessionStatus.Uploaded) {
       userStatsRefetch();
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
     }
   }, [sessionId, sessionStatus]);
 

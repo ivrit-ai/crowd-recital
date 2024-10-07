@@ -13,6 +13,7 @@ export default function () {
       queryClient.invalidateQueries({
         queryKey: ["session", toDeleteSessionId],
       });
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
     },
   });
   const deleteConfirmRef = useRef<HTMLDialogElement>(null);

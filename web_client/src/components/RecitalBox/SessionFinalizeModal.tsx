@@ -30,6 +30,7 @@ const SessionFinalizeModal = ({
       queryClient.invalidateQueries({
         queryKey: ["session", sessionId],
       });
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
     },
   });
 

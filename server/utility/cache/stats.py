@@ -8,6 +8,7 @@ from dogpile.cache import make_region
 class CacheKeys(StrEnum):
     user_stats = "user_stats"
     leaderboard = "leaderboard"
+    totals = "totals"
 
 
 user_stats_keys = set()
@@ -48,3 +49,8 @@ region = make_region(function_key_generator=stats_key_gen).configure(
 def invalidate_stats_by_user_id(user_id):
     for key in user_stats_keys:
         region.delete(key % user_id)
+
+
+def invalidate_cross_user_stats():
+    region.delete(CacheKeys.leaderboard)
+    region.delete(CacheKeys.totals)

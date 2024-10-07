@@ -86,7 +86,9 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   const [createNewSession, endSession] = useRecordingSession(document?.id);
   const endSessionAndMoveOn = useCallback(
     (sessionId: string) => {
-      endSession(sessionId).then(() => move.nextSentence());
+      endSession(sessionId).then(() => {
+        move.nextSentence();
+      });
     },
     [endSession, move],
   );
