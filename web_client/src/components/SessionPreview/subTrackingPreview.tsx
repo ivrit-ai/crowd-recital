@@ -49,6 +49,11 @@ const SessionPreview = (
   const activeCueTextRef = useRef<HTMLDivElement | null>(null);
 
   const [audioDataLoadedForId, setAudioDataLoadedForId] = useState("");
+  useEffect(() => {
+    // Reset - force the next preview to reprocess cues only
+    // aftr data load C
+    setAudioDataLoadedForId("");
+  }, [id]);
   const loadedForCurrentId = audioDataLoadedForId == id;
   const [activeCueId, setActiveCueId] = useState("");
   const [textCues, setTextCues] = useState<TextCueLocal[] | null>(null);
@@ -63,7 +68,7 @@ const SessionPreview = (
     const cueChangeCb = () => {
       if (textTrackRef.current) {
         const cues = textTrackRef.current.activeCues;
-        if (cues) setActiveCueId(cues[0].id);
+        if (cues) setActiveCueId(cues[0]?.id);
       }
     };
     const currentPreviewId = id;
@@ -101,10 +106,11 @@ const SessionPreview = (
     }
 
     return () => {
-      console.log("ue-cleanup");
-      audioRef.current?.removeEventListener("loadeddata", videoLoadedCb);
-      textTrackRef.current?.removeEventListener("cuechange", cueChangeCb);
-      textTrackRef.current = null;
+      if (loadedForCurrentId) {
+        audioRef.current?.removeEventListener("loadeddata", videoLoadedCb);
+        textTrackRef.current?.removeEventListener("cuechange", cueChangeCb);
+        textTrackRef.current = null;
+      }
     };
   }, [id, isPending, loadedForCurrentId]);
 
@@ -147,7 +153,7 @@ const SessionPreview = (
 
   return (
     <dialog className="modal" ref={ref} onClose={onClose}>
-      <div className="modal-box">
+      <div className="modal-box max-w-2xl">
         <h1 className="text-md pb-2 font-bold">
           {t("silly_moving_eagle_fold", { id })}
         </h1>
@@ -174,10 +180,9 @@ const SessionPreview = (
                   }}
                 >
                   <div className="text-sm">
-                    {secondsToHourMinuteSecondString(c.startTime, false)} -{" "}
-                    {secondsToHourMinuteSecondString(c.endTime, false)}
+                    {secondsToHourMinuteSecondString(c.startTime, false)}
                   </div>
-                  <div className="">{c.text}</div>
+                  <div className="w-full text-wrap py-2">{c.text}</div>
                 </div>
               ))}
             </div>
