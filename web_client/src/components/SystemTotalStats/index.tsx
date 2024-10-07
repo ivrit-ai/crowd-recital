@@ -16,11 +16,15 @@ const LeaderboardTable = () => {
       ) : (
         <div className="stats">
           <div className="stat">
-            <span className="stat-title">{t("royal_tame_eagle_walk")}</span>
+            <span className="stat-title text-primary">
+              {t("royal_tame_eagle_walk")}
+            </span>
             <span className="stat-value">{data?.total_recordings || 0}</span>
           </div>
           <div className="stat">
-            <span className="stat-title">{t("deft_mean_javelina_dazzle")}</span>
+            <span className="stat-title text-primary">
+              {t("deft_mean_javelina_dazzle")}
+            </span>
             <span className="stat-value">
               {secondsToHourMinuteSecondString(
                 data?.total_duration || 0,

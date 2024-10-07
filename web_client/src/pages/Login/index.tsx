@@ -6,6 +6,7 @@ import useTrackPageView from "@/analytics/useTrackPageView";
 import ivritAiLogo from "../../assets/ivrit_ai_logo.webp";
 import { UserContext } from "@/context/user";
 import HebrewSoup from "@/components/HebrewSoup/HebrewSoup";
+import SystemTotalStats from "@/components/SystemTotalStats";
 
 const Login = () => {
   useTrackPageView("login");
@@ -21,6 +22,7 @@ const Login = () => {
             <img src={ivritAiLogo} alt="Ivrit.ai logo" />
           </aside>
           <div className="flex-col">
+            <SystemTotalStats />
             <div className="my-8 text-center align-middle">
               <h1 className="text-3xl font-bold">{t("glossary.ivritai")}</h1>
               <h1 className="text-xl font-bold">
