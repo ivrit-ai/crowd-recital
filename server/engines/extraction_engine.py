@@ -54,9 +54,6 @@ class ExtractionEngine:
 
         return extracted
 
-    def _clear_structure_from_text(self, text_in: str) -> str:
-        return re.sub(r"\s+", " ", text_in).strip()
-
     def _extract_text_document_from_html_file(self, source_file: BinaryIO) -> ExtractedText:
         # Read the HTML content from the binary file
         html_content = source_file.read()
@@ -163,6 +160,9 @@ class ExtractionEngine:
         # At this point we have a list of chunks of text which we assume represent a paragraph.
         # Within those chunks we don't want any structure - since next step is to cut it up into sentences.
 
+        # Remove from each paragraph text between parentheses
+        paragraphs = [self._clear_text_between_parentheses(p) for p in paragraphs]
+
         # replace non word chars with a single space (including new lines)
         paragraphs = [self._clear_structure_from_text(p) for p in paragraphs]
 
@@ -171,3 +171,21 @@ class ExtractionEngine:
 
         # Cut up to paragraphs - use semantic sentence tokenization
         return [[s.text for s in self.nlp(p).sentences] for p in paragraphs]
+
+    def _clear_structure_from_text(self, text_in: str) -> str:
+        """
+        Cleans up the input text by replacing multiple whitespace characters
+        with a single space and trimming leading and trailing whitespace.
+
+        Args:
+            text_in (str): The input text to be cleaned.
+
+        Returns:
+            str: The cleaned text with normalized whitespace.
+        """
+        return re.sub(r"\s+", " ", text_in).strip()
+
+    def _clear_text_between_parentheses(self, text_in: str) -> str:
+        text_in = re.sub(r"\s*[<\[][^>\]]*[>\]]", "", text_in)  # remove words between brackets and any space before it.
+        text_in = re.sub(r"\s*\(([^)]+?)\)", "", text_in)  # remove words between parenthesis and any space before it.
+        return text_in
