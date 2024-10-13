@@ -90,12 +90,14 @@ const Header = ({ sessionId, recording, document }: Props) => {
           </span>
         </div>
       </div>
-      <div>
-        <HeaderUserStats
-          sessionId={sessionId}
-          sessionStatus={sessionData?.status}
-        />
-      </div>
+      {!recording && (
+        <div>
+          <HeaderUserStats
+            sessionId={sessionId}
+            sessionStatus={sessionData?.status}
+          />
+        </div>
+      )}
     </header>
   );
 };
