@@ -159,46 +159,52 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   );
 
   return (
-    <div className="flex h-screen-minus-topbar w-full flex-col content-between">
-      <Header sessionId={sessionId} recording={recording} document={document} />
+    <div>
+      <div className="sticky top-topbar">
+        <Header
+          sessionId={sessionId}
+          recording={recording}
+          document={document}
+        />
 
-      {autoStopReason ? (
-        <div className="alert alert-error mx-auto max-w-2xl">
-          <InfoIcon className="h-8 w-8 flex-shrink-0" />
-          {autoStopReason}
-        </div>
-      ) : (
-        <div className="flex items-center justify-center gap-4 pt-4 nokbd:hidden">
-          <span>
-            <kbd className="kbd kbd-sm">⏎</kbd>{" "}
-            {recording
-              ? t("bold_weird_okapi_win")
-              : t("odd_next_gazelle_transform")}
-          </span>
-          {!recording && (
+        {autoStopReason ? (
+          <div className="alert alert-error mx-auto max-w-2xl">
+            <InfoIcon className="h-8 w-8 flex-shrink-0" />
+            {autoStopReason}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-4 bg-base-200 py-2 nokbd:hidden">
             <span>
-              <kbd className="kbd kbd-sm">&uarr;</kbd>{" "}
-              {t("ornate_quiet_turtle_hurl")}
+              <kbd className="kbd kbd-sm">⏎</kbd>{" "}
+              {recording
+                ? t("bold_weird_okapi_win")
+                : t("odd_next_gazelle_transform")}
             </span>
-          )}
-          {!recording && (
+            {!recording && (
+              <span>
+                <kbd className="kbd kbd-sm">&uarr;</kbd>{" "}
+                {t("ornate_quiet_turtle_hurl")}
+              </span>
+            )}
+            {!recording && (
+              <span>
+                <kbd className="kbd kbd-sm">&darr;</kbd>{" "}
+                {t("weird_moving_mongoose_cry")}
+              </span>
+            )}
             <span>
-              <kbd className="kbd kbd-sm">&darr;</kbd>{" "}
-              {t("weird_moving_mongoose_cry")}
+              <kbd className="kbd kbd-sm">&larr;</kbd>{" "}
+              {t("zippy_safe_halibut_spur")}
             </span>
-          )}
-          <span>
-            <kbd className="kbd kbd-sm">&larr;</kbd>{" "}
-            {t("zippy_safe_halibut_spur")}
-          </span>
-          <span>
-            <kbd className="kbd kbd-sm">&rarr;</kbd>{" "}
-            {t("loose_loved_flea_drip")}
-          </span>
-        </div>
-      )}
+            <span>
+              <kbd className="kbd kbd-sm">&rarr;</kbd>{" "}
+              {t("loose_loved_flea_drip")}
+            </span>
+          </div>
+        )}
+      </div>
 
-      <div className="container mx-auto min-h-0 max-w-4xl grow self-stretch high-contrast">
+      <div className="high-contrast container mx-auto min-h-0 max-w-4xl grow self-stretch">
         <div
           tabIndex={0}
           className="mx-auto h-full max-w-prose overflow-auto py-5 text-justify text-lg focus-visible:outline-none md:text-xl"
@@ -253,7 +259,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
           {t("arable_teal_tern_greet")}
         </div>
       )}
-      <div className="sm:mx-auto sm:max-w-xl sm:px-2">
+      <div className="sticky bottom-0 sm:mx-auto sm:max-w-xl sm:px-2">
         {ready ? (
           <div
             className="p-4 px-4 text-center"

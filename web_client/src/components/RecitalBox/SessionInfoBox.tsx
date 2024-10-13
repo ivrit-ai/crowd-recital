@@ -22,6 +22,11 @@ const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
   ] = useSessionPreview();
 
   let statusElement = null;
+  const loadingStatusElement = (
+    <div className="btn btn-ghost btn-xs">
+      <span className="loading loading-infinity" />
+    </div>
+  );
   if (sessionData?.disavowed) {
     statusElement = (
       <div className="btn btn-ghost btn-xs">
@@ -42,23 +47,13 @@ const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
       </button>
     );
   } else if (sessionData) {
-    statusElement = (
-      <div className="btn btn-ghost btn-xs">
-        <span className="loading loading-infinity" />
-      </div>
-    );
+    statusElement = loadingStatusElement;
   }
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-      <div>
-        {id ? (
-          <span>{t("stock_major_myna_advise")}</span>
-        ) : (
-          t("fun_cute_mayfly_earn")
-        )}
-      </div>
-      {!isPending && statusElement}
+    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+      <div>{!id && t("fun_cute_mayfly_earn")}</div>
+      {isPending ? loadingStatusElement : statusElement}
       <SubTrackingSessionPreview
         ref={sessionPreviewRef}
         id={previewedSessionId}
