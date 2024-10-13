@@ -198,7 +198,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
         </div>
       )}
 
-      <div className="container mx-auto min-h-0 max-w-4xl grow self-stretch">
+      <div className="container mx-auto min-h-0 max-w-4xl grow self-stretch high-contrast">
         <div
           tabIndex={0}
           className="mx-auto h-full max-w-prose overflow-auto py-5 text-justify text-lg focus-visible:outline-none md:text-xl"
@@ -222,7 +222,7 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
                     "me-2 cursor-pointer border-b-2 border-e-8 border-neutral-content text-2xl last:border-e-0",
                     activeParagraphIndex == pidx &&
                       activeSentenceIndex == sidx &&
-                      "bg-base-content text-base-200",
+                      "bg-base-content text-base-300",
                   )}
                   ref={
                     activeParagraphIndex == pidx && activeSentenceIndex == sidx
