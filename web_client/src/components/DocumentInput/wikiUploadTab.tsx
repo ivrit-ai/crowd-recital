@@ -14,6 +14,8 @@ interface Props extends TabContentProps {
   loadNewDocumentFromWikiArticle: (url: string) => Promise<void>;
 }
 
+const validHeWikiUrlPattern = /^https:\/\/he(\.m)?\.wikipedia\.org\/wiki\//i;
+
 const WikiArticleUpload = ({
   error,
   setError,
@@ -29,7 +31,7 @@ const WikiArticleUpload = ({
     setValidUrl(
       !wikiArticleUrl ||
         (URL.canParse(wikiArticleUrl) &&
-          wikiArticleUrl.startsWith("https://he.wikipedia.org/wiki/")),
+          validHeWikiUrlPattern.test(wikiArticleUrl)),
     );
   }, [wikiArticleUrl, setValidUrl]);
 

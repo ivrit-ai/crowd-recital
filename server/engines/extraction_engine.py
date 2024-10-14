@@ -11,7 +11,7 @@ from models.text_document import PLAIN_TEXT_SOURCE_TYPE, WIKI_ARTICLE_SOURCE_TYP
 from .nlp_pipeline import NlpPipeline
 
 APP_USER_AGENT = "Ivrit.ai-Crowd-Recital/0.0.0 (https://www.ivrit.ai)"
-WIKI_HE_ARTICLE_URL_PREFIX = r"^(https?://he.wikipedia.org/wiki/)(.+)$"
+WIKI_HE_ARTICLE_URL_PREFIX = r"^(https?://he.(?:m.)?wikipedia.org/wiki/)(.+)$"
 
 
 class ExtractedText(BaseModel):
