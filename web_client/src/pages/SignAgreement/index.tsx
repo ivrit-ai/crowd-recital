@@ -37,48 +37,50 @@ const SignAgreement = () => {
   return (
     <CentredPage>
       <div className="hero">
-        <div className="hero-content h-screen-minus-topbar flex-col justify-start">
-          <div className="text-center">
-            <div className="text-4xl">👩‍⚖️🖊️</div>
-            <h1 className="text-3xl">{t("last_heavy_bulldog_favor")}</h1>
-            <p className="pt-6">{t("curly_lazy_manatee_wave")}</p>
-            <label className="btn btn-outline swap btn-sm mt-4">
-              <input
-                type="checkbox"
-                checked={licenseLang === "en"}
-                onChange={() =>
-                  setLicenseLang(licenseLang === "en" ? "he" : "en")
-                }
-              />
-              <div className="flex items-center gap-2 font-light">
-                <span className={twJoin(licenseLang === "he" && "font-bold")}>
-                  עבר
-                </span>
-                <ArrowLeftRight className="h-4 w-4" />
-                <span className={twJoin(licenseLang === "en" && "font-bold")}>
-                  Eng
-                </span>
-              </div>
-            </label>
+        <div>
+          <div className="hero-content h-screen-minus-topbar flex-col justify-start">
+            <div className="text-center">
+              <div className="text-4xl">👩‍⚖️🖊️</div>
+              <h1 className="text-3xl">{t("last_heavy_bulldog_favor")}</h1>
+              <p className="pt-6">{t("curly_lazy_manatee_wave")}</p>
+              <label className="btn btn-outline swap btn-sm mt-4">
+                <input
+                  type="checkbox"
+                  checked={licenseLang === "en"}
+                  onChange={() =>
+                    setLicenseLang(licenseLang === "en" ? "he" : "en")
+                  }
+                />
+                <div className="flex items-center gap-2 font-light">
+                  <span className={twJoin(licenseLang === "he" && "font-bold")}>
+                    עבר
+                  </span>
+                  <ArrowLeftRight className="h-4 w-4" />
+                  <span className={twJoin(licenseLang === "en" && "font-bold")}>
+                    Eng
+                  </span>
+                </div>
+              </label>
+            </div>
+            <div className="grow basis-0 overflow-auto">
+              <article className="prose">
+                {bothDataLoaded ? (
+                  <>
+                    <div
+                      dangerouslySetInnerHTML={{ __html: firstData.data! }}
+                    ></div>
+                    <div
+                      dangerouslySetInnerHTML={{ __html: secondData.data! }}
+                    ></div>
+                    <div className="divider h-2" ref={ref}></div>
+                  </>
+                ) : (
+                  <div className="loading loading-infinity loading-lg"></div>
+                )}
+              </article>
+            </div>
           </div>
-          <div className="grow basis-0 overflow-auto">
-            <article className="prose">
-              {bothDataLoaded ? (
-                <>
-                  <div
-                    dangerouslySetInnerHTML={{ __html: firstData.data! }}
-                  ></div>
-                  <div
-                    dangerouslySetInnerHTML={{ __html: secondData.data! }}
-                  ></div>
-                  <div ref={ref}></div>
-                </>
-              ) : (
-                <div className="loading loading-infinity loading-lg"></div>
-              )}
-            </article>
-          </div>
-          <div>
+          <div className="sticky bottom-0 text-center">
             {entry?.isIntersecting ? (
               <button
                 className="btn btn-primary"
