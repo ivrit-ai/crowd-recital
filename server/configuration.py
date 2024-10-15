@@ -38,6 +38,7 @@ def configure(container: "Container"):
     container.config.data.content_s3_disabled.from_value(env.bool("CONTENT_DISABLE_S3_UPLOAD", default=False))
 
     container.config.help.basic_guide_yt_video_id.from_value(env("HELP_BASIC_GUIDE_YT_VIDEO_ID", default=None))
+    container.config.help.faq_wp_api_url.from_value(env("HELP_FAQ_WP_API_URL", default=None))
 
     container.config.jobs.session_finalization.disabled.from_value(
         env.bool("JOB_SESSION_FINALIZATION_DISABLED", default=False)

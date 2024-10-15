@@ -27,6 +27,7 @@ class ClientConfig(BaseModel):
     analytics_posthog_host: str | None = None
 
     help_basic_guide_yt_video_id: str | None = None
+    help_faq_wp_api_url: str | None = None
 
     disable_soup: str = "0"
 
@@ -46,6 +47,7 @@ def get_env_config(
     posthog_api_key: str = Provide[Container.config.analytics.posthog.api_key],
     posthog_host: str = Provide[Container.config.analytics.posthog.host],
     help_basic_guide_yt_video_id: str = Provide[Container.config.help.basic_guide_yt_video_id],
+    help_faq_wp_api_url: str = Provide[Container.config.help.faq_wp_api_url],
     disable_soup: str = Provide[Container.config.client.disable_soup],
 ) -> str:
     client_env = ClientEnv(
@@ -56,6 +58,7 @@ def get_env_config(
             analytics_posthog_api_key=posthog_api_key,
             analytics_posthog_host=posthog_host,
             help_basic_guide_yt_video_id=help_basic_guide_yt_video_id,
+            help_faq_wp_api_url=help_faq_wp_api_url,
             disable_soup="1" if disable_soup else "0",
         )
     )
