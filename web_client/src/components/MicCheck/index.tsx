@@ -205,9 +205,13 @@ const MicCheck = ({ open, onClose }: Props) => {
                   )}
                 </button>
               ) : (
-                <button className="btn btn-accent" onClick={start}>
+                <button
+                  disabled={starting}
+                  className="btn btn-accent"
+                  onClick={start}
+                >
                   {starting ? (
-                    <span className="loading-sx loading-infinity" />
+                    <span className="loading-sx loading loading-infinity" />
                   ) : hasAudio ? (
                     t("candid_glad_lizard_sprout")
                   ) : (

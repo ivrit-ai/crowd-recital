@@ -154,7 +154,6 @@ export function useRecorder(
       microphoneRef.current = mic;
 
       try {
-        await mic.requestPermission();
         setReady(true);
       } catch {
         setReady(false);
