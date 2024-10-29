@@ -8,6 +8,7 @@ import { RecitalSessionStatus } from "@/types/session";
 import { Document } from "@/models";
 import HeaderUserStats from "./HeaderUserStats";
 import SessionInfoBox from "./SessionInfoBox";
+import { RecitalTipxBoxShowButton } from "./RecitalTipsBox";
 
 type Props = {
   sessionId: string;
@@ -81,13 +82,19 @@ const Header = ({ sessionId, recording, document }: Props) => {
           </div>
         </div>
         <div className="flex-shrink-0">
-          <span
-            className="btn btn-outline btn-sm sm:btn-xs"
-            onClick={() => mic?.setMicCheckActive(true)}
-          >
-            {t("honest_sea_halibut_reap")}{" "}
-            <MicIcon className="inline-block h-4 w-4" />
-          </span>
+          <div className="flex flex-col gap-2">
+            <span
+              className="btn btn-outline btn-sm sm:btn-xs"
+              onClick={() => mic?.setMicCheckActive(true)}
+            >
+              {t("honest_sea_halibut_reap")}{" "}
+              <MicIcon className="inline-block h-4 w-4" />
+            </span>
+
+            <span className="btn btn-outline btn-sm sm:btn-xs">
+              <RecitalTipxBoxShowButton>הסבר</RecitalTipxBoxShowButton>
+            </span>
+          </div>
         </div>
       </div>
       {!recording && (

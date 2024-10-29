@@ -13,7 +13,7 @@ const Leaderboard = () => {
   useTrackPageView("help");
 
   return (
-    <div className="container mx-10">
+    <div className="container px-5">
       {!!embedId && (
         <div className="my-4 w-full max-w-2xl flex-col p-0">
           <h1 className="my-2 text-xl">{t("weird_misty_gecko_kick")}</h1>
