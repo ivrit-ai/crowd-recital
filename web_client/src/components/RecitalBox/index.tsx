@@ -17,6 +17,7 @@ import { useRecordingSession } from "@/hooks/useRecordingSession";
 import { Document } from "@/models";
 import { secondsToHourMinuteSecondString } from "@/utils";
 import Header from "./Header";
+import RecitalTipsBox from "./RecitalTipsBox";
 import SessionFinalizeModal from "./SessionFinalizeModal";
 import useControlCallback from "./useControlCallback";
 import useDocumentNavigation, {
@@ -273,9 +274,11 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
                 </span>
               </div>
             ) : (
-              <div className="btn btn-primary join-item mx-auto w-full">
-                {t("odd_next_gazelle_transform")}
-              </div>
+              <>
+                <div className="btn btn-primary join-item mx-auto w-full">
+                  {t("odd_next_gazelle_transform")}
+                </div>
+              </>
             )}
           </div>
         ) : (
@@ -292,6 +295,8 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
         awaitingFinalization={awaitingSessionFinalization}
         setAwaitingFinalization={setAwaitingSessionFinalization}
       />
+
+      <RecitalTipsBox />
     </div>
   );
 };
