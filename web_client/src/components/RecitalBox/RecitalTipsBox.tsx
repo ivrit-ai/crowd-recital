@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { useTranslation } from "react-i18next";
 
 type ShowButtonProps = {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ export const RecitalTipxBoxShowButton = ({ children }: ShowButtonProps) => {
 };
 
 const RecitalTipsBox = () => {
+  const { t } = useTranslation();
   const [recitalGuideState, setRecitalGuideState] = useGuideState();
 
   const autoShowOn = recitalGuideState === RecitalGuideState.Initial;
@@ -39,41 +41,30 @@ const RecitalTipsBox = () => {
     <div className="modal modal-open">
       <div className="modal-box">
         <h1 className="mb-2 text-lg text-primary">
-          {reshow
-            ? "הסבר בסיסי וטיפים להקלטה"
-            : "כמה טיפים בסיסיים לפני שמתחילים..."}
+          {reshow ? t("lucky_this_sheep_fall") : t("level_large_cobra_foster")}
         </h1>
         <ul className="list-inside list-disc *:mb-2">
-          <li>
-            סדר הפעולות - התחלת הקלטה, הקראת המשפט המודגש, העברה למשפט הבא,
-            הקראה וכך הלאה עד לסיום ההקלטה
-          </li>
-          <li>לעצירת ההקלטה, יש לסיים את הקראת המשפט המודגש ולעצור</li>
-          <li>ההקלטה כוללת טעות גדולה? עצרו וסמנו אותה למחיקה</li>
-          <li>
-            כמה להקריא? התחילו במספר משפטים, כאשר תרגישו נוח כוונו להקלטות באורך
-            של 4-8 דקות
-          </li>
-          <li>לפני ההקלטה אפשר לנווט לכל חלק במסמך ממנו רוצים להקריא</li>
-          <li className="nokbd:hidden">
-            בזמן הקלטה - קל יותר לעבור למשפט הבא על ידי חץ קדימה
-          </li>
+          <li>{t("knotty_main_worm_enchant")}</li>
+          <li>{t("aloof_slow_iguana_pat")}</li>
+          <li>{t("kind_zany_meerkat_fond")}</li>
+          <li>{t("civil_cool_hound_work")}</li>
+          <li>{t("novel_weak_kitten_reap")}</li>
+          <li className="nokbd:hidden">{t("dizzy_trite_panther_sing")}</li>
           <li className="hidden nokbd:list-item">
-            בזמן הקלטה קל יותר לעבור למשפט הבא על ידי נגיעה במסך בכל חלק של
-            הטקסט
+            {t("acidic_short_skate_type")}
           </li>
         </ul>
         {!reshow && (
           <p className="mt-4 text-lg">
-            הכנו גם סרטון חביב וזריז שמסביר על תהליך ההקלטה והאתר{" "}
+            {t("misty_nice_skunk_nail")}{" "}
             <Link className="link" to="/help" onClick={onDismiss}>
-              לחץ לצפייה
+              {t("light_tired_orangutan_stir")}
             </Link>
           </p>
         )}
         <div className="modal-action">
           <button className="btn btn-primary" onClick={onDismiss}>
-            אפשר להמשיך
+            {t("bald_gross_panda_evoke")}
           </button>
         </div>
       </div>

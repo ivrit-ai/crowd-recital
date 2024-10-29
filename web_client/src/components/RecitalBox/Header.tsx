@@ -92,7 +92,7 @@ const Header = ({ sessionId, recording, document }: Props) => {
             </span>
 
             <span className="btn btn-outline btn-sm sm:btn-xs">
-              <RecitalTipxBoxShowButton>הסבר</RecitalTipxBoxShowButton>
+              <RecitalTipxBoxShowButton>{t("fuzzy_proud_mare_seek")}</RecitalTipxBoxShowButton>
             </span>
           </div>
         </div>
