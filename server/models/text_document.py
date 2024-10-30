@@ -42,6 +42,7 @@ class TextDocumentListRead(DateFieldsMixin, BaseModel):
     id: uuid.UUID
     source: ClassVar[str]
     source_type: str
+    lang: Optional[str]
     title: Optional[str]
     public: bool
 

@@ -98,6 +98,9 @@ const SelectExistingDocument = ({ setNoDocsFound }: Props) => {
             {doc.public ? <span className="text-accent"> [ציבורי]</span> : ""}
           </td>
           <td className="hidden text-xs sm:table-cell md:text-sm">{doc.id}</td>
+          <td className="hidden text-xs sm:table-cell md:text-sm">
+            {t(doc.lang || "he", "he", { ns: "translation" })}
+          </td>
           <td dir="ltr" className="text-xs md:text-sm">
             {new Date(doc.created_at).toLocaleDateString()}
           </td>
@@ -109,6 +112,9 @@ const SelectExistingDocument = ({ setNoDocsFound }: Props) => {
       <tr key={v}>
         <td>
           <div className="skeleton w-24 py-3 sm:w-52"></div>
+        </td>
+        <td>
+          <div className="skeleton w-10 py-3 sm:w-52"></div>
         </td>
         <td className="hidden sm:table-cell">
           <div className="skeleton w-40 py-3"></div>
@@ -145,6 +151,9 @@ const SelectExistingDocument = ({ setNoDocsFound }: Props) => {
               <th>{t("major_dark_husky_launch")}</th>
               <th className="hidden sm:table-cell">
                 {t("many_nimble_tapir_fade")}
+              </th>
+              <th className="hidden sm:table-cell">
+                {t("trick_major_moose_forgive")}
               </th>
               <SortCol
                 label={t("long_suave_bobcat_succeed")}

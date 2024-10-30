@@ -91,6 +91,7 @@ type ParagraphPointer = Paragraph | null;
 class Document {
   id?: string;
   title?: string;
+  lang?: string;
   paragraphs: Paragraph[];
   public?: boolean | null;
   constructor(paragraphs: Paragraph[]) {
@@ -137,6 +138,7 @@ class Document {
     const document = Document.fromParagraphsTextList(textDocument.text);
     document.id = textDocument.id;
     document.title = textDocument.title;
+    document.lang = textDocument.lang;
     document.public = textDocument.public;
     return document;
   }
@@ -145,6 +147,7 @@ class Document {
 export type TextDocumentResponse = {
   id: string;
   title: string;
+  lang?: string;
   text: string[][];
   source: string;
   public: boolean | null;
