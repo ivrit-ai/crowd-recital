@@ -14,7 +14,17 @@ interface Props extends TabContentProps {
   loadNewDocumentFromWikiArticle: (url: string) => Promise<void>;
 }
 
-const validHeWikiUrlPattern = /^https:\/\/he(\.m)?\.wikipedia\.org\/wiki\//i;
+const allowedWikiLangs = ["he", "yi"];
+const allowedWikiUrlPattern = new RegExp(
+  `^https://([a-z]+)(.m)?\\.wikipedia\\.org/wiki/`,
+  "i",
+);
+
+console.log(
+  allowedWikiUrlPattern.exec(
+    "https://yi.m.wikipedia.org/wiki/%D7%A7%D7%90%D6%B7%D7%98%D7%A2%D7%92%D7%90%D6%B8%D7%A8%D7%99%D7%A2:%D7%A7%D7%90%D6%B8%D7%95%D7%95%D7%99%D7%93-19",
+  ),
+);
 
 const WikiArticleUpload = ({
   error,
@@ -25,14 +35,32 @@ const WikiArticleUpload = ({
   const posthog = usePostHog();
   const [wikiArticleUrl, setWikiArticleUrl] = useState("");
   const [validUrl, setValidUrl] = useState(false);
+  const [invalidUrlReason, setInvalidUrlReason] = useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    setValidUrl(
-      !wikiArticleUrl ||
-        (URL.canParse(wikiArticleUrl) &&
-          validHeWikiUrlPattern.test(wikiArticleUrl)),
-    );
+    const emptyUrl = !wikiArticleUrl;
+    const parsableUrl = URL.canParse(wikiArticleUrl);
+    const aWikiArticleUrl = allowedWikiUrlPattern.test(wikiArticleUrl);
+    let supportedLang = true;
+    if (aWikiArticleUrl) {
+      const lang = allowedWikiUrlPattern.exec(wikiArticleUrl)?.[1];
+      if (lang && !allowedWikiLangs.includes(lang)) {
+        supportedLang = false;
+      }
+    }
+    const validUrl =
+      emptyUrl || (parsableUrl && aWikiArticleUrl && supportedLang);
+    setValidUrl(validUrl);
+    if (!validUrl) {
+      if (!parsableUrl) {
+        setInvalidUrlReason(t("many_mushy_scallop_gasp"));
+      } else if (!aWikiArticleUrl) {
+        setInvalidUrlReason(t("tangy_fuzzy_pug_pat"));
+      } else if (!supportedLang) {
+        setInvalidUrlReason(t("sweet_swift_chipmunk_foster"));
+      }
+    }
   }, [wikiArticleUrl, setValidUrl]);
 
   const upload = useCallback(() => {
@@ -47,10 +75,19 @@ const WikiArticleUpload = ({
         });
       posthog?.capture("Upload Wiki URL", { wiki_url: wikiArticleUrl });
     } else {
-      setError(t("many_mushy_scallop_gasp"));
+      setError(invalidUrlReason);
       posthog?.capture("Invalid Upload Wiki URL", { wiki_url: wikiArticleUrl });
     }
-  }, [loadNewDocumentFromWikiArticle, wikiArticleUrl, validUrl]);
+  }, [
+    loadNewDocumentFromWikiArticle,
+    wikiArticleUrl,
+    validUrl,
+    invalidUrlReason,
+  ]);
+
+  useEffect(() => {
+    if (wikiArticleUrl) setError("");
+  }, [wikiArticleUrl]);
 
   return (
     <div className="flex flex-col justify-end gap-4">

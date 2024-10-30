@@ -22,7 +22,7 @@ enum SortColumnsEnum {
 
 const itemsPerPage = 10;
 
-const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
+const SelectExistingDocument = ({ setNoDocsFound }: Props) => {
   const { t } = useTranslation("documents");
   const navigate = useNavigate({ from: "/documents" });
   const [onlyMine, setOnlyMine] = useState(true);
@@ -222,11 +222,6 @@ const SelectExistingDocument = ({ error, setNoDocsFound }: Props) => {
             {t("warm_next_alligator_laugh")}
           </button>
         </div>
-        {!!error && (
-          <div role="alert" className="alert alert-error text-sm">
-            <Link2Off /> {error}
-          </div>
-        )}
       </div>
     </>
   );
