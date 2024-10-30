@@ -52,7 +52,12 @@ const Header = ({ sessionId, recording, document }: Props) => {
                 </Link>
               )}
             </div>
-            <div className="truncate text-sm">{document.title}</div>
+            <div className="max-w-56 truncate text-sm md:max-w-none">
+              {document.title}
+            </div>
+            <div className="truncate text-sm">
+              [{t(document.lang || "he", "he", { ns: "translation" })}]
+            </div>
           </div>
           <div className="min-w-0">
             <div className="text-sm font-bold md:text-lg">
@@ -92,7 +97,9 @@ const Header = ({ sessionId, recording, document }: Props) => {
             </span>
 
             <span className="btn btn-outline btn-sm sm:btn-xs">
-              <RecitalTipxBoxShowButton>{t("fuzzy_proud_mare_seek")}</RecitalTipxBoxShowButton>
+              <RecitalTipxBoxShowButton>
+                {t("fuzzy_proud_mare_seek")}
+              </RecitalTipxBoxShowButton>
             </span>
           </div>
         </div>

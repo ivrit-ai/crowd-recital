@@ -20,6 +20,7 @@ class TextDocumentBase(DateFieldsMixin, SQLModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     source: str
     source_type: str
+    lang: Optional[str] = Field(default="he")
     text: list[list[str]] = Field(default_factory=dict, sa_column=Column(JSON))
     title: Optional[str]
 
@@ -41,6 +42,7 @@ class TextDocumentListRead(DateFieldsMixin, BaseModel):
     id: uuid.UUID
     source: ClassVar[str]
     source_type: str
+    lang: Optional[str]
     title: Optional[str]
     public: bool
 

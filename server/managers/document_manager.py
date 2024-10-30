@@ -39,6 +39,7 @@ class DocumentManager:
             TextDocument(
                 source=source_filename,
                 source_type=FILE_UPLOAD_SOURCE_TYPE,
+                lang=extracted_text.metadata.get("lang"),
                 text=extracted_text.text,
                 title=title,
                 owner=owner,
@@ -68,7 +69,14 @@ class DocumentManager:
 
         # Create the document and store it
         doc = self.documents_ra.upsert(
-            TextDocument(source=source, source_type=source_type, text=extracted_text.text, title=title, owner=owner)
+            TextDocument(
+                source=source,
+                source_type=source_type,
+                lang=extracted_text.metadata.get("lang"),
+                text=extracted_text.text,
+                title=title,
+                owner=owner,
+            )
         )
 
         # Return the document

@@ -106,20 +106,18 @@ const Header = () => {
                 <a>ממשק ניהול</a>
               </HeaderMenuItem>
             )} */}
-              {auth.user.isAdmin() && (
-                <HeaderMenuItem closeMenu={closeMenu}>
-                  {i18n.language !== "yi" && (
-                    <button type="button" onClick={() => changeLanguage("yi")}>
-                      יידיש <LanguagesIcon className="h-4 w-4" />
-                    </button>
-                  )}
-                  {i18n.language !== "he" && (
-                    <button type="button" onClick={() => changeLanguage("he")}>
-                      עבר <LanguagesIcon className="h-4 w-4" />
-                    </button>
-                  )}
-                </HeaderMenuItem>
-              )}
+              <HeaderMenuItem closeMenu={closeMenu}>
+                {i18n.language !== "yi" && (
+                  <button type="button" onClick={() => changeLanguage("yi")}>
+                    יידיש <LanguagesIcon className="h-4 w-4" />
+                  </button>
+                )}
+                {i18n.language !== "he" && (
+                  <button type="button" onClick={() => changeLanguage("he")}>
+                    עבר <LanguagesIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </HeaderMenuItem>
               <HeaderMenuItem closeMenu={closeMenu}>
                 <a onClick={() => mic?.setMicCheckActive(true)}>
                   {t("tiny_soft_whale_dazzle")} <MicIcon className="h-4 w-4" />

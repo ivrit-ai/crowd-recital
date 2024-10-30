@@ -1,5 +1,4 @@
 import re
-from cgitb import text
 from typing import BinaryIO, Optional
 
 from bs4 import BeautifulSoup
@@ -11,7 +10,8 @@ from models.text_document import PLAIN_TEXT_SOURCE_TYPE, WIKI_ARTICLE_SOURCE_TYP
 from .nlp_pipeline import NlpPipeline
 
 APP_USER_AGENT = "Ivrit.ai-Crowd-Recital/0.0.0 (https://www.ivrit.ai)"
-WIKI_HE_ARTICLE_URL_PREFIX = r"^(https?://he.(?:m.)?wikipedia.org/wiki/)(.+)$"
+WIKI_ALLOWED_LANGUAGES = ["he", "yi"]
+WIKI_ALLOWED_ARTICLE_URL_PREFIX = rf"^(https?://({'|'.join(WIKI_ALLOWED_LANGUAGES)}).(?:m\.)?wikipedia.org/wiki/)(.+)$"
 
 
 class ExtractedText(BaseModel):
@@ -21,10 +21,10 @@ class ExtractedText(BaseModel):
 
 class ExtractionEngine:
     def __init__(self, nlp_pipeline: NlpPipeline):
-        self.lang = "he"
-        self.wiki_lang = self.lang
-        self.wiki_wiki = wikipediaapi.Wikipedia(APP_USER_AGENT, self.wiki_lang)
-        self.nlp = nlp_pipeline.get_pipeline()
+        self.langs = ["he", "yi"]
+        self.wiki_langs = WIKI_ALLOWED_LANGUAGES
+        self.wiki_wiki_per_lang = {lang: wikipediaapi.Wikipedia(APP_USER_AGENT, lang) for lang in self.wiki_langs}
+        self.nlp_per_lang = {lang: nlp_pipeline.get_pipeline_for_lang(lang) for lang in self.langs}
 
     def extract_text_document_from_file(
         self,
@@ -45,9 +45,11 @@ class ExtractionEngine:
             return self._extract_text_document_from_plain_text(source, title)
 
     def _extract_text_document_from_plain_text(self, plain_text: str, title: Optional[str] = None) -> str:
+        lang = "he"  # TODO: how to detect language of plain text
         extracted = ExtractedText(
-            text=self._normalize_and_segment_text(plain_text),
+            text=self._normalize_and_segment_text(lang, plain_text),
             metadata={
+                "lang": lang,
                 "title": title,
             },
         )
@@ -57,6 +59,8 @@ class ExtractionEngine:
     def _extract_text_document_from_html_file(self, source_file: BinaryIO) -> ExtractedText:
         # Read the HTML content from the binary file
         html_content = source_file.read()
+
+        lang = "he"  # TODO: how to detect language of HTML text?
 
         # Parse the HTML content using BeautifulSoup
         soup = BeautifulSoup(html_content, "html5lib")
@@ -110,27 +114,32 @@ class ExtractionEngine:
         all_text = "\n".join(text)
 
         extracted = ExtractedText(
-            text=self._normalize_and_segment_text(all_text),
+            text=self._normalize_and_segment_text(lang, all_text),
             metadata={
+                "lang": lang,
                 "title": title,
             },
         )
 
         return extracted
 
-    def _extract_text_document_from_wiki_article(self, wiki_article_url: str) -> str:
+    def _extract_text_document_from_wiki_article(self, wiki_article_url: str) -> ExtractedText:
         invalid_wiki_article_url_error = ValueError(f"Invalid wiki article URL: {wiki_article_url}")
         # Check if the input is a wiki article URL
-        title_match = re.match(WIKI_HE_ARTICLE_URL_PREFIX, wiki_article_url)
-        if not title_match:
+        wiki_url_match = re.match(WIKI_ALLOWED_ARTICLE_URL_PREFIX, wiki_article_url)
+        if not wiki_url_match:
+            raise invalid_wiki_article_url_error
+
+        lang = wiki_url_match.group(2)
+        if lang not in self.wiki_langs:
             raise invalid_wiki_article_url_error
 
         # Extract the article title from the URL
-        title = title_match.group(2)
+        title = wiki_url_match.group(3)
         if not title.strip():
             raise invalid_wiki_article_url_error
 
-        wiki_page = self.wiki_wiki.page(title)
+        wiki_page = self.wiki_wiki_per_lang[lang].page(title)
 
         if not wiki_page.exists():
             raise ValueError(f"Wiki article not found: {wiki_article_url}")
@@ -138,19 +147,23 @@ class ExtractionEngine:
         # Extract the article text
         article_text = wiki_page.text
 
+        if not article_text:
+            raise ValueError(f"Wiki article has no text: {wiki_article_url}")
+
         # Normalize and segment the text
-        article_text_paragraphs_sentences = self._normalize_and_segment_text(article_text)
+        article_text_paragraphs_sentences = self._normalize_and_segment_text(lang, article_text)
 
         extracted = ExtractedText(
             text=article_text_paragraphs_sentences,
             metadata={
+                "lang": lang,
                 "title": wiki_page.title,
             },
         )
 
         return extracted
 
-    def _normalize_and_segment_text(self, text_in: str) -> list[list[str]]:
+    def _normalize_and_segment_text(self, lang: str, text_in: str) -> list[list[str]]:
         # replace \r\n with \n (windows line endings)
         text_in = text_in.replace("\r\n", "\n")
 
@@ -169,8 +182,13 @@ class ExtractionEngine:
         # Get rid of empty paragraphs
         paragraphs = [p for p in paragraphs if len(p) > 0]
 
+        nlp = self.nlp_per_lang[lang]
+
+        if not nlp:
+            raise ValueError(f"Language not supported: {lang}")
+
         # Cut up to paragraphs - use semantic sentence tokenization
-        return [[s.text for s in self.nlp(p).sentences] for p in paragraphs]
+        return [[s.text for s in nlp(p).sentences] for p in paragraphs]
 
     def _clear_structure_from_text(self, text_in: str) -> str:
         """

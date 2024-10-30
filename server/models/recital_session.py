@@ -48,6 +48,7 @@ Index("ix_recital_sessions_disavowed_status", RecitalSession.disavowed, RecitalS
 
 class SessionTextDocument(BaseModel):
     id: str
+    lang: Optional[str]
     title: str
 
 

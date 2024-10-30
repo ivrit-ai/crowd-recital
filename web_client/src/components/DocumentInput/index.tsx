@@ -18,7 +18,8 @@ const DocumentInput = () => {
   const navigate = useNavigate({ from: "/documents" });
   const [noDocsFound, setNoDocsFound] = useState<boolean | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState("");
+  const [wikiUploadError, setWikiUploadError] = useState("");
+  const [freeTextUploadError, setFreeTextUploadError] = useState("");
   const queryClient = useQueryClient();
 
   const { createWikiArticleDocument, createFreeTextDocument } = useDocuments();
@@ -31,12 +32,15 @@ const DocumentInput = () => {
         const { id } = await createWikiArticleDocument(decodedUrl);
         queryClient.invalidateQueries({ queryKey: ["documents"] });
         navigate({ to: "/recite/$docId", params: { docId: id } });
-        setError("");
+        setWikiUploadError("");
       } catch (error) {
-        setError(
+        setWikiUploadError(
           t("caring_polite_ape_amuse", { error: getErrorMessage(error) }),
         );
+        console.error('---')
         console.error(error);
+        console.log(getErrorMessage(error));
+        console.error('===')
       } finally {
         setProcessing(false);
       }
@@ -51,9 +55,9 @@ const DocumentInput = () => {
         const { id } = await createFreeTextDocument(text, title);
         queryClient.invalidateQueries({ queryKey: ["documents"] });
         navigate({ to: "/recite/$docId", params: { docId: id } });
-        setError("");
+        setFreeTextUploadError("");
       } catch (error) {
-        setError(
+        setFreeTextUploadError(
           t("caring_polite_ape_amuse", { error: getErrorMessage(error) }),
         );
         console.error(error);
@@ -65,8 +69,6 @@ const DocumentInput = () => {
   );
 
   const tabContentProps: TabContentProps = {
-    error,
-    setError,
     processing,
     setProcessing,
   };
@@ -94,6 +96,8 @@ const DocumentInput = () => {
         <>
           <Collapse title={t("teal_loved_stork_buy")} defaultOpen={noDocsFound}>
             <WikiArticleUpload
+              error={wikiUploadError}
+              setError={setWikiUploadError}
               {...tabContentProps}
               loadNewDocumentFromWikiArticle={uploadWikiDocument}
             />
@@ -102,6 +106,8 @@ const DocumentInput = () => {
             <>
               <Collapse title={t("cuddly_dull_toucan_fulfill")}>
                 <FreeTextUpload
+                  error={freeTextUploadError}
+                  setError={setFreeTextUploadError}
                   {...tabContentProps}
                   loadNewDocumentFromFreeText={uploadFreeTextDocument}
                 />
