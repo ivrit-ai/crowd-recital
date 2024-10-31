@@ -4,6 +4,7 @@ from typing import Callable, Iterator
 from sqlmodel import Session, select
 
 from models.user import User
+from models.user_metadata import UserMetadata, UserMetadataUpdate
 
 
 class UsersRA:
@@ -30,3 +31,18 @@ class UsersRA:
             session.merge(user)
             session.commit()
             return user
+
+    def get_profile_by_id(self, id: str) -> UserMetadata:
+        with self.session_factory() as session:
+            results = session.exec(select(UserMetadata).filter(UserMetadata.id == id))
+            return results.first()
+
+    def upsert_profile(self, id: str, update: UserMetadataUpdate) -> UserMetadata:
+        with self.session_factory() as session:
+            existing = self.get_profile_by_id(id)
+            if not existing:
+                existing = UserMetadata(id=id)
+            updated = existing.model_copy(update=update.model_dump(exclude_unset=True))
+            session.merge(updated)
+            session.commit()
+            return updated
