@@ -227,11 +227,16 @@ export const UserProfileRequestModal = () => {
 
   const quesionsStillMissing = useRef<ProfileQuestions[]>([]);
   const questionStillMissingThisRender: ProfileQuestions[] = [];
-  if (!data?.biologicalSex) {
-    questionStillMissingThisRender.push(ProfileQuestions.BIOLOGICAL_SEX);
-  }
-  if (!data?.yearOfBirth && data?.yearOfBirth !== unspecifiedYearOfBirthValue) {
-    questionStillMissingThisRender.push(ProfileQuestions.YEAR_OF_BIRTH);
+  if (!isPending) {
+    if (!data?.biologicalSex) {
+      questionStillMissingThisRender.push(ProfileQuestions.BIOLOGICAL_SEX);
+    }
+    if (
+      !data?.yearOfBirth &&
+      data?.yearOfBirth !== unspecifiedYearOfBirthValue
+    ) {
+      questionStillMissingThisRender.push(ProfileQuestions.YEAR_OF_BIRTH);
+    }
   }
   const anyQuestionMissing = questionStillMissingThisRender.length > 0;
   const wakeupAfterSnooze =
