@@ -1,5 +1,5 @@
 import { reportResponseError } from "@/analytics";
-import { UserType, User, UserProfile, UserProfileDTO } from "@/types/user";
+import { UserType, User, UserProfile } from "@/types/user";
 
 export const userApiBaseUrl = "/api/me";
 
