@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import SubTrackingSessionPreview from "@/components/SessionPreview/subTrackingPreview";
 import useSessionPreview from "@/components/SessionPreview/useSessionPreview";
+import { UserProfileRequestModal } from "@/components/UserProfile";
 import { RecitalSessionStatus, RecitalSessionType } from "@/types/session";
 import { secondsToHourMinuteSecondString } from "@/utils";
 
@@ -59,6 +60,9 @@ const SessionInfoBox = ({ id, sessionData, isPending }: Props) => {
         id={previewedSessionId}
         onClose={onClose}
       />
+      {sessionData?.status === RecitalSessionStatus.Uploaded && (
+        <UserProfileRequestModal />
+      )}
     </div>
   );
 };

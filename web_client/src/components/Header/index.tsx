@@ -96,16 +96,6 @@ const Header = () => {
               tabIndex={0}
               className="menu dropdown-content menu-sm z-[999] mt-3 w-44 rounded-box bg-base-100 p-2 shadow"
             >
-              <li className="menu-title">{auth.user.name}</li>
-              {/* {auth.user.isAdmin() && (
-              <HeaderMenuItem
-                activeRoute={activeRoute}
-                goTo={goTo}
-                gotoRoute={Routes.Admin}
-              >
-                <a>ממשק ניהול</a>
-              </HeaderMenuItem>
-            )} */}
               <HeaderMenuItem closeMenu={closeMenu}>
                 {i18n.language !== "yi" && (
                   <button type="button" onClick={() => changeLanguage("yi")}>
@@ -118,6 +108,20 @@ const Header = () => {
                   </button>
                 )}
               </HeaderMenuItem>
+              <HeaderMenuItem closeMenu={closeMenu}>
+                <HeaderMenuLink to="/profile">{t("patient_crisp_gazelle_fold")}</HeaderMenuLink>
+              </HeaderMenuItem>
+              {/* <li className="menu-title">{auth.user.name}</li> */}
+              {/* {auth.user.isAdmin() && (
+              <HeaderMenuItem
+                activeRoute={activeRoute}
+                goTo={goTo}
+                gotoRoute={Routes.Admin}
+              >
+                <a>ממשק ניהול</a>
+              </HeaderMenuItem>
+            )} */}
+
               <HeaderMenuItem closeMenu={closeMenu}>
                 <a onClick={() => mic?.setMicCheckActive(true)}>
                   {t("tiny_soft_whale_dazzle")} <MicIcon className="h-4 w-4" />

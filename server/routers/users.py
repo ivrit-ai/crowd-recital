@@ -1,13 +1,14 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Annotated, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 
 from containers import Container
 from models.user import User
 from resource_access.users_ra import UsersRA
+from models.user_metadata import UserMetadataUpdate, UserMetadata
 from utility.authentication.google_login import (
     GoogleIdentification,
     get_google_identification,
@@ -96,6 +97,28 @@ def logout(track_event: AnonTracker, response: Response, auth_cookie: AuthCookie
 @inject
 def get_me(active_user: Annotated[User, Depends(get_valid_user)]):
     return active_user
+
+
+@router.get("/me/profile", response_model=UserMetadata)
+@inject
+def get_profile(
+    active_user: Annotated[User, Depends(get_valid_user)], users_ra: UsersRA = Depends(Provide[Container.users_ra])
+):
+    return users_ra.get_profile_by_id(active_user.id)
+
+
+@router.patch("/me/profile")
+@inject
+def update_profile(
+    track_event: Tracker,
+    active_user: Annotated[User, Depends(get_valid_user)],
+    user_metadata_update: UserMetadataUpdate,
+    users_ra: UsersRA = Depends(Provide[Container.users_ra]),
+):
+    users_ra.upsert_profile(active_user.id, user_metadata_update)
+    track_event("User Updated Profile")
+
+    return users_ra.get_profile_by_id(active_user.id)
 
 
 @router.post("/me/agree")

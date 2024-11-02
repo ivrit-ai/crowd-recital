@@ -44,6 +44,7 @@ class User(UserBase, DateFieldsMixin, table=True):
 
     recital_sessions: list["RecitalSession"] = Relationship(back_populates="user")
     text_documents: list["TextDocument"] = Relationship(back_populates="owner")
+    user_metadata: Optional["UserMetadata"] = Relationship(back_populates="user")
 
 
 class UserCreate(UserBase):
