@@ -57,4 +57,38 @@ class User implements UserType {
   }
 }
 
-export { type UserType, User, UserGroups };
+export type UserProfileDTO = {
+  biological_sex?: string;
+  year_of_birth?: number;
+};
+
+type UserProfileType = {
+  biologicalSex?: string;
+  yearOfBirth?: number;
+};
+
+class UserProfile implements UserProfileType {
+  biologicalSex?: string;
+  yearOfBirth?: number;
+
+  constructor(metadata: UserProfileType) {
+    this.biologicalSex = metadata.biologicalSex;
+    this.yearOfBirth = metadata.yearOfBirth;
+  }
+
+  static fromDTO({ biological_sex, year_of_birth }: UserProfileDTO) {
+    return new UserProfile({
+      biologicalSex: biological_sex,
+      yearOfBirth: year_of_birth,
+    });
+  }
+
+  static toDTO(profile: UserProfile): UserProfileDTO {
+    return {
+      biological_sex: profile.biologicalSex,
+      year_of_birth: profile.yearOfBirth,
+    };
+  }
+}
+
+export { type UserType, User, UserGroups, UserProfile };
