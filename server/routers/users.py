@@ -1,8 +1,8 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Annotated, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 
 from containers import Container
@@ -107,7 +107,7 @@ def get_profile(
     return users_ra.get_profile_by_id(active_user.id)
 
 
-@router.post("/me/profile")
+@router.patch("/me/profile")
 @inject
 def update_profile(
     track_event: Tracker,

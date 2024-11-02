@@ -35,7 +35,8 @@ class UsersRA:
     def get_profile_by_id(self, id: str) -> UserMetadata:
         with self.session_factory() as session:
             results = session.exec(select(UserMetadata).filter(UserMetadata.id == id))
-            return results.first()
+            result = results.first()
+            return result or UserMetadata(id=id)
 
     def upsert_profile(self, id: str, update: UserMetadataUpdate) -> UserMetadata:
         with self.session_factory() as session:
