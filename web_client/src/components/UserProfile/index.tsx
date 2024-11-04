@@ -259,13 +259,6 @@ export const UserProfileRequestModal = () => {
     }
   }, [shouldShow]);
 
-  console.log({
-    quesionsStillMissing,
-    isPending,
-    questionStillMissingThisRender,
-    shouldRequest,
-  });
-
   const onDismiss = () => setProfileRequestState(ProfileRequestState.DISMISSED);
   const onSnooze = () => setProfileRequestState(ProfileRequestState.SNOZZED);
 
