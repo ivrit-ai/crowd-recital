@@ -39,6 +39,7 @@ const LeaderboardTable = () => {
       global_rank: myUserStats.global_rank,
       total_duration: myUserStats.total_duration,
       total_recordings: myUserStats.total_recordings,
+      next_higher_duration: myUserStats.next_higher_duration,
     };
   }
 
@@ -47,6 +48,11 @@ const LeaderboardTable = () => {
   const isOutOfTable = thisUserGlobalRank > leaderboardLength;
   const gapBelowTheTable =
     isOutOfTable && thisUserGlobalRank > leaderboardLength + 1;
+  let durationToOvertakeNextPosition = 0;
+  if (currentUserEntry?.next_higher_duration) {
+    durationToOvertakeNextPosition =
+      currentUserEntry.next_higher_duration - currentUserEntry.total_duration;
+  }
 
   const userTableRow =
     currentUserEntry && isOutOfTable ? (
@@ -72,7 +78,17 @@ const LeaderboardTable = () => {
     ) : null;
 
   return (
-    <div dir="rtl" className="overflow-x-scroll py-8">
+    <div dir="rtl" className="overflow-x-scroll py-4">
+      {durationToOvertakeNextPosition > 0 && (
+        <h2 className="mb-2 text-sm font-bold text-success">
+          {t("quick_grey_zipper_slide", {
+            duration: secondsToHourMinuteSecondString(
+              durationToOvertakeNextPosition,
+              false,
+            ),
+          })}
+        </h2>
+      )}
       <table className="table table-sm table-auto sm:table-md">
         <thead>
           <tr>
@@ -125,7 +141,7 @@ const LeaderboardTable = () => {
       </table>
       {!isOutOfTable && (
         <div>
-          <Link className="btn btn-primary btn-sm mt-2" to="/documents">
+          <Link className="btn btn-primary btn-sm mt-4" to="/documents">
             {t("mean_mean_iguana_pick")}
           </Link>
         </div>

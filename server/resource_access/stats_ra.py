@@ -22,6 +22,7 @@ class UserStats(BaseModel):
     global_rank: int
     total_duration: float
     total_recordings: int
+    next_higher_duration: float | None
 
 
 class TotalStats(BaseModel):
@@ -57,6 +58,9 @@ class StatsRA:
                     user_session_totals.c.total_duration,
                     user_session_totals.c.total_recordings,
                     func.dense_rank().over(order_by=user_session_totals.c.total_duration.desc()).label("global_rank"),
+                    func.lag(user_session_totals.c.total_duration)
+                    .over(order_by=user_session_totals.c.total_duration.desc())
+                    .label("next_higher_duration"),
                 )
                 .select_from(user_session_totals)
                 .cte(name="user_session_totals_with_ranks")
@@ -66,6 +70,7 @@ class StatsRA:
                 user_session_totals_with_ranks.c.global_rank,
                 user_session_totals_with_ranks.c.total_duration,
                 user_session_totals_with_ranks.c.total_recordings,
+                user_session_totals_with_ranks.c.next_higher_duration,
             ).filter(user_session_totals_with_ranks.c.user_id == user_id)
 
             results = session.exec(this_user_total)
@@ -78,6 +83,7 @@ class StatsRA:
                 global_rank=user_stats.global_rank,
                 total_duration=user_stats.total_duration,
                 total_recordings=user_stats.total_recordings,
+                next_higher_duration=user_stats.next_higher_duration,
             )
 
     @region.cache_on_arguments(namespace={"fixed_key": CacheKeys.leaderboard}, expiration_time=60 * 1)
