@@ -98,7 +98,7 @@ class RecitalManager:
             trigger=trigger,
         )
 
-    def schedule_session_duration_update_job(self, session_id: str, duration: float) -> None:
+    def schedule_session_duration_update_job(self, session_id: str, duration: float | None) -> None:
         self.job_scheduler.add_job(
             self._session_duration_update_task,
             trigger=None,
@@ -114,13 +114,21 @@ class RecitalManager:
         self.upload_aggregated_sessions()
         self.discard_disavowed_sessions()
 
-    def _session_duration_update_task(self, session_id: str, duration: float) -> None:
+    def _session_duration_update_task(self, session_id: str, duration: float | None) -> None:
         recital_session = self.recitals_ra.get_by_id(session_id)
         if not recital_session:
             return
 
         # Update duration
-        recital_session.duration = max(recital_session.duration or 0, duration)
+        # If no explicit duration was specified
+        if duration is None:
+            # find the top text segment present seek end and use that
+            text_segments = list(self.recitals_ra.get_session_text_segments(session_id, exclude_discarded=True))
+            duration = text_segments[-1].seek_end if text_segments else 0
+            recital_session.duration = duration
+        else:
+            recital_session.duration = max(recital_session.duration or 0, duration)
+
         self.recitals_ra.upsert(recital_session)
 
     def aggregate_ended_sessions(self) -> None:
@@ -192,6 +200,11 @@ class RecitalManager:
                         continue
 
                     self.recitals_ra.upsert(recital_session)
+
+                    # Lets the duration be found from actual non discarded text segments
+                    # Durations before that a rough estimate based on sent text segments disregarding
+                    # discarded ones
+                    self.schedule_session_duration_update_job(session_id, None)
 
                     self.posthog.capture(
                         "server",

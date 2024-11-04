@@ -10,7 +10,7 @@ type Props = {
   readyToFinalize: boolean;
   awaitingFinalization: boolean;
   setAwaitingFinalization: (awaiting: boolean) => void;
-  endSession: (sessionId: string) => void;
+  endSession: (sessionId: string, discardLastNTextSegments: number) => void;
 };
 
 const SessionFinalizeModal = ({
@@ -34,10 +34,13 @@ const SessionFinalizeModal = ({
     },
   });
 
-  const onEndSession = useCallback(() => {
-    sessionId && endSession(sessionId);
-    setAwaitingFinalization(false);
-  }, [endSession, sessionId]);
+  const onEndSession = useCallback(
+    (discardLastNTextSegments: number) => {
+      sessionId && endSession(sessionId, discardLastNTextSegments);
+      setAwaitingFinalization(false);
+    },
+    [endSession, sessionId],
+  );
   const onDeleteSession = useCallback(async () => {
     setProgress(true);
     sessionId && (await mutation.mutateAsync(sessionId));
@@ -54,6 +57,7 @@ const SessionFinalizeModal = ({
         <button
           className="btn btn-ghost btn-sm text-error"
           onClick={() => onDeleteSession()}
+          tabIndex={3}
         >
           {progress ? (
             <span className="loading loading-infinity loading-xs" />
@@ -62,10 +66,19 @@ const SessionFinalizeModal = ({
           )}
         </button>
         <button
+          className="btn btn-accent btn-sm"
+          onClick={() => onEndSession(1)}
+          disabled={progress}
+          tabIndex={2}
+        >
+          {t("quick_nice_iguana_fetch")}
+        </button>
+        <button
           className="btn btn-primary btn-sm"
-          onClick={() => onEndSession()}
+          onClick={() => onEndSession(0)}
           disabled={progress}
           autoFocus
+          tabIndex={1}
         >
           {t("frail_fluffy_loris_scold")}
         </button>
