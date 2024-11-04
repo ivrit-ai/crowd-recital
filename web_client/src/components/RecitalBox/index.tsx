@@ -88,7 +88,13 @@ const RecitalBox = ({ document }: RecitalBoxProps) => {
   const endSessionAndMoveOn = useCallback(
     (sessionId: string, discardLastNTextSegments: number) => {
       endSession(sessionId, discardLastNTextSegments).then(() => {
-        move.nextSentence();
+        if (discardLastNTextSegments === 0) {
+          move.nextSentence();
+        } else {
+          // TODO - when we support discarding more than one sentence:
+          // Staying put is not enough - we actually need to wind back n - 1
+          // sentences to start next recording at the missing text.
+        }
       });
     },
     [endSession, move],
