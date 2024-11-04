@@ -134,6 +134,17 @@ class RecitalsRA:
             session.commit()
             return recital_session
 
+    def set_session_status(self, recital_session_id: str, status: SessionStatus) -> None:
+        with self.session_factory() as session:
+            results = session.exec(select(RecitalSession).filter(RecitalSession.id == recital_session_id))
+            recital_session = results.first()
+            if recital_session:
+                recital_session.status = status
+                session.add(recital_session)
+                session.commit()
+            else:
+                raise ValueError(f"No session found with id: {recital_session_id}")
+
     def store_session_text(self, text_content: str, filename: str) -> str:
         with open(f"{self.data_folder}/{filename}", "w") as f:
             f.write(text_content)

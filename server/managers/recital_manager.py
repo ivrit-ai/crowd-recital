@@ -98,7 +98,7 @@ class RecitalManager:
             trigger=trigger,
         )
 
-    def schedule_session_duration_update_job(self, session_id: str, duration: float | None) -> None:
+    def schedule_session_duration_update_job(self, session_id: str, duration: float) -> None:
         self.job_scheduler.add_job(
             self._session_duration_update_task,
             trigger=None,
@@ -114,20 +114,18 @@ class RecitalManager:
         self.upload_aggregated_sessions()
         self.discard_disavowed_sessions()
 
-    def _session_duration_update_task(self, session_id: str, duration: float | None) -> None:
+    def _derive_session_duration_from_text_segments(self, session_id: str) -> float:
+        # Get the top text segment present seek end and use that
+        text_segments = list(self.recitals_ra.get_session_text_segments(session_id, exclude_discarded=True))
+        return text_segments[-1].seek_end if text_segments else 0
+
+    def _session_duration_update_task(self, session_id: str, duration: float) -> None:
         recital_session = self.recitals_ra.get_by_id(session_id)
         if not recital_session:
             return
 
         # Update duration
-        # If no explicit duration was specified
-        if duration is None:
-            # find the top text segment present seek end and use that
-            text_segments = list(self.recitals_ra.get_session_text_segments(session_id, exclude_discarded=True))
-            duration = text_segments[-1].seek_end if text_segments else 0
-            recital_session.duration = duration
-        else:
-            recital_session.duration = max(recital_session.duration or 0, duration)
+        recital_session.duration = max(recital_session.duration or 0, duration)
 
         self.recitals_ra.upsert(recital_session)
 
@@ -199,12 +197,11 @@ class RecitalManager:
                         )
                         continue
 
-                    self.recitals_ra.upsert(recital_session)
-
                     # Lets the duration be found from actual non discarded text segments
                     # Durations before that a rough estimate based on sent text segments disregarding
                     # discarded ones
-                    self.schedule_session_duration_update_job(session_id, None)
+                    recital_session.duration = self._derive_session_duration_from_text_segments(session_id)
+                    self.recitals_ra.upsert(recital_session)
 
                     self.posthog.capture(
                         "server",
@@ -259,8 +256,7 @@ class RecitalManager:
                     self.recitals_content_ra.remove_local_data_file(light_audio_filename)
 
                 # Mark the session as published
-                recital_session.status = SessionStatus.UPLOADED
-                self.recitals_ra.upsert(recital_session)
+                self.recitals_ra.set_session_status(recital_session.id, SessionStatus.UPLOADED)
                 uploaded_sessions_mutated = True
 
                 # Invalidate the stats cache for this user
