@@ -6,6 +6,7 @@ import shutil
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Tuple
 
 from webvtt import Caption, WebVTT
 
@@ -70,6 +71,18 @@ class AggregationEngine:
         self.data_folder = data_folder
 
     def aggregate_session_captions(self, session_id: str, format: str = "vtt") -> str:
+        """Aggregates text of a session onto the requested captions format.
+
+        Args:
+            session_id (str): The session to process
+            format (str, optional): Captions format. Currently only supports "vtt".
+
+        Raises:
+            ValueError: Format not supported
+
+        Returns:
+            str: The captions content in the requested format
+        """
         if not format == "vtt":
             raise ValueError("Only `vtt` format is supported")
 
