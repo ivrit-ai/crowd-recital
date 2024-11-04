@@ -47,6 +47,40 @@ class RecitalManager:
         self.aggregation_engine = aggregation_engine
         self.transform_engine = transform_engine
 
+    def end_session(self, user: User, session_id: str, discard_last_n_text_segments: int = 0) -> None:
+        """Ends a session and marks the last n text segments as discarded.
+
+        Args:
+            user (User): Owner user - must match the session
+            session_id (str): Session to end
+            discard_last_n_text_segments (int, optional): Number of text segments to mark as discarded from the end. Defaults to 0.
+
+        Raises:
+            MissingSessionError: Session does not exist for this user
+
+        Returns:
+            bool: True if session was ended, False if session was already ended
+        """
+        recital_session = self.recitals_ra.get_by_id_and_user_id(session_id, user.id)
+        if not recital_session:
+            raise MissingSessionError()
+
+        if recital_session.status == SessionStatus.ACTIVE:
+            # Mark text segment sessions as discarded as required
+            if discard_last_n_text_segments > 0:
+                # Take all text segments - so we correctly mark n from the end
+                text_segments = self.recitals_ra.get_session_text_segments(session_id, exclude_discarded=False)
+                for text_segment in text_segments[-discard_last_n_text_segments:]:
+                    text_segment.discarded = True
+                    self.recitals_ra.upsert_session_text_segment(text_segment)
+
+            recital_session.status = SessionStatus.ENDED
+            self.recitals_ra.upsert(recital_session)
+            self.schedule_session_finalization_job()
+            return True
+
+        return False
+
     def schedule_session_finalization_job(self, defer=False) -> None:
         if self.session_finalization_job_disabled:
             return
@@ -80,6 +114,11 @@ class RecitalManager:
         self.upload_aggregated_sessions()
         self.discard_disavowed_sessions()
 
+    def _derive_session_duration_from_text_segments(self, session_id: str) -> float:
+        # Get the top text segment present seek end and use that
+        text_segments = list(self.recitals_ra.get_session_text_segments(session_id, exclude_discarded=True))
+        return text_segments[-1].seek_end if text_segments else 0
+
     def _session_duration_update_task(self, session_id: str, duration: float) -> None:
         recital_session = self.recitals_ra.get_by_id(session_id)
         if not recital_session:
@@ -87,6 +126,7 @@ class RecitalManager:
 
         # Update duration
         recital_session.duration = max(recital_session.duration or 0, duration)
+
         self.recitals_ra.upsert(recital_session)
 
     def aggregate_ended_sessions(self) -> None:
@@ -102,6 +142,15 @@ class RecitalManager:
                 if not recital_session:
                     raise MissingSessionError()
 
+                text_segments = list(self.recitals_ra.get_session_text_segments(session_id))
+                last_seek_time = text_segments[-1].seek_end if text_segments else 0
+
+                if not last_seek_time:  # No text content
+                    print(f"No textual content found for session {session_id} - disavowing")
+                    recital_session.disavowed = True
+                    self.recitals_ra.upsert(recital_session)
+                    continue
+
                 # Aggregate text
                 if not recital_session.text_filename:
                     vtt_file_content = self.aggregation_engine.aggregate_session_captions(recital_session.id)
@@ -110,11 +159,6 @@ class RecitalManager:
                         self.recitals_ra.store_session_text(vtt_file_content, text_filename)
                         recital_session.text_filename = text_filename
                         self.recitals_ra.upsert(recital_session)
-                    else:
-                        print(f"No textual content found for session {session_id} - disavowing")
-                        recital_session.disavowed = True
-                        self.recitals_ra.upsert(recital_session)
-                        continue
 
                 # Aggregate audio segments into a single file if not done yet
                 if not recital_session.source_audio_filename:
@@ -130,8 +174,12 @@ class RecitalManager:
 
                 # Transcode the audio into the target formats if not done yet
                 if not recital_session.main_audio_filename:
-                    main_audio_filename, light_audio_filename = self.transform_engine.transcode_session_audio(
-                        recital_session.id
+                    # The audio should match the text segments coverage.
+                    # It might be longer (if some text segments were discarded from the end)
+                    # So we specify the target audio duration to get the destination audio file and derivatives
+                    # using that duration
+                    main_audio_filename, light_audio_filename = self.transform_engine.derive_session_audio(
+                        recital_session.id, last_seek_time
                     )
 
                     if main_audio_filename:
@@ -149,6 +197,10 @@ class RecitalManager:
                         )
                         continue
 
+                    # Lets the duration be found from actual non discarded text segments
+                    # Durations before that a rough estimate based on sent text segments disregarding
+                    # discarded ones
+                    recital_session.duration = self._derive_session_duration_from_text_segments(session_id)
                     self.recitals_ra.upsert(recital_session)
 
                     self.posthog.capture(
@@ -204,8 +256,7 @@ class RecitalManager:
                     self.recitals_content_ra.remove_local_data_file(light_audio_filename)
 
                 # Mark the session as published
-                recital_session.status = SessionStatus.UPLOADED
-                self.recitals_ra.upsert(recital_session)
+                self.recitals_ra.set_session_status(recital_session.id, SessionStatus.UPLOADED)
                 uploaded_sessions_mutated = True
 
                 # Invalidate the stats cache for this user

@@ -93,14 +93,25 @@ class RecitalsRA:
             session.commit()
             session.refresh(recital_text_segment)
 
-    def get_session_text_segments(self, recital_session_id: str) -> Iterator[RecitalTextSegment]:
+    def get_session_text_segments(
+        self, recital_session_id: str, exclude_discarded=True
+    ) -> Iterator[RecitalTextSegment]:
         with self.session_factory() as session:
+            seg_filter = RecitalTextSegment.recital_session_id == recital_session_id
+            if exclude_discarded:
+                seg_filter = and_(seg_filter, RecitalTextSegment.discarded != True)
             results = session.exec(
-                select(RecitalTextSegment).filter(RecitalTextSegment.recital_session_id == recital_session_id)
+                select(RecitalTextSegment).filter(seg_filter)
                 # Sort results by the "seek_end" column ascending
                 .order_by(RecitalTextSegment.seek_end)
             )
             return results.all()
+
+    def upsert_session_text_segment(self, recital_text_segment: RecitalTextSegment) -> None:
+        with self.session_factory() as session:
+            session.merge(recital_text_segment)
+            session.commit()
+            return recital_text_segment
 
     def add_audio_segment(self, recital_audio_segment: RecitalAudioSegment):
         with self.session_factory() as session:
@@ -122,6 +133,17 @@ class RecitalsRA:
             session.merge(recital_session)
             session.commit()
             return recital_session
+
+    def set_session_status(self, recital_session_id: str, status: SessionStatus) -> None:
+        with self.session_factory() as session:
+            results = session.exec(select(RecitalSession).filter(RecitalSession.id == recital_session_id))
+            recital_session = results.first()
+            if recital_session:
+                recital_session.status = status
+                session.add(recital_session)
+                session.commit()
+            else:
+                raise ValueError(f"No session found with id: {recital_session_id}")
 
     def store_session_text(self, text_content: str, filename: str) -> str:
         with open(f"{self.data_folder}/{filename}", "w") as f:

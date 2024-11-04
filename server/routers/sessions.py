@@ -63,30 +63,32 @@ async def new_recital_session(
     return {"session_id": recital_session.id}
 
 
+class EndSessionPayload(BaseModel):
+    discard_last_n_text_segments: Optional[int] = 0
+
+
 @router.post("/{session_id}/end")
 @inject
 async def end_recital_session(
     track_event: Tracker,
     session_id: Annotated[str, Path(title="Session id of the transcript")],
     speaker_user: Annotated[User, Depends(get_speaker_user)],
+    end_session_payload: Optional[EndSessionPayload] = EndSessionPayload(),
     recital_manager: RecitalManager = Depends(Provide[Container.recital_manager]),
-    recitals_ra: RecitalsRA = Depends(Provide[Container.recitals_ra]),
 ):
-    recital_session = recitals_ra.get_by_id_and_user_id(session_id, speaker_user.id)
-    if not recital_session:
+    try:
+        ended = recital_manager.end_session(speaker_user, session_id, end_session_payload.discard_last_n_text_segments)
+
+        if ended:
+            track_event(
+                "Recital Session Ended",
+                {
+                    "session_id": session_id,
+                },
+            )
+    except MissingSessionError:
         raise HTTPException(status_code=404, detail="Recital session not found")
 
-    if recital_session.status == SessionStatus.ACTIVE:
-        recital_session.status = SessionStatus.ENDED
-        recitals_ra.upsert(recital_session)
-        recital_manager.schedule_session_finalization_job()
-
-        track_event(
-            "Recital Session Ended",
-            {
-                "session_id": session_id,
-            },
-        )
     return {"message": "Recital session ended successfully"}
 
 

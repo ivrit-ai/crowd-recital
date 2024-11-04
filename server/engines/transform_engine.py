@@ -44,7 +44,7 @@ class TransformEngine:
         self.recitals_ra = recitals_ra
         self.data_folder = data_folder
 
-    def transcode_session_audio(self, session_id: str) -> str:
+    def derive_session_audio(self, session_id: str, target_duration: float) -> str:
         recital_session = self.recitals_ra.get_by_id(session_id)
         source_audio_filename = Path(self.data_folder, recital_session.source_audio_filename)
 
@@ -62,25 +62,31 @@ class TransformEngine:
         main_output_audio_file = f"{session_id}.{output_audio_file_extension}"
         abs_main_output_audio_file = Path(self.data_folder, main_output_audio_file)
 
+        base_ffmpeg_cmd = ["ffmpeg", "-y", "-i", str(source_audio_filename)]
+        target_duration_ffmpeg_options = ["-t", str(target_duration)]
+
         main_ffmpeg_cmd = [
-            "ffmpeg",
-            "-y",
-            "-i",
-            str(source_audio_filename),
+            *base_ffmpeg_cmd,
             "-acodec",
             "copy",
-            str(abs_main_output_audio_file),
         ]
+
+        # Append the target duration if it's specified (non-zero or non-None)
+        if target_duration:
+            main_ffmpeg_cmd.extend(target_duration_ffmpeg_options)
+
+        # Output always at the end
+        main_ffmpeg_cmd.append(str(abs_main_output_audio_file))
 
         light_output_audio_file = f"{session_id}.mp3"
         abs_light_output_audio_file = Path(self.data_folder, light_output_audio_file)
-        light_ffmpeg_cmd = [
-            "ffmpeg",
-            "-y",
-            "-i",
-            str(source_audio_filename),
-            str(abs_light_output_audio_file),
-        ]
+        light_ffmpeg_cmd = list(base_ffmpeg_cmd)
+
+        # Append the target duration if it's specified (non-zero or non-None)
+        if target_duration:
+            light_ffmpeg_cmd.extend(target_duration_ffmpeg_options)
+        # Output always at the end
+        light_ffmpeg_cmd.append(str(abs_light_output_audio_file))
 
         try:
             subprocess.check_call(main_ffmpeg_cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
