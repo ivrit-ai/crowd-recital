@@ -17,19 +17,14 @@ from utility.communication.email import Emailer
 from utility.scheduler import JobScheduler
 
 
-print("Starting Container initialization")
-
 class Container(containers.DeclarativeContainer):
-    print("Defining Container class")
 
     wiring_config = containers.WiringConfiguration(
         packages=["routers", "routers.dependencies", "utility", "utility.authentication", "utility.communication"],
         modules=["application"],
     )
-    print(f"Wiring config initialized: {wiring_config}")
 
     config = providers.Configuration()
-    print(f"Configuration provider initialized: {config}")
 
     posthog = providers.Singleton(
         ConfiguredPosthog, api_key=config.analytics.posthog.api_key, host=config.analytics.posthog.host
@@ -86,5 +81,3 @@ class Container(containers.DeclarativeContainer):
         aggregation_engine=aggregation_engine,
         transform_engine=transform_engine,
     )
-
-print("Container class definition completed")
