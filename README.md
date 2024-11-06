@@ -1,6 +1,29 @@
 # crowd-recital
 Crowd-sourced Text Recital Acquisition
 
+# Table of Contents
+
+1. [Deployment](#deployment)
+   - [Prerequisites](#prerequisites)
+   - [Setup](#setup)
+   - [ID Delegation Authentication](#id-delegation-authentication)
+   - [Analytics](#analytics)
+   - [DB Migration](#db-migration)
+   - [Running the Server - No Docker Option](#running-the-server---no-docker-option)
+   - [Running the Background Jobs (Optional)](#running-the-background-jobs-optional)
+   - [Running the Server - Docker Option](#running-the-server---docker-option)
+   - [Using a Reverse Proxy (like nginx)](#using-a-reverse-proxy-like-nginx)
+
+2. [Operations](#operations)
+   - [Speaker Users](#speaker-users)
+
+3. [Development](#development)
+   - [Prerequisites](#prerequisites-1)
+   - [The Vite Development Web Server](#the-vite-development-web-server)
+   - [The FastAPI Web Server](#the-fastapi-web-server)
+
+4. [Bump Versions](#bump-versions)
+
 ## Deployment
 
 ### Prerequisites
@@ -15,7 +38,7 @@ Crowd-sourced Text Recital Acquisition
 - Clone this repo
 - Inside the `/server` directory
 - Create a virtual environment and install the requirements
-
+`python -m venv ./venv`
 `pip install -r requirements.txt`
 
 - Create a `.env` file in the `/server` directory and add the following variables
@@ -35,6 +58,7 @@ JOB_SESSION_FINALIZATION_INTERVAL_SEC=<Seconds between runs of aggregation+uploa
 PUBLIC_POSTHOG_KEY=<optional - tracking to posthog>
 PUBLIC_POSTHOG_HOST=<optional - tracking to posthog>
 DEBUG=<True/False - prints db and other detailed logs (False)>
+EMAIL_SENDER_ADDRESS=<email to send from>
 ```
 
 *JOB_SESSION_FINALIZATION_INTERVAL_SEC*: Note, the server will also immediately trigger finalization when a recording session ends when this flag is turned on to minimize latency of getting an available session preview.
@@ -142,7 +166,7 @@ Each such folder will contain a vtt file and 3 audio files (source, main and lig
 
 - Command to run the server docker image
 
-`docker run -p 8000:80 --env-file server/.env`
+`docker run -p 8000:80 --env-file server/.env docker.io/library/crowd-recital:latest`
 
 This binds the web server on the host port 8000.
 
@@ -226,18 +250,25 @@ from the root folder.
 You need to start two web servers from two shells.
 
 ### The Vite development web server
-- Go into "web_client" and run "pnpm run dev"
+- Go into "web_client" and run:
+1. `pnpm install`
+2. `pnpm run dev`
 
 ### The FastAPI web server
 
 - Make sure the virtual environment is activated
 - Create a `cert` folder under the root
-- Generate self signed certificates using the following command
+- Generate self signed certificates using the following command (from the root)
 
 `openssl req -x509 -newkey rsa:4096 -keyout cert/key.pem -out cert/cert.pem -days 365 -nodes`
 
-- From the root folder run uvicorn using the certificates in the `cert` folder
+- From the server folder:
+1. Create venv `python -m venv ./venv` (Don't forget to activate the venv)
+2. install the requirements: `pip install -r requirements.txt`
 
+- From the root folder:
+1. Create a web_client_dist folder 
+2. run uvicorn using the certificates in the `cert` folder
 `uvicorn --app-dir=server application:app --reload --ssl-keyfile ./cert/key.pem --ssl-certfile ./cert/cert.pem`
 
 - Access the app on `https://localhost:5173`
