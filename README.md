@@ -246,6 +246,26 @@ from the root folder.
 - Python >= 3.11 and < 3.12 Installed
 - Node 20 available on PATH
 - Install tbump with `pipx install tbump`
+- add `.env` file inside the `/server` folder with these environment variables
+```
+DB_CONNECTION_STR=<PostgreSQL Connection String>
+GOOGLE_CLIENT_ID=<Google client id for the Google login app>
+ACCESS_TOKEN_SECRET_KEY=<Generated secret to sign the JWT session tokens>
+DELEGATED_IDENTITY_SECRET_KEY=<Secret key to for id delegation authentication (See Below)>
+AWS_ACCESS_KEY_ID=<AWS access key>
+AWS_SECRET_ACCESS_KEY=<AWS secret access key>
+AWS_DEFAULT_REGION=<The region for the S3 bucket access>
+CONTENT_STORAGE_S3_BUCKET=<AWS S3 bucket name for the uploaded content>
+CONTENT_DISABLE_S3_UPLOAD=<True/False - Disable content uploading - for development purposes (False)>
+JOB_SESSION_FINALIZATION_DISABLED=<True/False - enable or disable aggregations+upload jobs (True)>
+JOB_SESSION_FINALIZATION_INTERVAL_SEC=<Seconds between runs of aggregation+upload jobs, read more below. (120)>
+PUBLIC_POSTHOG_KEY=<optional - tracking to posthog>
+PUBLIC_POSTHOG_HOST=<optional - tracking to posthog>
+DEBUG=<True/False - prints db and other detailed logs (False)>
+EMAIL_SENDER_ADDRESS=<email to send from>
+```
+
+GOOGLE_CLIENT_ID & ACCESS_TOKEN_SECRET_KEY - instructions can be found here: https://support.google.com/cloud/answer/15549257?hl=en# 
 
 You need to start two web servers from two shells.
 
