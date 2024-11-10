@@ -79,7 +79,7 @@ def get_authenticated_user_id(
 def get_delegated_user_email(
     delegation_secret_key: IdentityDelegationSecurity,
     delegated_email: DelegatedUserEmail = None,
-    delegated_identity_secret_key: str = Provide[Container.config.auth.delegated_identity_secret_key],
+    delegated_identity_secret_key: str = Depends(Provide[Container.config.auth.delegated_identity_secret_key]),
 ) -> str:
     if delegation_secret_key == delegated_identity_secret_key and delegated_email:
         return delegated_email
@@ -92,7 +92,7 @@ async def get_valid_user(
     response: Response,
     authenticated_user_id: Annotated[str, Depends(get_authenticated_user_id)],
     delegated_user_email: Annotated[str, Depends(get_delegated_user_email)],
-    google_client_id: str = Provide[Container.config.auth.google.client_id],
+    google_client_id: str = Depends(Provide[Container.config.auth.google.client_id]),
     users_ra: UsersRA = Depends(Provide[Container.users_ra]),
 ):
     user: User = None
