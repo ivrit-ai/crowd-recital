@@ -1,7 +1,7 @@
 import pathlib
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.responses import PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -42,13 +42,13 @@ def get_env_config(
     # For safety - we bother to list each configuration entry we want to expose,
     # and in multiple places - so exposing anything from the server env to the client
     # is (hopefully) a deliberate decision.
-    version: str = Provide[Container.config.version],
-    google_client_id: str = Provide[Container.config.auth.google.client_id],
-    posthog_api_key: str = Provide[Container.config.analytics.posthog.api_key],
-    posthog_host: str = Provide[Container.config.analytics.posthog.host],
-    help_basic_guide_yt_video_id: str = Provide[Container.config.help.basic_guide_yt_video_id],
-    help_faq_wp_api_url: str = Provide[Container.config.help.faq_wp_api_url],
-    disable_soup: str = Provide[Container.config.client.disable_soup],
+    version: str = Depends(Provide[Container.config.version]),
+    google_client_id: str = Depends(Provide[Container.config.auth.google.client_id]),
+    posthog_api_key: str = Depends(Provide[Container.config.analytics.posthog.api_key]),
+    posthog_host: str = Depends(Provide[Container.config.analytics.posthog.host]),
+    help_basic_guide_yt_video_id: str = Depends(Provide[Container.config.help.basic_guide_yt_video_id]),
+    help_faq_wp_api_url: str = Depends(Provide[Container.config.help.faq_wp_api_url]),
+    disable_soup: str = Depends(Provide[Container.config.client.disable_soup]),
 ) -> str:
     client_env = ClientEnv(
         config=ClientConfig(

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from dependency_injector.wiring import Provide, inject
 from pydantic import BaseModel
+from fastapi import Depends
 
 from containers import Container
 from models.user import User
@@ -31,7 +32,7 @@ def get_access_token_expire_minutes():
 def encode_access_token(
     data: dict,
     expires_delta: timedelta | None = None,
-    access_token_secret_key: str = Provide[Container.config.auth.access_token_secret_key],
+    access_token_secret_key: str = Depends(Provide[Container.config.auth.access_token_secret_key]),
 ):
     to_encode = data.copy()
     if expires_delta:
@@ -45,7 +46,7 @@ def encode_access_token(
 
 @inject
 def decode_access_token(
-    token: str, access_token_secret_key: str = Provide[Container.config.auth.access_token_secret_key]
+    token: str, access_token_secret_key: str = Depends(Provide[Container.config.auth.access_token_secret_key])
 ):
     payload = jwt.decode(token, access_token_secret_key, algorithms=[ALGORITHM])
     return payload
@@ -76,7 +77,9 @@ def create_empty_speaker_user(email: str):
 
 @inject
 def record_user_agreement(
-    user: User, users_ra: UsersRA = Provide[Container.users_ra], emailer: Emailer = Provide[Container.emailer]
+    user: User,
+    users_ra: UsersRA = Depends(Provide[Container.users_ra]),
+    emailer: Emailer = Depends(Provide[Container.emailer]),
 ):
     # only if the user had not signed the agreement yet
     first_time_signer = user.agreement_signed_at is None
