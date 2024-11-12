@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { EnvConfig } from "@/config";
+import { EnvConfig } from "@/env/config";
 
 class HebrewFloatingLetters {
   private container: HTMLElement;

@@ -1,5 +1,5 @@
 import { reportResponseError } from "@/analytics";
-import { EnvConfig } from "@/config";
+import { EnvConfig } from "@/env/config";
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 const faqLoadUrl = EnvConfig.get("help_faq_wp_api_url");

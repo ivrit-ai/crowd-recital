@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import ReactPlayer from "react-player/lazy";
 
 import useTrackPageView from "@/analytics/useTrackPageView";
-import { EnvConfig } from "@/config";
+import { EnvConfig } from "@/env/config";
 import FAQSection from "./faqSection";
 
 const embedId = EnvConfig.get("help_basic_guide_yt_video_id");

@@ -1,6 +1,6 @@
 import posthog from "posthog-js";
 
-import { EnvConfig } from "@/config";
+import { EnvConfig } from "@/env/config";
 
 const posthogConfigured = !!EnvConfig.get("analytics_posthog_api_key");
 if (posthogConfigured) {

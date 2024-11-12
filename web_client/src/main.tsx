@@ -5,7 +5,7 @@ import { VERSION } from './version';
 
 import "./i18n";
 
-import { EnvConfig } from "@/config";
+import { EnvConfig } from "@/env/config";
 import App from "./App";
 
 console.log(

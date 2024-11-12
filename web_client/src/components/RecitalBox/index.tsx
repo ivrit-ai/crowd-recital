@@ -10,7 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 
-import { EnvConfig } from "@/config";
+import { EnvConfig } from "@/env/config";
 import { useRecordingUploader } from "@/hooks/recodingUploader";
 import { useTextSegmentUploader } from "@/hooks/textSegmentUploader";
 import { useRecordingSession } from "@/hooks/useRecordingSession";
