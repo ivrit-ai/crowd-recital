@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { usePostHog } from "posthog-js/react";
 
-import { EnvConfig } from "@/config";
+import { EnvConfig } from "@/env/config";
 import googleAccounts from "@/services/googleAccounts";
 
 type credentialsResponseCallback = (

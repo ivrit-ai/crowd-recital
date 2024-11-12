@@ -13,6 +13,7 @@ import {
 } from "@/client/user";
 import { User } from "../../types/user";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { INVITE_STORAGE_KEY } from "@/env/invites";
 
 const reportLogin = (posthog: PostHog, loginResponse: LoginResponse) => {
   try {
@@ -37,6 +38,7 @@ export default function useLogin() {
   const [activeUser, setActiveUser] = useState<User | null>(null);
   const [loggingIn, setLoggingIn] = useState(true);
   const [accessToken, setAccessToken] = useLocalStorage<string>("actk", "");
+  const [inviteValue] = useLocalStorage<string>(INVITE_STORAGE_KEY, "");
 
   useEffect(() => {
     const init = async () => {
@@ -91,6 +93,7 @@ export default function useLogin() {
           const loginResponse = await loginUsingGoogleCredential(
             loginCredential,
             csrfToken,
+            inviteValue,
           );
 
           if (loginResponse) {

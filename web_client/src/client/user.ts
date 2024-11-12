@@ -129,10 +129,12 @@ export type LoginResponse = {
 export const loginUsingGoogleCredential = async (
   googleCredential: string,
   gCsrfToken: string,
+  inviteValue: string,
 ) => {
   const formData = new FormData();
   formData.append("credential", googleCredential);
   formData.append("g_csrf_token", gCsrfToken);
+  formData.append("invite_value", inviteValue || "");
   const response = await fetch("api/login", {
     method: "POST",
     body: formData,

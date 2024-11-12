@@ -1,19 +1,20 @@
-from datetime import datetime, timedelta
-from typing import Annotated, Optional
+from datetime import timedelta
+from typing import Annotated
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Form, Response, status
 from pydantic import BaseModel
 
 from containers import Container
 from models.user import User
+from models.user_metadata import UserMetadata, UserMetadataUpdate
 from resource_access.users_ra import UsersRA
-from models.user_metadata import UserMetadataUpdate, UserMetadata
 from utility.authentication.google_login import (
     GoogleIdentification,
     get_google_identification,
     validate_csrf_token,
 )
+from utility.authentication.invites import validate_invite_value
 from utility.authentication.users import (
     create_access_token_payload_from_user,
     create_user_from_google_id,
@@ -45,6 +46,7 @@ class LoginResponse(BaseModel):
 async def login_user(
     track_event: RawTracker,
     google_identification: Annotated[GoogleIdentification, Depends(get_google_identification)],
+    invite_value: Annotated[str, Form()],
     response: Response,
     users_ra: UsersRA = Depends(Provide[Container.users_ra]),
 ):
@@ -57,13 +59,24 @@ async def login_user(
     # and anyway not expect users to try and hack this system (famous last words - blame Yair.L)
     existing_user = users_ra.get_by_email(derived_user_from_google_id.email)
 
+    # Valid invites ensure auto speaker approval
+    has_valid_invite = validate_invite_value(invite_value)
+
     if not existing_user:
+        if has_valid_invite:
+            derived_user_from_google_id.group = "speaker"
+
         users_ra.upsert(derived_user_from_google_id)
         track_event(derived_user_from_google_id.id, "User Signed Up")
     else:
         existing_user.picture = derived_user_from_google_id.picture
         existing_user.name = derived_user_from_google_id.name
         existing_user.email_verified = derived_user_from_google_id.email_verified
+
+        if has_valid_invite and existing_user.group is None:
+            track_event(derived_user_from_google_id.id, "User Self Approved Speaker")
+            existing_user.group = "speaker"
+
         users_ra.upsert(existing_user)
 
     user_email = existing_user.email if existing_user else derived_user_from_google_id.email
