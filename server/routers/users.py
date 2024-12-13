@@ -14,7 +14,6 @@ from utility.authentication.google_login import (
     get_google_identification,
     validate_csrf_token,
 )
-from utility.authentication.invites import validate_invite_value
 from utility.authentication.users import (
     create_access_token_payload_from_user,
     create_user_from_google_id,
@@ -29,6 +28,7 @@ from .dependencies.users import (
     get_valid_user,
     set_access_token_cookie,
     unset_access_token_cookie,
+    should_grant_speaker_permission,
 )
 
 router = APIRouter()
@@ -59,11 +59,8 @@ async def login_user(
     # and anyway not expect users to try and hack this system (famous last words - blame Yair.L)
     existing_user = users_ra.get_by_email(derived_user_from_google_id.email)
 
-    # Valid invites ensure auto speaker approval
-    has_valid_invite = validate_invite_value(invite_value)
-
     if not existing_user:
-        if has_valid_invite:
+        if should_grant_speaker_permission(derived_user_from_google_id, invite_value):
             derived_user_from_google_id.group = "speaker"
 
         users_ra.upsert(derived_user_from_google_id)
@@ -73,8 +70,8 @@ async def login_user(
         existing_user.name = derived_user_from_google_id.name
         existing_user.email_verified = derived_user_from_google_id.email_verified
 
-        if has_valid_invite and existing_user.group is None:
-            track_event(derived_user_from_google_id.id, "User Self Approved Speaker")
+        if existing_user.group is None and should_grant_speaker_permission(existing_user, invite_value):
+            track_event(derived_user_from_google_id.id, "User Self/Auto Approved Speaker")
             existing_user.group = "speaker"
 
         users_ra.upsert(existing_user)
