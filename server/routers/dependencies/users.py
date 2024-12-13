@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from containers import Container
 from models.user import User, UserGroups
 from resource_access.users_ra import UsersRA
+from utility.authentication.invites import validate_invite_value
 from utility.authentication.users import (
     decode_access_token,
     get_access_token_expire_minutes,
@@ -125,6 +126,20 @@ def has_admin_permission(user: User):
 
 def has_speaker_permission(user: User):
     return user.group == UserGroups.SPEAKER or has_admin_permission(user)
+
+
+@inject
+def should_grant_speaker_permission(
+    user: User,  # not looking at the user ATM
+    invite_value: str,
+    disable_auto_speaker_approve: bool = Provide[Container.config.auth.disable_auto_speaker_approve],
+):
+    if not disable_auto_speaker_approve:  # Always approve as speaker
+        return True
+    elif validate_invite_value(invite_value):
+        return True
+
+    return False
 
 
 async def get_speaker_user(user: Annotated[User, Depends(get_valid_user)]):

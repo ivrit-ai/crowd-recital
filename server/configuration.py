@@ -29,6 +29,7 @@ def configure(container: "Container"):
     container.config.auth.google.client_id.from_value(env("GOOGLE_CLIENT_ID"))
     container.config.auth.delegated_identity_secret_key.from_value(env("DELEGATED_IDENTITY_SECRET_KEY"))
     container.config.auth.access_token_secret_key.from_value(env("ACCESS_TOKEN_SECRET_KEY"))
+    container.config.auth.disable_auto_speaker_approve.from_value(env.bool("DISABLE_AUTO_SPEAKER_APPROVAL"))
 
     container.config.email.sender_address.from_value(env("EMAIL_SENDER_ADDRESS"))
     container.config.email.reply_to_address.from_value(env("EMAIL_REPLY_TO_ADDRESS", env("EMAIL_SENDER_ADDRESS")))
