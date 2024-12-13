@@ -38,7 +38,10 @@ export default function useLogin() {
   const [activeUser, setActiveUser] = useState<User | null>(null);
   const [loggingIn, setLoggingIn] = useState(true);
   const [accessToken, setAccessToken] = useLocalStorage<string>("actk", "");
-  const [inviteValue] = useLocalStorage<string>(INVITE_STORAGE_KEY, "");
+  const [inviteValueObj] = useLocalStorage(INVITE_STORAGE_KEY, {
+    inviteValue: "",
+  });
+  const { inviteValue } = inviteValueObj;
 
   useEffect(() => {
     const init = async () => {

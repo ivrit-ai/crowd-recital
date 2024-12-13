@@ -10,7 +10,10 @@ function captureInvitesFromUrl() {
 
   if (invite) {
     // Store the invite in localStorage
-    localStorage.setItem(INVITE_STORAGE_KEY, invite);
+    localStorage.setItem(
+      INVITE_STORAGE_KEY,
+      JSON.stringify({ inviteValue: invite }),
+    );
   }
 }
 
