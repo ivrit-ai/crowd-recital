@@ -103,7 +103,7 @@ const DocumentInput = () => {
               loadNewDocumentFromWikiArticle={uploadWikiDocument}
             />
           </Collapse>
-          <Collapse title={t("short_spry_rooster_swim")} defaultOpen={true}>
+          <Collapse title={t("short_spry_rooster_swim")} defaultOpen={false}>
             <EnterExistingDocTab />
           </Collapse>
           {isAdmin && (
