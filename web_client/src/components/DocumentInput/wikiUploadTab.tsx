@@ -5,6 +5,11 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 
 import type { TabContentProps } from "./types";
+import {
+  SuggestedWikiArticle,
+  suggestWikiArticle,
+  WikiArticleLang,
+} from "@/client/documents";
 
 interface Props extends TabContentProps {
   error: string | null;
@@ -14,16 +19,13 @@ interface Props extends TabContentProps {
   loadNewDocumentFromWikiArticle: (url: string) => Promise<void>;
 }
 
-const allowedWikiLangs = ["he", "yi"];
+const allowedWikiLangs = [
+  WikiArticleLang.Hebrew as string,
+  WikiArticleLang.Yiddish as string,
+];
 const allowedWikiUrlPattern = new RegExp(
   `^https://([a-z]+)(.m)?\\.wikipedia\\.org/wiki/`,
   "i",
-);
-
-console.log(
-  allowedWikiUrlPattern.exec(
-    "https://yi.m.wikipedia.org/wiki/%D7%A7%D7%90%D6%B7%D7%98%D7%A2%D7%92%D7%90%D6%B8%D7%A8%D7%99%D7%A2:%D7%A7%D7%90%D6%B8%D7%95%D7%95%D7%99%D7%93-19",
-  ),
 );
 
 const WikiArticleUpload = ({
@@ -31,11 +33,14 @@ const WikiArticleUpload = ({
   setError,
   loadNewDocumentFromWikiArticle,
 }: Props) => {
-  const { t } = useTranslation("documents");
+  const { t, i18n } = useTranslation("documents");
   const posthog = usePostHog();
   const [wikiArticleUrl, setWikiArticleUrl] = useState("");
   const [validUrl, setValidUrl] = useState(false);
   const [invalidUrlReason, setInvalidUrlReason] = useState("");
+  const [suggestedArticle, setSuggestedArticle] =
+    useState<SuggestedWikiArticle | null>(null);
+  const [suggesting, setSuggesting] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -63,6 +68,21 @@ const WikiArticleUpload = ({
     }
   }, [wikiArticleUrl, setValidUrl]);
 
+  const suggest = useCallback(async () => {
+    try {
+      setSuggesting(true);
+      setError("");
+      const suggested = await suggestWikiArticle(
+        i18n.language as WikiArticleLang,
+      );
+      setSuggestedArticle(suggested);
+    } catch (err) {
+      setError("Wiki suggestions failed.");
+    } finally {
+      setSuggesting(false);
+    }
+  }, [i18n.language]);
+
   const upload = useCallback(() => {
     if (validUrl) {
       setUploading(true);
@@ -84,6 +104,22 @@ const WikiArticleUpload = ({
     validUrl,
     invalidUrlReason,
   ]);
+
+  const uploadSuggested = useCallback(() => {
+    if (suggestedArticle) {
+      setUploading(true);
+      loadNewDocumentFromWikiArticle(suggestedArticle.url)
+        .then(() => {
+          setSuggestedArticle(null);
+        })
+        .finally(() => {
+          setUploading(false);
+        });
+      posthog?.capture("Upload Suggested Wiki", {
+        wiki_url: suggestedArticle.title,
+      });
+    }
+  }, [loadNewDocumentFromWikiArticle, suggestedArticle]);
 
   useEffect(() => {
     if (wikiArticleUrl) setError("");
@@ -119,6 +155,62 @@ const WikiArticleUpload = ({
           )}
         </button>
       </div>
+
+      <label className="label">{t("major_brief_fly_approve")}</label>
+
+      {!suggestedArticle && !suggesting ? (
+        <div className="flex gap-2">
+          <button
+            disabled={uploading}
+            className={twJoin("btn btn-primary btn-sm")}
+            onClick={suggest}
+          >
+            {t("inner_cuddly_nuthatch_care")}
+          </button>
+        </div>
+      ) : suggesting ? (
+        <div className="flex justify-center">
+          <span className="loading loading-infinity loading-lg min-h-32 px-4" />
+        </div>
+      ) : (
+        <div>
+          <div>
+            <h3 className="text-md font-bold">{suggestedArticle?.title}</h3>
+          </div>
+          <div className="flex justify-between">
+            <p>{suggestedArticle?.extract}</p>
+            <div className="ms-5 hidden grow-0 basis-1/5 sm:block">
+              <img
+                className="object-cover"
+                src={suggestedArticle?.thumbnail.source}
+              />
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              disabled={uploading}
+              className={twJoin("btn btn-outline btn-sm")}
+              onClick={suggest}
+            >
+              {t("tough_stock_crocodile_foster")}
+            </button>
+            <button
+              disabled={uploading}
+              className={twJoin("btn btn-primary btn-sm")}
+              onClick={uploadSuggested}
+            >
+              {uploading ? (
+                <span className="flex items-center">
+                  {t("fancy_tame_grizzly_renew")}
+                  <span className="loading loading-infinity loading-xs px-4" />
+                </span>
+              ) : (
+                <span>{t("warm_next_alligator_laugh")}</span>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       {!!error && (
         <div role="alert" className="alert alert-error text-sm">

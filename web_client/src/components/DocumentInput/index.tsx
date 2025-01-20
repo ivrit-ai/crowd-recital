@@ -10,6 +10,7 @@ import Collapse from "@/components/Collapse";
 import WikiArticleUpload from "./wikiUploadTab";
 import FreeTextUpload from "./freeTextUploadTab";
 import SelectExistingDocument from "./existingDocTab";
+import EnterExistingDocTab from "./enterExistingDocTab";
 import type { TabContentProps } from "./types";
 
 const DocumentInput = () => {
@@ -37,10 +38,10 @@ const DocumentInput = () => {
         setWikiUploadError(
           t("caring_polite_ape_amuse", { error: getErrorMessage(error) }),
         );
-        console.error('---')
+        console.error("---");
         console.error(error);
         console.log(getErrorMessage(error));
-        console.error('===')
+        console.error("===");
       } finally {
         setProcessing(false);
       }
@@ -101,6 +102,9 @@ const DocumentInput = () => {
               {...tabContentProps}
               loadNewDocumentFromWikiArticle={uploadWikiDocument}
             />
+          </Collapse>
+          <Collapse title={t("short_spry_rooster_swim")} defaultOpen={true}>
+            <EnterExistingDocTab />
           </Collapse>
           {isAdmin && (
             <>

@@ -26,7 +26,6 @@ const SelectExistingDocument = ({ setNoDocsFound }: Props) => {
   const { t } = useTranslation("documents");
   const navigate = useNavigate({ from: "/documents" });
   const [onlyMine, setOnlyMine] = useState(true);
-  const [existingId, setExistingId] = useState("");
 
   // Documents table loading
   const [page, setPage] = useState(1);
@@ -211,27 +210,6 @@ const SelectExistingDocument = ({ setNoDocsFound }: Props) => {
         : isError
           ? errorPlaceholder
           : noDocsPlaceholder}
-      <div className="divider"></div>
-      <div className="flex flex-col justify-end gap-4">
-        <label className="label">{t("short_spry_rooster_swim")}</label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            className="input input-sm input-bordered w-full max-w-xl"
-            value={existingId}
-            onChange={(e) => setExistingId(e.target.value)}
-          />
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() =>
-              navigate({ to: "/recite/$docId", params: { docId: existingId } })
-            }
-          >
-            {t("warm_next_alligator_laugh")}
-          </button>
-        </div>
-      </div>
     </>
   );
 };
