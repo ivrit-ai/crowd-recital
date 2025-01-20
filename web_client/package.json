@@ -25,7 +25,8 @@
     "react-error-boundary": "^4.0.13",
     "react-i18next": "^15.0.2",
     "react-player": "^2.16.0",
-    "tailwind-merge": "^2.4.0"
+    "tailwind-merge": "^2.4.0",
+    "wikipedia": "^2.1.2"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.14",

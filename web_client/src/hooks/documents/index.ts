@@ -10,5 +10,8 @@ export function useDocuments() {
     return createDocument(text, SourceType.PlainText, title);
   }, []);
 
-  return { createWikiArticleDocument, createFreeTextDocument };
+  return {
+    createWikiArticleDocument,
+    createFreeTextDocument,
+  };
 }
