@@ -25,9 +25,9 @@ async def get_user_totals(
 @inject
 async def get_leaderboard(
     stats_ra: StatsRA = Depends(Provide[Container.stats_ra]),
+    leaderboard_depth: int = Depends(Provide[Container.config.stats.leaderboard_depth]),
 ):
-
-    return stats_ra.leader_board(10)
+    return stats_ra.leader_board(leaderboard_depth)
 
 
 @router.get("/totals", response_model=TotalStats)
