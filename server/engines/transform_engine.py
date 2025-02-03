@@ -62,7 +62,7 @@ class TransformEngine:
         main_output_audio_file = f"{session_id}.{output_audio_file_extension}"
         abs_main_output_audio_file = Path(self.data_folder, main_output_audio_file)
 
-        base_ffmpeg_cmd = ["ffmpeg", "-y", "-i", str(source_audio_filename)]
+        base_ffmpeg_cmd = ["ffmpeg", "-y", "-fflags", "+genpts", "-i", str(source_audio_filename)]
         target_duration_ffmpeg_options = ["-t", str(target_duration)]
 
         main_ffmpeg_cmd = [
@@ -89,8 +89,8 @@ class TransformEngine:
         light_ffmpeg_cmd.append(str(abs_light_output_audio_file))
 
         try:
-            subprocess.check_call(main_ffmpeg_cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-            subprocess.check_call(light_ffmpeg_cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            subprocess.check_call(main_ffmpeg_cmd, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, text=True)
+            subprocess.check_call(light_ffmpeg_cmd, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, text=True)
         except OSError as e:
             print("Warning - Error while transcoding audio input. Skipping.")
             print(e)
