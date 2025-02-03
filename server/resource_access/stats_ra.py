@@ -77,7 +77,7 @@ class StatsRA:
             user_stats = results.one_or_none()
 
             if not user_stats:
-                return UserStats(global_rank=0, total_duration=0, total_recordings=0)
+                return UserStats(global_rank=0, total_duration=0, total_recordings=0, next_higher_duration=0)
 
             return UserStats(
                 global_rank=user_stats.global_rank,
