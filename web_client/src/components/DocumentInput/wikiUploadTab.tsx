@@ -24,7 +24,7 @@ const allowedWikiLangs = [
   WikiArticleLang.Yiddish as string,
 ];
 const allowedWikiUrlPattern = new RegExp(
-  `^https://([a-z]+)(.m)?\\.wikipedia\\.org/wiki/`,
+  `^https://([a-z]+)(.m)?(\\.wikipedia\\.org|\\.hamichlol\\.org\\.il)(/wiki)?/(.+)$`,
   "i",
 );
 

@@ -6,12 +6,19 @@ import wikipediaapi
 from pydantic import BaseModel
 
 from models.text_document import PLAIN_TEXT_SOURCE_TYPE, WIKI_ARTICLE_SOURCE_TYPE
+from .wiki.hamichlol_wiki import HamichlolWikipedia
 
 from .nlp_pipeline import NlpPipeline
 
 APP_USER_AGENT = "Ivrit.ai-Crowd-Recital/0.0.0 (https://www.ivrit.ai)"
-WIKI_ALLOWED_LANGUAGES = ["he", "yi"]
-WIKI_ALLOWED_ARTICLE_URL_PREFIX = rf"^(https?://({'|'.join(WIKI_ALLOWED_LANGUAGES)}).(?:m\.)?wikipedia.org/wiki/)(.+)$"
+WIKIPEDIA_SOURCE = "wikipedia.org"
+HAMICHLOL_SOURCE = "hamichlol.org.il"
+WIKI_SOURCE_TO_WIKI_CLASS = {WIKIPEDIA_SOURCE: wikipediaapi.Wikipedia, HAMICHLOL_SOURCE: HamichlolWikipedia}
+WIKI_ALLOWED_LANGUAGE_SOURCES = [("he", WIKIPEDIA_SOURCE), ("yi", WIKIPEDIA_SOURCE), ("yi", HAMICHLOL_SOURCE)]
+WIKI_ALLOWED_LANGUAGES = list(set([lang for lang, _ in WIKI_ALLOWED_LANGUAGE_SOURCES]))
+WIKI_ALLOWED_ARTICLE_URL_PREFIX = (
+    rf"^(https?://({'|'.join(WIKI_ALLOWED_LANGUAGES)}).(?:m\.)?({WIKIPEDIA_SOURCE}|{HAMICHLOL_SOURCE})(/wiki)?/)(.+)$"
+)
 
 
 class ExtractedText(BaseModel):
@@ -23,7 +30,10 @@ class ExtractionEngine:
     def __init__(self, nlp_pipeline: NlpPipeline):
         self.langs = ["he", "yi"]
         self.wiki_langs = WIKI_ALLOWED_LANGUAGES
-        self.wiki_wiki_per_lang = {lang: wikipediaapi.Wikipedia(APP_USER_AGENT, lang) for lang in self.wiki_langs}
+        self_wiki_lang_srcs = WIKI_ALLOWED_LANGUAGE_SOURCES
+        self.wiki_wiki_per_lang_source = {
+            (lang, src): WIKI_SOURCE_TO_WIKI_CLASS[src](APP_USER_AGENT, lang) for lang, src in self_wiki_lang_srcs
+        }
         self.nlp_per_lang = {lang: nlp_pipeline.get_pipeline_for_lang(lang) for lang in self.langs}
 
     def extract_text_document_from_file(
@@ -134,12 +144,16 @@ class ExtractionEngine:
         if lang not in self.wiki_langs:
             raise invalid_wiki_article_url_error
 
+        wiki_source = wiki_url_match.group(3)
+        if wiki_source not in WIKI_SOURCE_TO_WIKI_CLASS.keys():
+            raise invalid_wiki_article_url_error
+
         # Extract the article title from the URL
-        title = wiki_url_match.group(3)
+        title = wiki_url_match.group(5)
         if not title.strip():
             raise invalid_wiki_article_url_error
 
-        wiki_page = self.wiki_wiki_per_lang[lang].page(title)
+        wiki_page = self.wiki_wiki_per_lang_source[(lang, wiki_source)].page(title)
 
         if not wiki_page.exists():
             raise ValueError(f"Wiki article not found: {wiki_article_url}")
