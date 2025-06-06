@@ -99,12 +99,17 @@ const Header = () => {
               <HeaderMenuItem closeMenu={closeMenu}>
                 {i18n.language !== "yi" && (
                   <button type="button" onClick={() => changeLanguage("yi")}>
-                    יידיש <LanguagesIcon className="h-4 w-4" />
+                    {t("yi", { lng: "yi" })} <LanguagesIcon className="h-4 w-4" />
+                  </button>
+                )}
+                {i18n.language !== "en" && (
+                  <button type="button" onClick={() => changeLanguage("en")}>
+                    {t("en", { lng: "en" })} <LanguagesIcon className="h-4 w-4" />
                   </button>
                 )}
                 {i18n.language !== "he" && (
                   <button type="button" onClick={() => changeLanguage("he")}>
-                    עבר <LanguagesIcon className="h-4 w-4" />
+                    {t("he", { lng: "he" })} <LanguagesIcon className="h-4 w-4" />
                   </button>
                 )}
               </HeaderMenuItem>
