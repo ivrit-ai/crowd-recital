@@ -11,7 +11,7 @@ import App from "./App";
 console.log(
   "%cעברית.ai",
   "color: black; background-color: white; font-size: 2rem; padding: 16px 4px; border-radius: 10px;",
-  `\n-- Crowed Recital Client ${VERSION}`,
+  `\n-- Crowd Recital Client ${VERSION}`,
   `\n-- Server Version ${EnvConfig.get("version")}`,
 );
 
