@@ -94,6 +94,7 @@ async def get_valid_user(
     authenticated_user_id: Annotated[str, Depends(get_authenticated_user_id)],
     delegated_user_email: Annotated[str, Depends(get_delegated_user_email)],
     google_client_id: str = Depends(Provide[Container.config.auth.google.client_id]),
+    dev_auto_login_user_email: str = Depends(Provide[Container.config.auth.dev_auto_login_user_email]),
     users_ra: UsersRA = Depends(Provide[Container.users_ra]),
 ):
     user: User = None
@@ -101,6 +102,11 @@ async def get_valid_user(
         user = users_ra.get_by_id(authenticated_user_id)
     elif delegated_user_email:
         user = users_ra.get_by_email(delegated_user_email)
+    elif dev_auto_login_user_email:
+        print(f"WARNING: Using DEV_AUTO_LOGIN_USER_EMAIL for development - auto-logging in user: {dev_auto_login_user_email}")
+        user = users_ra.get_by_email(dev_auto_login_user_email)
+        if not user:
+            print(f"ERROR: DEV_AUTO_LOGIN_USER_EMAIL not found in DB - auto-logging in user: {dev_auto_login_user_email}")
     else:  # Not authenticated
         auth_error_details = AuthenticationErrorDetails(
             google_client_id=google_client_id, g_csrf_token=generate(size=16)

@@ -59,6 +59,7 @@ PUBLIC_POSTHOG_KEY=<optional - tracking to posthog>
 PUBLIC_POSTHOG_HOST=<optional - tracking to posthog>
 DEBUG=<True/False - prints db and other detailed logs (False)>
 EMAIL_SENDER_ADDRESS=<email to send from>
+DEV_AUTO_LOGIN_USER_EMAIL=<optional - for development only - automatically login with this user email>
 ```
 
 *JOB_SESSION_FINALIZATION_INTERVAL_SEC*: Note, the server will also immediately trigger finalization when a recording session ends when this flag is turned on to minimize latency of getting an available session preview.
@@ -241,6 +242,74 @@ from the root folder.
 
 ## Development
 
+### Development Auto-Login
+
+For easier local development, you can use the `DEV_AUTO_LOGIN_USER_EMAIL` environment variable to automatically log in as a specific user without going through the Google authentication flow. This is particularly useful for testing and development purposes.
+
+To use this feature:
+
+1. Add `DEV_AUTO_LOGIN_USER_EMAIL=your-email@example.com` to your `.env` file
+2. Ensure the email corresponds to a user that already exists in the database
+3. When the server starts, any unauthenticated requests will automatically be authenticated as this user
+
+#### Creating Development Users
+
+To create development users for testing, you can run the following SQL script against your PostgreSQL database. This script creates two users: one with "speaker" permissions and one with "admin" permissions.
+
+```sql
+-- Create a speaker user
+INSERT INTO users (
+    id, 
+    email, 
+    email_verified, 
+    name, 
+    picture, 
+    group, 
+    created_at, 
+    updated_at
+) VALUES (
+    gen_random_uuid(), -- Generate a random UUID
+    'speaker@example.com', -- Replace with your desired email
+    TRUE, -- Email verified
+    'Test Speaker', -- User's name
+    'https://example.com/avatar.png', -- Optional profile picture URL
+    'speaker', -- User group: 'speaker' or 'admin'
+    CURRENT_TIMESTAMP, -- Created timestamp
+    CURRENT_TIMESTAMP -- Updated timestamp
+);
+
+-- Create an admin user
+INSERT INTO users (
+    id, 
+    email, 
+    email_verified, 
+    name, 
+    picture, 
+    group, 
+    created_at, 
+    updated_at
+) VALUES (
+    gen_random_uuid(), -- Generate a random UUID
+    'admin@example.com', -- Replace with your desired email
+    TRUE, -- Email verified
+    'Test Admin', -- User's name
+    'https://example.com/avatar.png', -- Optional profile picture URL
+    'admin', -- User group: 'admin' for full administrative access
+    CURRENT_TIMESTAMP, -- Created timestamp
+    CURRENT_TIMESTAMP -- Updated timestamp
+);
+```
+
+After running this script, you can set `DEV_AUTO_LOGIN_USER_EMAIL=speaker@example.com` or `DEV_AUTO_LOGIN_USER_EMAIL=admin@example.com` in your `.env` file to automatically log in as either user.
+
+**Important Notes:**
+- The `group` field determines the user's permissions:
+  - `speaker`: Can use the recital web UI to record audio
+  - `admin`: Has full administrative access to the system
+- This feature should only be used in development environments
+- A console warning will be displayed when this feature is active
+- The auto-login only happens when no other authentication method is present
+
 ### Prerequisites
 
 - Python >= 3.11 and < 3.12 Installed
@@ -263,6 +332,7 @@ PUBLIC_POSTHOG_KEY=<optional - tracking to posthog>
 PUBLIC_POSTHOG_HOST=<optional - tracking to posthog>
 DEBUG=<True/False - prints db and other detailed logs (False)>
 EMAIL_SENDER_ADDRESS=<email to send from>
+DEV_AUTO_LOGIN_USER_EMAIL=<optional - for development only - automatically login with this user email>
 ```
 
 GOOGLE_CLIENT_ID & ACCESS_TOKEN_SECRET_KEY - instructions can be found here: https://support.google.com/cloud/answer/15549257?hl=en# 
@@ -298,6 +368,3 @@ You need to start two web servers from two shells.
 Use tbump from the "server" folder:
 
 `tbump 4.3.2`
-
-
-
