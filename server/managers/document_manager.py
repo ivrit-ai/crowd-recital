@@ -8,9 +8,9 @@ from fastapi import UploadFile
 
 from engines.extraction_engine import ExtractionEngine
 from models.text_document import (
+    FILE_UPLOAD_SOURCE_TYPE,
     PLAIN_TEXT_SOURCE_TYPE,
     WIKI_ARTICLE_SOURCE_TYPE,
-    FILE_UPLOAD_SOURCE_TYPE,
     TextDocument,
 )
 from models.user import User
@@ -29,11 +29,15 @@ class DocumentManager:
         source_content_type: str,
         source_filename: Optional[str] = None,
         title: Optional[str] = None,
+        lang: Optional[str] = "he",
         owner: Optional[User] = None,
     ) -> TextDocument:
-        extracted_text = self.extraction_engine.extract_text_document_from_file(source_file, source_content_type)
+        title: Optional[str] = (None,)
+        extracted_text = self.extraction_engine.extract_text_document_from_file(
+            source_file, source_content_type, title=title, lang=lang
+        )
 
-        title = title or extracted_text.metadata.get("title") or source_filename or None
+        title = extracted_text.metadata.get("title", None) or source_filename or None
 
         doc = self.documents_ra.upsert(
             TextDocument(
@@ -50,14 +54,19 @@ class DocumentManager:
         return doc
 
     def create_from_source(
-        self, source: str, source_type: str, title: Optional[str] = None, owner: Optional[User] = None
+        self,
+        source: str,
+        source_type: str,
+        title: Optional[str] = None,
+        lang: Optional[str] = "he",
+        owner: Optional[User] = None,
     ) -> TextDocument:
         # Validate the source
         if not source or source_type not in [WIKI_ARTICLE_SOURCE_TYPE, PLAIN_TEXT_SOURCE_TYPE]:
             raise ValueError("Invalid source or source type")
 
         # Extract text from the source
-        extracted_text = self.extraction_engine.extract_text_document(source, source_type, title)
+        extracted_text = self.extraction_engine.extract_text_document(source, source_type, title=title, lang=lang)
 
         # Add any provided metadata
         title = None

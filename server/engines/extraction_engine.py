@@ -37,25 +37,29 @@ class ExtractionEngine:
         self.nlp_per_lang = {lang: nlp_pipeline.get_pipeline_for_lang(lang) for lang in self.langs}
 
     def extract_text_document_from_file(
-        self,
-        source_file: BinaryIO,
-        source_content_type: str,
+        self, source_file: BinaryIO, source_content_type: str, title: Optional[str] = None, lang: Optional[str] = "he"
     ) -> ExtractedText:
         if source_content_type == "text/plain":
-            return self._extract_text_document_from_plain_text(source_file.read().decode("utf-8"), None)
+            return self._extract_text_document_from_plain_text(
+                source_file.read().decode("utf-8"), title=title, lang=lang
+            )
         elif source_content_type == "text/html":
-            return self._extract_text_document_from_html_file(source_file)
+            return self._extract_text_document_from_html_file(source_file, title=title, lang=lang)
         else:
             raise ValueError(f"Unsupported source content type: {source_content_type}")
 
-    def extract_text_document(self, source: str, source_type: str, title: Optional[str] = None) -> ExtractedText:
+    def extract_text_document(
+        self, source: str, source_type: str, title: Optional[str] = None, lang: Optional[str] = "he"
+    ) -> ExtractedText:
         if source_type == WIKI_ARTICLE_SOURCE_TYPE:
+            # title,lang are not used for wiki articles
             return self._extract_text_document_from_wiki_article(source)
         elif source_type == PLAIN_TEXT_SOURCE_TYPE:
-            return self._extract_text_document_from_plain_text(source, title)
+            return self._extract_text_document_from_plain_text(source, title=title, lang=lang)
 
-    def _extract_text_document_from_plain_text(self, plain_text: str, title: Optional[str] = None) -> str:
-        lang = "he"  # TODO: how to detect language of plain text
+    def _extract_text_document_from_plain_text(
+        self, plain_text: str, title: Optional[str] = None, lang: Optional[str] = "he"
+    ) -> ExtractedText:
         extracted = ExtractedText(
             text=self._normalize_and_segment_text(lang, plain_text),
             metadata={
@@ -66,31 +70,32 @@ class ExtractionEngine:
 
         return extracted
 
-    def _extract_text_document_from_html_file(self, source_file: BinaryIO) -> ExtractedText:
+    def _extract_text_document_from_html_file(
+        self, source_file: BinaryIO, title: Optional[str] = None, lang: Optional[str] = "he"
+    ) -> ExtractedText:
         # Read the HTML content from the binary file
         html_content = source_file.read()
-
-        lang = "he"  # TODO: how to detect language of HTML text?
 
         # Parse the HTML content using BeautifulSoup
         soup = BeautifulSoup(html_content, "html5lib")
 
-        # Initialize the title variable
-        title = ""
+        # If no title is provided, try to extract it from the HTML content
+        if not title:
+            title = ""
 
-        # Priority 1: Extract the <title> from the <head>
-        if soup.title and soup.title.string:
-            title = soup.title.string.strip()
-        else:
-            # Priority 2: Extract the first <h1> found in the document
-            h1 = soup.find("h1")
-            if h1 and h1.get_text():
-                title = h1.get_text(strip=True)
+            # Priority 1: Extract the <title> from the <head>
+            if soup.title and soup.title.string:
+                title = soup.title.string.strip()
             else:
-                # Priority 3: Extract from <meta name="title"> or <meta property="og:title">
-                meta_title = soup.find("meta", attrs={"name": "title"}) or soup.find("meta", property="og:title")
-                if meta_title and meta_title.get("content"):
-                    title = meta_title.get("content").strip()
+                # Priority 2: Extract the first <h1> found in the document
+                h1 = soup.find("h1")
+                if h1 and h1.get_text():
+                    title = h1.get_text(strip=True)
+                else:
+                    # Priority 3: Extract from <meta name="title"> or <meta property="og:title">
+                    meta_title = soup.find("meta", attrs={"name": "title"}) or soup.find("meta", property="og:title")
+                    if meta_title and meta_title.get("content"):
+                        title = meta_title.get("content").strip()
 
         # Extract paragraphs under <body>, excluding certain nested sections
         text = []
