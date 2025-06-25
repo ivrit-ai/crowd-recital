@@ -32,7 +32,6 @@ class DocumentManager:
         lang: Optional[str] = "he",
         owner: Optional[User] = None,
     ) -> TextDocument:
-        title: Optional[str] = (None,)
         extracted_text = self.extraction_engine.extract_text_document_from_file(
             source_file, source_content_type, title=title, lang=lang
         )

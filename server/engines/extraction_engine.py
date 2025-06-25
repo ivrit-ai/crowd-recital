@@ -1,15 +1,16 @@
 import re
 from typing import BinaryIO, Optional
 
-from bs4 import BeautifulSoup
 import wikipediaapi
+from bs4 import BeautifulSoup
 from pydantic import BaseModel
 
 from models.text_document import PLAIN_TEXT_SOURCE_TYPE, WIKI_ARTICLE_SOURCE_TYPE
-from .wiki.hamichlol_wiki import HamichlolWikipedia
 
 from .nlp_pipeline import NlpPipeline
+from .wiki.hamichlol_wiki import HamichlolWikipedia
 
+SUPPORTED_DOC_LANGS = ["he", "yi"]
 APP_USER_AGENT = "Ivrit.ai-Crowd-Recital/0.0.0 (https://www.ivrit.ai)"
 WIKIPEDIA_SOURCE = "wikipedia.org"
 HAMICHLOL_SOURCE = "hamichlol.org.il"
@@ -28,7 +29,7 @@ class ExtractedText(BaseModel):
 
 class ExtractionEngine:
     def __init__(self, nlp_pipeline: NlpPipeline):
-        self.langs = ["he", "yi"]
+        self.langs = SUPPORTED_DOC_LANGS
         self.wiki_langs = WIKI_ALLOWED_LANGUAGES
         self_wiki_lang_srcs = WIKI_ALLOWED_LANGUAGE_SOURCES
         self.wiki_wiki_per_lang_source = {
@@ -57,11 +58,22 @@ class ExtractionEngine:
         elif source_type == PLAIN_TEXT_SOURCE_TYPE:
             return self._extract_text_document_from_plain_text(source, title=title, lang=lang)
 
+    def _derive_title_from_extracted_text(self, extracted_text: list[list[str]]) -> str:
+        title = None
+        if extracted_text and extracted_text[0]:
+            words = extracted_text[0][0].split(" ")
+            title = " ".join(words[:5])
+        return title
+
     def _extract_text_document_from_plain_text(
         self, plain_text: str, title: Optional[str] = None, lang: Optional[str] = "he"
     ) -> ExtractedText:
+        extracted_text = self._normalize_and_segment_text(lang, plain_text)
+        if not title:
+            title = self._derive_title_from_extracted_text(extracted_text)
+
         extracted = ExtractedText(
-            text=self._normalize_and_segment_text(lang, plain_text),
+            text=extracted_text,
             metadata={
                 "lang": lang,
                 "title": title,
@@ -128,8 +140,12 @@ class ExtractionEngine:
 
         all_text = "\n".join(text)
 
+        extracted_text = self._normalize_and_segment_text(lang, all_text)
+
+        if not title:
+            title = self._derive_title_from_extracted_text(extracted_text)
         extracted = ExtractedText(
-            text=self._normalize_and_segment_text(lang, all_text),
+            text=extracted_text,
             metadata={
                 "lang": lang,
                 "title": title,
