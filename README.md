@@ -264,7 +264,7 @@ INSERT INTO users (
     email_verified, 
     name, 
     picture, 
-    group, 
+    "group", 
     created_at, 
     updated_at
 ) VALUES (
@@ -285,7 +285,7 @@ INSERT INTO users (
     email_verified, 
     name, 
     picture, 
-    group, 
+    "group", 
     created_at, 
     updated_at
 ) VALUES (
