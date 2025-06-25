@@ -28,6 +28,7 @@ class CreateDocumentFromSourceBody(BaseModel):
     source: str
     source_type: str
     title: Optional[str] = None
+    lang: Optional[str] = "he"
 
 
 max_source_file_size_mb = 10
@@ -35,11 +36,12 @@ max_source_file_size_mb = 10
 
 @router.post("/from_source_file")
 @inject
-async def create_document_from_source(
+async def create_document_from_source_file(
     track_event: Tracker,
     speaker_user: Annotated[User, Depends(get_speaker_user)],
     source_file: UploadFile = File(...),
     title: Annotated[str, Form()] = None,
+    lang: Annotated[str, Form()] = "he",
     document_manager: DocumentManager = Depends(Provide[Container.document_manager]),
 ):
 
@@ -62,6 +64,7 @@ async def create_document_from_source(
             source_content_type=source_file.content_type,
             source_filename=source_file.filename,
             title=title,
+            lang=lang,
             owner=speaker_user,
         )
     except ValueError as e:
@@ -84,6 +87,7 @@ async def create_document_from_source(
             create_from_source.source,
             create_from_source.source_type,
             title=create_from_source.title,
+            lang=create_from_source.lang,
             owner=speaker_user,
         )
     except ValueError as e:
