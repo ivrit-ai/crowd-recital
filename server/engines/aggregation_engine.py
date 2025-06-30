@@ -120,6 +120,11 @@ class AggregationEngine:
         for seg_filename in file_names:
             os.remove(Path(self.data_folder, seg_filename))
 
+    def delete_audio_segment_files(self, session_id: str) -> None:
+        audio_segments_filenames = self._get_audio_segment_file_names(session_id)
+        if len(audio_segments_filenames) > 0:
+            self._delete_audio_segment_file_names(audio_segments_filenames)
+
     def delete_session_audio(self, session_id: str) -> None:
         # Find all files that start with the session_id and end with .seg.*
         # and delete them
@@ -144,8 +149,5 @@ class AggregationEngine:
             for seg_filename in audio_segments_filenames:
                 with open(Path(self.data_folder, seg_filename), "rb") as seg_file:
                     shutil.copyfileobj(seg_file, concat_file)
-
-        # Delete all segments files - now they are stored into a single file
-        self._delete_audio_segment_file_names(audio_segments_filenames)
 
         return concatenated_filename

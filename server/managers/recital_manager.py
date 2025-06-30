@@ -186,6 +186,10 @@ class RecitalManager:
                         recital_session.light_audio_filename = light_audio_filename
                         recital_session.main_audio_filename = main_audio_filename
                         recital_session.status = SessionStatus.AGGREGATED  # done aggregating
+
+                        # Now that the audio is transcoded we know the aggregated binary audio file is valid
+                        # and we can delete the individual audio segment files
+                        self.aggregation_engine.delete_audio_segment_files(session_id)
                     else:
                         print(f"Could not transcode audio for session {session_id} - skipping")
                         self.posthog.capture(
@@ -322,7 +326,6 @@ class RecitalManager:
                 source_audio_filename = recital_session.source_audio_filename
                 if source_audio_filename:
                     self.recitals_content_ra.remove_local_data_file(source_audio_filename)
-                
                 # In case audio aggregation failed and the session is not yet marked as aggregated
                 if recital_session.text_filename:
                     self.recitals_content_ra.remove_local_data_file(recital_session.text_filename)
