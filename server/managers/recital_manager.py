@@ -318,6 +318,11 @@ class RecitalManager:
             if original_status in [SessionStatus.ACTIVE, SessionStatus.ENDED]:
                 # delete audio segment files which may have been uploaded (but not yet aggregated)
                 self.aggregation_engine.delete_session_audio(session_id)
+                # Check if the aggregated audio file was created - and remove it
+                source_audio_filename = recital_session.source_audio_filename
+                if source_audio_filename:
+                    self.recitals_content_ra.remove_local_data_file(source_audio_filename)
+                
                 # In case audio aggregation failed and the session is not yet marked as aggregated
                 if recital_session.text_filename:
                     self.recitals_content_ra.remove_local_data_file(recital_session.text_filename)
