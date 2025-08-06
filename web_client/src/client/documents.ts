@@ -47,6 +47,7 @@ export const createDocument = async (
   source: string,
   sourceType: SourceType,
   title?: string,
+  lang?: string,
 ) => {
   const response = await fetch(`${documentsApiBase}/from_source`, {
     method: "POST",
@@ -57,6 +58,7 @@ export const createDocument = async (
       source,
       source_type: sourceType,
       title,
+      lang
     }),
   });
   if (!response.ok) {

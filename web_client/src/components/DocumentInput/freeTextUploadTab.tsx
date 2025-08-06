@@ -11,7 +11,7 @@ interface Props extends TabContentProps {
   setError: (error: string) => void;
   processing: boolean;
   setProcessing: (processing: boolean) => void;
-  loadNewDocumentFromFreeText: (text: string, title?: string) => Promise<void>;
+  loadNewDocumentFromFreeText: (text: string, title?: string, lang?: string) => Promise<void>;
 }
 
 const FreeTextUpload = ({ error, loadNewDocumentFromFreeText }: Props) => {
@@ -19,11 +19,12 @@ const FreeTextUpload = ({ error, loadNewDocumentFromFreeText }: Props) => {
   const posthog = usePostHog();
   const [freeText, setFreeText] = useState("");
   const [freeTextTitle, setFreeTextTitle] = useState<string | undefined>();
+  const [freeTextLang, setFreeTextLang] = useState<string | undefined>();
   const [uploading, setUploading] = useState(false);
 
   const upload = useCallback(() => {
     setUploading(true);
-    loadNewDocumentFromFreeText(freeText, freeTextTitle)
+    loadNewDocumentFromFreeText(freeText, freeTextTitle, freeTextLang)
       .then(() => {
         setFreeText("");
       })
@@ -31,10 +32,18 @@ const FreeTextUpload = ({ error, loadNewDocumentFromFreeText }: Props) => {
         setUploading(false);
       });
     posthog?.capture("Upload Free Text");
-  }, [loadNewDocumentFromFreeText, freeText, freeTextTitle]);
+  }, [loadNewDocumentFromFreeText, freeText, freeTextTitle, freeTextLang]);
 
   return (
     <div className="flex flex-col items-end gap-4">
+      <select
+        className="select select-bordered w-full"
+        value={freeTextLang}
+        onChange={(e) => setFreeTextLang(e.target.value)}
+      >
+        <option value="he">{t("he", { ns: "translation" })}</option>
+        <option value="yi">{t("yi", { ns: "translation" })}</option>
+      </select>
       <input
         className="input input-bordered w-full"
         placeholder={t("muddy_only_swallow_surge")}

@@ -50,10 +50,10 @@ const DocumentInput = () => {
   );
 
   const uploadFreeTextDocument = useCallback(
-    async (text: string, title?: string) => {
+    async (text: string, title?: string, lang?: string) => {
       setProcessing(true);
       try {
-        const { id } = await createFreeTextDocument(text, title);
+        const { id } = await createFreeTextDocument(text, title, lang);
         queryClient.invalidateQueries({ queryKey: ["documents"] });
         navigate({ to: "/recite/$docId", params: { docId: id } });
         setFreeTextUploadError("");
